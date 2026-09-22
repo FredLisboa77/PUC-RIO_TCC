@@ -1,0 +1,34 @@
+# --- Dados de projetos PBIP reais e artefatos gerados (R-06) ---
+data/
+outputs/
+rag/store/
+*.pbix
+*.abf
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# --- Segredos ---
+.env
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# --- Modelos e caches de ML ---
+.cache/
+*.onnx
+
+# --- Material pessoal, nao publicar em repositorio publico ---
+Diversos/
+_pessoal/
+
+# --- Sistema operacional / editores ---
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
