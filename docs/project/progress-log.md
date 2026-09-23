@@ -112,3 +112,12 @@ Painel de Vendas (PBIP)
 - **Verificação do ambiente:** projeto em `D:\dev\powerbi-ai-auditor`, `git fsck` sem erros, 4 commits, 19 arquivos rastreados, `Main` sincronizada com o GitHub, `.venv` com Python 3.11.9 apontando para o D:, e `data/pbip/P8_contoso-vendas/model.bim` no lugar.
 - **Pendência conhecida, sem impacto em disco:** ainda existe um `.venv` antigo dentro do OneDrive, em `Auditoria Power BI usando IA\.venv` (20 MB). Ele não está no PATH permanente — o PATH da máquina não tem nenhuma entrada de Python —, mas o VS Code o ativa automaticamente quando a janela está aberta na pasta do OneDrive. **Abrir o VS Code em `D:\dev\powerbi-ai-auditor`** resolve. A pasta `Projeto` obsoleta também segue lá, e o conteúdo dela já está no GitHub.
 - **Próximo passo:** semana 2 — abrir um terminal novo (para herdar as variáveis), instalar o Ollama e rodar o spike de LLM (R-02).
+
+## 23/09/2026 — correção: branch padrão do repositório
+
+- **Problema encontrado:** o repositório tinha dois branches que diferiam apenas por maiúscula. Todo o trabalho estava em `Main`, enquanto o branch padrão do GitHub era `main`, que continha só o "Initial commit" de 08/09/2026 com um README de duas linhas. Na prática, quem abrisse a página do repositório — orientador, banca — via um projeto vazio. As duas histórias eram desconexas: o commit raiz do trabalho (`b7d1735`) não descendia de `b317951`.
+- **Decisão (Fred):** consolidar tudo em `main`, o nome convencional, e eliminar a ambiguidade.
+- **Feito:** branch local renomeado de `Main` para `main` (via nome temporário, porque o Git no Windows trata os dois como o mesmo ref); `origin/main` sobrescrito com o histórico real usando `--force-with-lease` ancorado no SHA remoto conhecido, para abortar caso o remoto tivesse mudado; branch `Main` apagado do remoto **depois** de confirmar que `main` já tinha os 19 arquivos.
+- **Descartado:** o commit `b317951` e seu README de duas linhas, cujo conteúdo já está coberto pelo README atual. Ele permanece como objeto solto no repositório local até a próxima coleta de lixo do Git, caso precise ser recuperado.
+- **Estado final:** um único branch `main`, padrão do repositório, local e remoto em `a573cec`, `git fsck` sem erros.
+- **Lição para as próximas sessões:** conferir o `default_branch` do GitHub, não só a árvore do commit enviado. Um push bem-sucedido não garante que o trabalho esteja visível na página do repositório.
