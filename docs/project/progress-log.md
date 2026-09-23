@@ -101,3 +101,14 @@ Painel de Vendas (PBIP)
   - `data/pbip/P8_contoso-vendas/` acompanhou a mudança.
 - **Atenção para a semana 2:** mover o projeto **não** resolve o R-14 sozinho. O Ollama baixa os modelos para `C:\Users\<user>\.ollama` e o Playwright instala o Chromium em `AppData\Local\ms-playwright` — os dois em C:, por padrão. Antes de instalar qualquer um, definir `OLLAMA_MODELS` e `PLAYWRIGHT_BROWSERS_PATH` apontando para D:, ou liberar espaço em C:. Sem isso, o download do modelo do spike falha.
 - **Próximo passo:** configurar essas duas variáveis, e então rodar o spike de LLM (R-02).
+
+## 23/09/2026 — R-14 mitigado, ambiente pronto para a semana 2
+
+- **Feito:** variáveis de ambiente de usuário criadas, para que nada pesado volte a cair em C:
+  - `OLLAMA_MODELS` = `D:\dev\ollama-models`
+  - `PLAYWRIGHT_BROWSERS_PATH` = `D:\dev\playwright-browsers`
+  - `HF_HOME` = `D:\dev\hf-cache`
+- **Feito:** limpeza em C: pelo Fred. O disco saiu de **0,87 GB** para **38,8 GB livres**. R-14 passa a **Mitigado**, com gatilho de reavaliação em 15 GB.
+- **Verificação do ambiente:** projeto em `D:\dev\powerbi-ai-auditor`, `git fsck` sem erros, 4 commits, 19 arquivos rastreados, `Main` sincronizada com o GitHub, `.venv` com Python 3.11.9 apontando para o D:, e `data/pbip/P8_contoso-vendas/model.bim` no lugar.
+- **Pendência conhecida, sem impacto em disco:** ainda existe um `.venv` antigo dentro do OneDrive, em `Auditoria Power BI usando IA\.venv` (20 MB). Ele não está no PATH permanente — o PATH da máquina não tem nenhuma entrada de Python —, mas o VS Code o ativa automaticamente quando a janela está aberta na pasta do OneDrive. **Abrir o VS Code em `D:\dev\powerbi-ai-auditor`** resolve. A pasta `Projeto` obsoleta também segue lá, e o conteúdo dela já está no GitHub.
+- **Próximo passo:** semana 2 — abrir um terminal novo (para herdar as variáveis), instalar o Ollama e rodar o spike de LLM (R-02).
