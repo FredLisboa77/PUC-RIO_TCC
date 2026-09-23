@@ -1,15 +1,17 @@
 # Dataset de avaliação
 
-**Status:** PLANEJADO — os arquivos ainda não foram baixados nem convertidos.
+**Status:** P8 convertido (23/09/2026). P1–P7 ainda não baixados nem convertidos.
 **Decisão de origem:** [ADR-005](../docs/adr/ADR-005-dataset-de-avaliacao.md).
 
 ## Origem
 
-Todos os PBIX vêm de **[microsoft/powerbi-desktop-samples](https://github.com/microsoft/powerbi-desktop-samples)**, licença **MIT** (confirmada via API do GitHub em 22/09/2026).
+**P1–P7** vêm de **[microsoft/powerbi-desktop-samples](https://github.com/microsoft/powerbi-desktop-samples)**, licença **MIT** (confirmada via API do GitHub em 22/09/2026).
 
 Usar amostras públicas em vez de projetos corporativos é uma decisão metodológica: a banca e qualquer leitor podem baixar exatamente os mesmos arquivos e repetir a avaliação.
 
-## Os 7 projetos
+**P8** é a exceção deliberada: um projeto construído pelo autor sobre o banco de exemplo público **ContosoRetailDW**. Entrou no dataset porque modelos de amostra da Microsoft tendem a ser limpos demais (risco R-12), enquanto P8 já apresenta problemas reais de modelagem na primeira leitura. Não é reprodutível por terceiros, e por isso **nunca sustenta sozinho uma conclusão** — toda métrica reportada deve aparecer também na forma "apenas P1–P7".
+
+## Os 8 projetos
 
 | PBIP_ID | Arquivo de origem | Pasta no repositório | Domínio |
 |---|---|---|---|
@@ -20,8 +22,30 @@ Usar amostras públicas em vez de projetos corporativos é uma decisão metodol�
 | P5 | `Store Sales.pbix` | `2026 Power BI Samples Revamp` | Varejo / loja física |
 | P6 | `Supply Chain Sample.pbix` | `Sample Reports` | Cadeia de suprimentos |
 | P7 | `Revenue Opportunities.pbix` | `Sample Reports` | Pipeline comercial / CRM |
+| P8 | `CONTOSO - Painel de Análise de Vendas Online.pbix` | — (autoria própria, base ContosoRetailDW) | Varejo online |
 
 P1–P5 vêm da revisão de 2026 e P6–P7 de amostras mais antigas. A mistura é proposital: modelos de épocas diferentes tendem a ter qualidade diferente, o que evita um dataset uniformemente bom ou uniformemente ruim.
+
+### P8 — ficha e verificação de privacidade
+
+Convertido em 23/09/2026 e guardado em `data/pbip/P8_contoso-vendas/` (fora do Git). `definition.pbism` `version` **4.2**; `compatibilityLevel` **1600**.
+
+O `.pbix` de origem **não** está em `data/pbix/`: com 174 MB e o disco C: sem espaço (ver R-14), ele permanece apenas na pasta original do autor. A ferramenta lê o PBIP, não o PBIX, então isso não afeta a avaliação.
+
+| Objeto | Qtd |
+|---|---|
+| Tabelas | 19 |
+| Medidas | 93 |
+| Colunas | 106 (35 calculadas) |
+| Relacionamentos | 11 |
+
+**Mascaramento exigido pelo R-12 — verificado, nada a mascarar:**
+
+- Única fonte externa: `Sql.Databases("localhost\")` → banco `ContosoRetailDW`. Sem host real, sem credenciais, sem caminho de arquivo.
+- Varredura do PBIP inteiro por nome de usuário, `C:\Users`, `OneDrive`, e-mails e menções à instituição: **nenhuma ocorrência**.
+- As colunas de pessoas (`DimCustomer`, `DimEmployee`) contêm dados sintéticos do Contoso, não pessoas reais.
+
+Reverificar essa varredura se o PBIP for regerado.
 
 ## Procedimento de conversão (manual, fora do escopo do software)
 
@@ -55,4 +79,4 @@ Regras de construção:
 
 ## Contingência
 
-Se na semana 4 o total de achados no dataset inteiro ficar abaixo de ~40, as amostras da Microsoft são limpas demais para uma avaliação significativa. Nesse caso, acrescentar 1 ou 2 PBIX próprios como P8/P9, com caminhos e strings de conexão mascarados antes de qualquer commit (risco R-12).
+O slot P8 já foi usado (ver acima), antecipando a contingência do risco R-12. Se na semana 4 o total de achados no dataset inteiro ainda ficar abaixo de ~40, acrescentar **1 PBIX próprio como P9**, repetindo a mesma verificação de privacidade aplicada ao P8 antes de qualquer commit.

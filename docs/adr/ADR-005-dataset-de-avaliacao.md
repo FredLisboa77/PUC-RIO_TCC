@@ -1,7 +1,16 @@
 # ADR-005 — Dataset de avaliação: amostras públicas da Microsoft
 
-- **Status:** Aceita
+- **Status:** Aceita, **emendada em 23/09/2026**
 - **Data:** 22/09/2026
+
+## Emenda de 23/09/2026 — inclusão do P8
+A contingência prevista para o risco R-12 foi antecipada. O projeto próprio `CONTOSO - Painel de Análise de Vendas Online` entrou no dataset como **P8** (varejo online), passando o dataset de 7 para 8 projetos.
+
+**Motivo:** ao converter o primeiro PBIP real (G-2), o modelo mostrou problemas de modelagem logo na primeira leitura — tempo automático ligado com 5 tabelas de data geradas, apesar de já existir uma `DimCalendar`. Esperar até a semana 4 para descobrir que as amostras da Microsoft são limpas demais custaria tempo que o cronograma não tem.
+
+**Custo da decisão, assumido explicitamente:** P8 não é reprodutível por terceiros, o que enfraquece o argumento de reprodutibilidade que motivou esta ADR. Mitigação: toda métrica reportada na monografia deve aparecer também na forma "apenas P1–P7", de modo que nenhuma conclusão dependa do P8. A verificação de privacidade exigida pelo R-12 foi feita e está registrada em `eval/dataset.md`.
+
+**Contingência restante:** se na semana 4 os achados ainda forem poucos, resta o slot P9.
 
 ## Contexto
 A avaliação precisa de 5 a 8 projetos PBIP de domínios de negócio diferentes. Havia duas opções: usar PBIX próprios (já disponíveis) ou usar amostras públicas. O desenvolvedor optou pelas amostras públicas.
