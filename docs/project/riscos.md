@@ -1,7 +1,7 @@
 # Registro de Riscos
 
 Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
-Última atualização: **23/09/2026** (G-2 concluído).
+Última atualização: **23/09/2026** (G-2 concluído; projeto movido para D:).
 
 | ID | Risco | P | I | Mitigação | Gatilho | Status |
 |---|---|---|---|---|---|---|
@@ -15,10 +15,10 @@ Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
 | R-08 | Dependências com problema de instalação no Windows | B | M | Python 3.11.9, já instalado, com wheels prontos; evitar bibliotecas que exijam compilação | Falha no spike | Aberto |
 | R-09 | Poucos PBIP públicos para demo | B | B | `microsoft/powerbi-desktop-samples`, licença MIT confirmada, é a base do dataset (ADR-005) | — | **Resolvido** |
 | R-10 | `TabularEditor/BestPracticeRules` não tem arquivo de licença | M | M | Usar apenas como referência conceitual com citação da URL; nunca copiar os `BPARules-*.json` nem reproduzir o texto das regras; ancorar cada regra numa página do Learn (ADR-004) | Qualquer trecho copiado literalmente | Aberto |
-| R-11 | Projeto dentro do OneDrive (sincronização de `.venv`, ChromaDB e Chromium) | B | M | Cópia de trabalho movida para `C:\dev\powerbi-ai-auditor` em 22/09/2026; GitHub é o backup | Erro de arquivo bloqueado ou sincronização lenta | **Mitigado** |
+| R-11 | Projeto dentro do OneDrive (sincronização de `.venv`, ChromaDB e Chromium) | B | M | Cópia de trabalho movida para fora do OneDrive em 22/09/2026 e realocada para `D:\dev\powerbi-ai-auditor` em 23/09/2026 (ver R-14); GitHub é o backup | Erro de arquivo bloqueado ou sincronização lenta | **Mitigado** |
 | R-12 | Amostras públicas da Microsoft têm poucos problemas, reduzindo a significância da avaliação | M | M | Contingência antecipada em 23/09/2026: P8 próprio já incluído no dataset (ADR-005, emenda). Slot P9 continua de reserva para a semana 4 | Menos de ~40 achados no dataset inteiro na semana 4 | **Mitigado** |
 | R-13 | Extrator de HTML do Learn quebra com mudança de layout do site | B | M | Guardar o HTML bruto em `rag/store/raw/` para reprocessar sem rebaixar; testes sobre 3 páginas de referência | Extração devolve texto vazio ou com navegação | Aberto |
-| R-14 | Disco C: sem espaço livre (0 bytes em 23/09/2026, de 475 GB) | A | A | Não guardar `.pbix` em `data/pbix/`; o pipeline lê o PBIP. Liberar espaço antes da semana 2: Ollama + modelos pedem 5–10 GB, e ChromaDB e o Chromium do Playwright somam mais | Qualquer erro "No space left on device"; menos de 15 GB livres ao instalar o Ollama | **Aberto — bloqueia a semana 2** |
+| R-14 | Disco C: praticamente sem espaço (0 byte livre em 23/09/2026, de 475 GB) | A | A | Projeto inteiro movido para `D:\dev\powerbi-ai-auditor` em 23/09/2026 (D: tem 1,5 TB livres). **Mitigação incompleta:** o Ollama grava os modelos em `C:\Users\<user>\.ollama` e o Playwright grava o Chromium em `AppData\Local\ms-playwright` — ambos em C: por padrão. Antes da semana 2, apontar os dois para D: via `OLLAMA_MODELS` e `PLAYWRIGHT_BROWSERS_PATH`, ou liberar espaço em C: | Qualquer erro "No space left on device"; download de modelo falhando na semana 2 | **Parcialmente mitigado** |
 
 ## Mudanças nesta revisão (22/09/2026)
 - **R-02** subiu de P=M para **P=A**: a GPU foi medida e tem exatamente 6144 MiB de VRAM, que é o limite para um modelo 7–8B quantizado, não folga.

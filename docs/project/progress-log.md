@@ -92,3 +92,12 @@ Painel de Vendas (PBIP)
 
 - **PROBLEMA SÉRIO — disco C: chegou a 0 byte livre** durante a cópia (475 GB, todos ocupados). Um `cat` falhou com "No space left on device". Contorno aplicado: o `.pbix` de 174 MB foi removido de `data/pbix/` — o original continua na pasta do autor e o pipeline lê o PBIP, não o PBIX — o que devolveu 163 MB. Registrado como **R-14**, e **bloqueia a semana 2**: Ollama e modelos pedem de 5 a 10 GB, e ainda faltam ChromaDB e o Chromium do Playwright.
 - **Próximo passo:** liberar espaço em C: (meta: 20 GB livres) **antes** de qualquer coisa. Depois, semana 2 — instalar o Ollama e rodar o spike de LLM (R-02, critérios na ADR-002).
+
+## 23/09/2026 — mudança de disco (R-14)
+
+- **Feito:** projeto inteiro movido de `C:\dev\powerbi-ai-auditor` para **`D:\dev\powerbi-ai-auditor`**. O D: tem 1,5 TB livres, contra praticamente nada em C:.
+  - `.venv` **não** foi movido: um ambiente virtual guarda caminhos absolutos em `pyvenv.cfg` e nos scripts de ativação, e quebra ao mudar de pasta. Foi descartado e recriado no destino — Python 3.11.9, pip 24.0, só pip e setuptools instalados, nada a reinstalar.
+  - Repositório Git verificado depois da mudança: `git fsck` sem erros, 19 arquivos rastreados, remoto `origin` intacto e `Main` sincronizada com o GitHub.
+  - `data/pbip/P8_contoso-vendas/` acompanhou a mudança.
+- **Atenção para a semana 2:** mover o projeto **não** resolve o R-14 sozinho. O Ollama baixa os modelos para `C:\Users\<user>\.ollama` e o Playwright instala o Chromium em `AppData\Local\ms-playwright` — os dois em C:, por padrão. Antes de instalar qualquer um, definir `OLLAMA_MODELS` e `PLAYWRIGHT_BROWSERS_PATH` apontando para D:, ou liberar espaço em C:. Sem isso, o download do modelo do spike falha.
+- **Próximo passo:** configurar essas duas variáveis, e então rodar o spike de LLM (R-02).
