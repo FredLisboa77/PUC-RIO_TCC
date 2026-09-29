@@ -15,12 +15,14 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 | Fase | Período | Status |
 |---|---|---|
 | **Fase 1 — Viabilidade e planejamento** | Semanas 1–2 | **Gate aprovado em 22/09/2026** |
-| Fase 2 — Leitura do PBIP e regras | Semanas 3–4 | Não iniciada |
+| **Fase 2 — Leitura do PBIP e regras** | Semanas 3–4 | **Em andamento** — ingestão e parser prontos (29/09/2026) |
 | Fase 3 — RAG e análise com LLM | Semanas 5–8 | Não iniciada |
 | Fase 4 — Interface e relatório | Semanas 9–10 | Não iniciada |
 | Fase 5 — Avaliação, documentação e banca | Semanas 11–13 | Não iniciada |
 
-Nenhum código de produto foi escrito ainda. O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md).
+O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
+
+Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, e o parser do `model.bim` para um modelo interno normalizado. 15 testes passando.
 
 ## Decisões de arquitetura
 
@@ -63,7 +65,26 @@ Windows 11, Python 3.11.9. O ambiente virtual fica em `.venv/` na raiz do projet
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
+
+### Certificado do PyPI nesta máquina
+
+O Norton intercepta TLS aqui: o certificado do PyPI chega emitido pela raiz "Norton Web/Mail Shield". O Windows confia nessa raiz, mas o `pip` usa o bundle do `certifi`, que não a contém — daí o erro `CERTIFICATE_VERIFY_FAILED`. A solução é apontar o `pip` para a mesma raiz que o sistema já confia, **sem** desabilitar a verificação:
+
+```powershell
+pip install -r requirements.txt --cert C:\ProgramData\Norton\Antivirus\wscert.pem
+```
+
+Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa configuração. Como o `.venv` não é versionado, ele precisa ser refeito se o ambiente for recriado.
+
+## Testes
+
+```powershell
+pytest
+```
+
+Os testes montam PBIP sintéticos em pasta temporária. Os quatro testes que leem o PBIP real são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório.
 
 ## Nota sobre dados
 
