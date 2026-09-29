@@ -1,6 +1,6 @@
 # ADR-002 — Stack tecnológica
 
-- **Status:** Aceita (revisada em 22/09/2026 após verificação do ambiente real) · validação final no spike da semana 2
+- **Status:** **VALIDADO** no spike de 29/09/2026 (ver o resultado no fim deste documento)
 - **Data:** 22/09/2026 · **Revisão:** 22/09/2026 (C-1, C-2, C-6)
 
 ## Contexto
@@ -62,3 +62,36 @@ Isso mantém o embedding de 130 MB e evita trocar para um modelo multilíngue de
 - LLM local: menos de 60 s por achado e citação correta em pelo menos 4 de 5 prompts de teste.
 - PDF de um HTML de exemplo gerado pelo Playwright.
 - Registrar no progress-log: modelo escolhido, tempo médio, uso de VRAM e RAM.
+
+## Resultado do spike — 29/09/2026 — ADR-002 passa a VALIDADO
+
+Ollama 0.34.4 instalado. Os dois candidatos foram medidos sobre os mesmos 5 achados, com `num_ctx=4096` e `temperature=0.2`. Script e dados brutos: `eval/spike_llm.py`, `eval/results/spike_llm.json`.
+
+| Modelo | Carga | Tempo médio | Pior | Citações válidas | VRAM | Veredito |
+|---|---|---|---|---|---|---|
+| `qwen2.5:3b` | 6,7 s | **2,0 s** | 2,5 s | 5/5 | ~3,4 GB | Aprovado nos critérios |
+| `qwen2.5:7b-instruct-q4_K_M` | 9,9 s | **6,0 s** | 6,5 s | 5/5 | **~5,3 GB** | Aprovado nos critérios |
+
+**Decisão: `qwen2.5:7b-instruct-q4_K_M` como modelo principal, `qwen2.5:3b` como contingência.** A ADR-006 **não** será aberta.
+
+### O que o spike confirmou
+
+O orçamento de memória previsto em 22/09 estava certo: o 7B em Q4_K_M ocupa ~5,3 GB dos 6,0 GB de VRAM com contexto de 4096. Cabe, sem folga — exatamente como a ADR-002 previa ao fixar o `num_ctx`. Aumentar o contexto empurraria camadas para a CPU.
+
+Os tempos ficaram uma ordem de grandeza abaixo do limite de 60 s. Mesmo com ~100 achados num modelo grande, a etapa de geração fica em torno de 10 minutos, o que torna viável rodar o pipeline inteiro sem cache — o cache (F16) continua útil para a demo, mas deixa de ser necessidade.
+
+As 10 citações de 10 foram válidas nos dois modelos: a URL citada estava sempre entre as fornecidas. A obrigatoriedade de citação da ADR-003 funciona na prática, e não apenas no desenho.
+
+### Duas limitações dos critérios, descobertas ao ler as respostas
+
+**1. Os critérios não detectam erro factual.** O 3B escreveu "o modelo tem duas tabelas de data geradas automaticamente" quando a evidência entregue dizia quatro. Passou nos dois critérios — respondeu em 1,7 s e citou uma URL válida — e ainda assim afirmou um número errado sobre o dado que recebeu. O 7B não cometeu esse erro em nenhum dos cinco achados.
+
+Consequência: **acrescentar um terceiro critério de fidelidade à evidência** na avaliação da Fase 5, verificando que números e nomes citados na explicação aparecem no achado. É verificável por código, já que o achado é estruturado.
+
+**2. Citação válida não é citação relevante.** No achado das tabelas de data automáticas, o 7B citou `model-date-tables` em vez de `auto-date-time`, que é a página que sustenta o achado. As duas foram fornecidas, então a citação conta como válida pela regra da ADR-003, mas é a menos pertinente das duas.
+
+Consequência: a métrica de citação da Fase 5 deve distinguir **válida** (a URL está entre as recuperadas) de **pertinente** (é a fonte que sustenta aquele achado). A segunda exige julgamento humano e entra na rubrica, não no cálculo automático.
+
+### Ressalva de método
+
+Na primeira execução o 3B reprovou com 84,2 s no primeiro achado e 1,8 a 2,5 s nos demais. Era o carregamento do modelo do disco para a VRAM, não inferência. O script passou a fazer uma chamada de aquecimento fora da medição, e a carga é reportada em separado. O critério de 60 s da ADR-002 descreve custo por achado, e um custo pago uma vez por sessão não pertence a ele.

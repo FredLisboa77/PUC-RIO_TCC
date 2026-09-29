@@ -14,7 +14,7 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 
 | Fase | Período | Status |
 |---|---|---|
-| **Fase 1 — Viabilidade e planejamento** | Semanas 1–2 | **Gate aprovado em 22/09/2026** |
+| Fase 1 — Viabilidade e planejamento | Semanas 1–2 | **Concluída em 29/09/2026** — gate aprovado e spike de LLM validado |
 | **Fase 2 — Leitura do PBIP e regras** | Semanas 3–4 | **Em andamento** — ingestão e parser prontos (29/09/2026) |
 | Fase 3 — RAG e análise com LLM | Semanas 5–8 | Não iniciada |
 | Fase 4 — Interface e relatório | Semanas 9–10 | Não iniciada |
@@ -77,6 +77,24 @@ pip install -r requirements.txt --cert C:\ProgramData\Norton\Antivirus\wscert.pe
 ```
 
 Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa configuração. Como o `.venv` não é versionado, ele precisa ser refeito se o ambiente for recriado.
+
+### Modelo de linguagem
+
+Ollama, com `qwen2.5:7b-instruct-q4_K_M` como modelo principal e `qwen2.5:3b` como contingência — escolhidos no spike de 29/09/2026 (resultado na [ADR-002](docs/adr/ADR-002-stack-tecnologica.md)).
+
+```powershell
+winget install --id Ollama.Ollama
+ollama pull qwen2.5:7b-instruct-q4_K_M
+ollama pull qwen2.5:3b
+```
+
+**Antes do primeiro `pull`**, defina `OLLAMA_MODELS` apontando para um disco com espaço. Por padrão o Ollama grava em `C:\Users\<voce>\.ollama`, e os dois modelos somam 6,2 GB. Nesta máquina a variável aponta para `D:\dev\ollama-models` (risco R-14).
+
+Para repetir o spike:
+
+```powershell
+python eval/spike_llm.py qwen2.5:3b qwen2.5:7b-instruct-q4_K_M
+```
 
 ## Testes
 

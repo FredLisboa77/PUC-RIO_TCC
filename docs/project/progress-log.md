@@ -160,3 +160,29 @@ Primeiro código de produto do projeto, escrito em TDD: teste primeiro, visto fa
 - **Dívida técnica assumida:** três testes do parser (coluna calculada, partição M, propriedades desconhecidas) passaram na primeira execução, porque a implementação anterior já os cobria. Documentam comportamento em vez de tê-lo dirigido, e ficam como testes de regressão.
 - **Pendência inalterada:** o spike de LLM da semana 2 (R-02) não foi feito. Ele não bloqueia a Fase 2, mas continua sendo o que fecha a Fase 1.
 - **Próximo passo:** semana 4 — as regras determinísticas, começando pelas estruturais (tempo automático e relacionamentos bidirecionais já têm caso real para teste), conforme o critério de detectabilidade.
+
+## 29/09/2026 — Fase 1, semana 2 — spike de LLM concluído; **Fase 1 encerrada**
+
+Ollama 0.34.4 instalado via winget. Os dois candidatos da ADR-002 foram baixados e medidos sobre os mesmos 5 achados (`num_ctx=4096`, `temperature=0.2`). Script em `eval/spike_llm.py`, dados brutos em `eval/results/spike_llm.json`.
+
+| Modelo | Carga | Tempo médio | Pior | Citações | VRAM |
+|---|---|---|---|---|---|
+| `qwen2.5:3b` | 6,7 s | 2,0 s | 2,5 s | 5/5 | ~3,4 GB |
+| `qwen2.5:7b-instruct-q4_K_M` | 9,9 s | 6,0 s | 6,5 s | 5/5 | ~5,3 GB |
+
+**Decisão: 7B como principal, 3B como contingência. A ADR-006 não será aberta** — não haverá API paga. A ADR-002 passa a VALIDADO e o **R-02, único risco de probabilidade alta e impacto alto do projeto, passa a Resolvido.**
+
+**O orçamento de memória da ADR-002 estava correto:** o 7B ocupa ~5,3 GB dos 6,0 GB de VRAM com contexto de 4096. Cabe, sem folga, exatamente como previsto ao fixar o `num_ctx`. Os tempos ficaram uma ordem de grandeza abaixo do limite de 60 s.
+
+**O `OLLAMA_MODELS` definido em 23/09 provou seu valor:** os 6,2 GB de modelos foram para `D:\dev\ollama-models` e nada caiu em C:. Sem aquela variável, o R-14 teria voltado hoje. O C: caiu de 38,8 para 28 GB por causa do instalador do Ollama, ainda acima do gatilho de 15 GB.
+
+**Dois achados que os critérios da ADR-002 NÃO capturaram**, e que só apareceram ao ler as respostas:
+
+1. **Erro factual passa pelos critérios.** O 3B escreveu "o modelo tem duas tabelas de data geradas automaticamente" quando a evidência entregue dizia quatro. Respondeu em 1,7 s, citou URL válida, e afirmou um número errado sobre o dado que recebeu. O 7B não errou em nenhum dos cinco. Isso pesa mais na escolha do 7B do que a diferença de tempo, e vira um **terceiro critério de fidelidade à evidência** na avaliação da Fase 5 — verificável por código, já que o achado é estruturado.
+2. **Citação válida não é citação pertinente.** No mesmo achado o 7B citou `model-date-tables` em vez de `auto-date-time`, que é a página que de fato sustenta o achado. As duas foram fornecidas, então a citação é válida pela regra da ADR-003, mas é a menos relevante. A métrica da Fase 5 deve separar as duas coisas; pertinência exige julgamento humano e vai para a rubrica.
+
+**Ressalva de método:** na primeira execução o 3B "reprovou" com 84,2 s no primeiro achado e 1,8 a 2,5 s nos demais. Era carregamento do modelo para a VRAM, não inferência. O script passou a fazer uma chamada de aquecimento fora da medição e a reportar a carga em separado. O critério de 60 s descreve custo por achado; um custo pago uma vez por sessão não pertence a ele. Sem essa correção, o 3B teria sido descartado por um motivo inexistente.
+
+- **Consequência para o cronograma:** com 6 s por achado, o pipeline inteiro sobre um modelo grande fica em torno de 10 minutos na etapa de geração. O cache de resultados (F16) continua útil para a demo, mas deixa de ser necessidade.
+- **Situação das fases:** Fase 1 encerrada. Fase 2 em andamento, com ingestão e parser prontos.
+- **Próximo passo:** semana 4 — as regras determinísticas, começando pelas estruturais.

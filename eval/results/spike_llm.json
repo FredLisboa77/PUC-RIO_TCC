@@ -1,0 +1,106 @@
+[
+  {
+    "modelo": "qwen2.5:3b",
+    "tempo_carga_s": 6.7,
+    "tempo_medio_s": 2.0,
+    "tempo_pior_s": 2.5,
+    "citacoes_validas": 5,
+    "total_achados": 5,
+    "aprovado": true,
+    "vram_mib_final": 3319,
+    "execucoes": [
+      {
+        "achado": "MOD001",
+        "categoria": "MODELAGEM",
+        "segundos": 1.7,
+        "citacao_valida": true,
+        "palavras": 67,
+        "resposta": "EXPLICACAO: Isso é um problema porque o modelo tem duas tabelas de data geradas automaticamente (DateTableTemplate_* e LocalDateTable_*), uma delas sobre a coluna de data da tabela DimCalendar. Isso pode aumentar o tamanho do modelo e não é necessário, já que existe uma tabela de calendário própria chamada DimCalendar.\n\nRECOMENDACAO: Desabilite a opção de geração automática de data/time e use sua própria tabela de calendário. \n\nFONTE: https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time"
+      },
+      {
+        "achado": "MOD002",
+        "categoria": "MODELAGEM",
+        "segundos": 2.5,
+        "citacao_valida": true,
+        "palavras": 83,
+        "resposta": "EXPLICACAO: Isso é um problema porque 4 dos 11 relacionamentos usam filtro cruzado bidirecional, o que pode causar desempenho de consulta lento e ambiguidade na propagação de filtro. Essa prática deve ser evitada conforme recomendado na Microsoft Learn, pois pode causar problemas de performance e ambiguidade.\n\nRECOMENDACAO: Para resolver, altere os relacionamentos que usam filtro cruzado bidirecional para usar o DAX CROSSFILTER, o que permitirá que apenas uma medida tenha essa funcionalidade. Isso ajudará a melhorar o desempenho e evitar ambiguidade.\n\nFONTE: https://learn.microsoft.com/en-us/power-bi/guidance/relationships-bidirectional-filtering"
+      },
+      {
+        "achado": "DAX001",
+        "categoria": "DAX",
+        "segundos": 2.1,
+        "citacao_valida": true,
+        "palavras": 80,
+        "resposta": "EXPLICACAO: Usando o operador / em vez da função DIVIDE pode resultar em erros de divisão por zero, o que pode levar a resultados imprevisíveis ou erros na medida 'Margem %'. A função DIVIDE, por outro lado, evita esses erros ao retornar BLANK ou um resultado alternativo quando a divisão por zero ocorrer.\n\nRECOMENDACAO: Para corrigir, substitua o uso do operador / por uma chamada à função DIVIDE, como [Lucro] / [Receita] deve ser alterado para DIVIDE([Lucro], [Receita]).\n\nFONTE: https://learn.microsoft.com/en-us/dax/best-practices/dax-divide-function-operator"
+      },
+      {
+        "achado": "PERF001",
+        "categoria": "PERFORMANCE",
+        "segundos": 2.0,
+        "citacao_valida": true,
+        "palavras": 84,
+        "resposta": "EXPLICACAO: As colunas calculadas em DAX aumentam o tamanho da tabela de fato, ocupando mais espaço no modelo e não comprimem como as colunas carregadas diretamente da origem dos dados. Isso pode levar a um aumento no tempo de processamento e desempenho do modelo.\n\nRECOMENDACAO: Para melhorar o desempenho, recomendo que você aplique as técnicas de redução de dados descritas no Microsoft Learn para importar dados, movendo a maioria das colunas calculadas para a origem dos dados ou para o Power Query.\n\nFONTE: https://learn.microsoft.com/en-us/power-bi/guidance/import-modeling-data-reduction"
+      },
+      {
+        "achado": "M001",
+        "categoria": "M",
+        "segundos": 1.8,
+        "citacao_valida": true,
+        "palavras": 76,
+        "resposta": "EXPLICACAO: Isso é um problema porque a consulta seleciona e ordena todas as linhas da tabela 'FactOnlineSales-part', o que impede a otimização do query folding. Sem o folding, as transformações são processadas localmente, o que pode causar lentidão na atualização.\n\nRECOMENDACAO: Para resolver, você deve evitar a ordenação e seleção de todas as linhas na tabela. Em vez disso, aplique a Table.SelectRows antes da Table.Sort para garantir que apenas as linhas necessárias sejam processadas.\n\nFONTE: https://learn.microsoft.com/en-us/power-query/power-query-folding"
+      }
+    ]
+  },
+  {
+    "modelo": "qwen2.5:7b-instruct-q4_K_M",
+    "tempo_carga_s": 9.9,
+    "tempo_medio_s": 6.0,
+    "tempo_pior_s": 6.5,
+    "citacoes_validas": 5,
+    "total_achados": 5,
+    "aprovado": true,
+    "vram_mib_final": 5297,
+    "execucoes": [
+      {
+        "achado": "MOD001",
+        "categoria": "MODELAGEM",
+        "segundos": 6.5,
+        "citacao_valida": true,
+        "palavras": 77,
+        "resposta": "EXPLICACAO: A existência de tabelas de data geradas automaticamente (DateTableTemplate_* e LocalDateTable_*) sobrepostas à tabela DimCalendar pode redundar em dados duplicados e aumentar o tamanho do modelo, sem oferecer benefícios adicionais, já que a DimCalendar já serve para filtrar e agrupar por períodos de data.\n\nRECOMENDACAO: Desabilite a opção de geração automática de tabelas de data e marque a DimCalendar como uma tabela de data, garantindo que as funções de inteligência de tempo funcionem corretamente.\n\nFONTE: https://learn.microsoft.com/en-us/power-bi/guidance/model-date-tables"
+      },
+      {
+        "achado": "MOD002",
+        "categoria": "MODELAGEM",
+        "segundos": 5.8,
+        "citacao_valida": true,
+        "palavras": 57,
+        "resposta": "EXPLICACAO: O uso de relacionamentos bidirecionais pode comprometer o desempenho da consulta e criar caminhos de propagação de filtros ambiguos, o que pode levar a resultados imprecisos.\n\nRECOMENDACAO: Evite o uso de relacionamentos bidirecionais a menos que seja necessário. Para casos específicos, utilize a função DAX CROSSFILTER para habilitar o comportamento para uma única medida.\n\nFONTE: https://learn.microsoft.com/en-us/power-bi/guidance/relationships-bidirectional-filtering"
+      },
+      {
+        "achado": "DAX001",
+        "categoria": "DAX",
+        "segundos": 6.2,
+        "citacao_valida": true,
+        "palavras": 56,
+        "resposta": "EXPLICACAO: Usar o operador / em vez da função DIVIDE pode resultar em erros ao dividir por zero, o que pode interromper a execução do modelo ou retornar valores não esperados.\n\nRECOMENDACAO: Substitua [Lucro] / [Receita] por DIVIDE([Lucro], [Receita]), para evitar erros de divisão por zero e garantir que o modelo continue executando corretamente.\n\nFONTE: https://learn.microsoft.com/en-us/dax/best-practices/dax-divide-function-operator"
+      },
+      {
+        "achado": "PERF001",
+        "categoria": "PERFORMANCE",
+        "segundos": 5.9,
+        "citacao_valida": true,
+        "palavras": 66,
+        "resposta": "EXPLICACAO: A presença de 35 colunas calculadas em DAX na tabela de fatos aumenta o tamanho do modelo, pois as colunas calculadas não se comprimem bem. Isso pode afetar o desempenho do Power BI ao carregar e processar dados.\n\nRECOMENDACAO: Push as cálculos para a origem dos dados ou para Power Query, onde possível. Isso reduzirá o tamanho do modelo e melhorará o desempenho.\n\nFONTE: <https://learn.microsoft.com/en-us/power-bi/guidance/import-modeling-data-reduction>"
+      },
+      {
+        "achado": "M001",
+        "categoria": "M",
+        "segundos": 5.7,
+        "citacao_valida": true,
+        "palavras": 73,
+        "resposta": "EXPLICACAO: Quando a consulta aplica Table.SelectRows após Table.Sort sobre toda a tabela, isso impede o query folding. Como resultado, o Power Query processa os dados localmente em vez de na fonte, o que pode significativamente atrasar a atualização.\n\nRECOMENDACAO: Para corrigir, refatore a consulta para aplicar Table.SelectRows antes de Table.Sort, ou reorganize a lógica para que a seleção seja feita com base em critérios que não dependam do resultado do Table.Sort.\n\nFONTE: https://learn.microsoft.com/en-us/power-query/power-query-folding"
+      }
+    ]
+  }
+]

@@ -43,7 +43,7 @@ Consequência prática: se a contagem final ficar perto de 20 em vez de 25, a di
 |---|---|---|---|
 | G-2 | ~~Salvar 1 PBIP real em TMSL e registrar `tree /F /A` no progress-log~~ | Fred | **Concluído em 23/09/2026** |
 | G-8 | Gerar `rag/sources.yaml` a partir dos `toc.json` | Semana 5 | Semana 5 |
-| — | Instalar Ollama e rodar o spike de LLM | Fred | Semana 2 |
+| — | ~~Instalar Ollama e rodar o spike de LLM~~ | Fred | **Concluído em 29/09/2026** — 7B aprovado, ADR-006 descartada |
 | — | Baixar os 7 PBIX do dataset e converter para PBIP | Fred | Semana 4 |
 | — | Detalhar as limitações declaradas (heurísticas vs. parser DAX; performance estática vs. medida) no capítulo de metodologia | Fred | Semana 12 |
 | — | Escrever o estudo de caso do P8 | Fred | Semana 12 |
