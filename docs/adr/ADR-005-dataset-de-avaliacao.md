@@ -1,12 +1,23 @@
 # ADR-005 — Dataset de avaliação: amostras públicas da Microsoft
 
-- **Status:** Aceita, **emendada em 23/09/2026**
+- **Status:** Aceita, **emendada em 23/09/2026 e em 29/09/2026**
 - **Data:** 22/09/2026
+
+## Emenda de 29/09/2026 — P8 sai do dataset e vira estudo de caso
+O P8 deixa de ser o oitavo projeto do dataset de avaliação e passa a **estudo de caso qualitativo**, em seção própria da monografia. O dataset de métricas volta a ser **P1–P7**, todos sob licença MIT.
+
+**Motivo:** manter o P8 dentro das métricas obrigava a reportar todo número em duas formas — "com P8" e "apenas P1–P7" —, porque o projeto não é reprodutível por terceiros. Como estudo de caso ele deixa de contaminar as métricas e passa a servir ao que faz melhor: mostrar a ferramenta agindo em profundidade sobre um modelo real, com problemas reais.
+
+**O que o estudo de caso cobre:** o achado de tempo automático ligado — 4 tabelas de data geradas (1 `DateTableTemplate_*` e 3 `LocalDateTable_*`) convivendo com uma `DimCalendar` própria —, com a explicação gerada pela ferramenta, a fonte citada e o impacto no modelo. É um problema clássico e documentado pela Microsoft, portanto defensável na banca.
+
+**Consequência assumida:** o **R-12 volta a Aberto**. A inclusão do P8 era a mitigação desse risco, e o dataset volta a depender de amostras que podem ser limpas demais. A contingência é o slot **P9** — um segundo PBIX próprio —, decidida na semana 4 pelo mesmo gatilho: menos de ~40 achados no dataset inteiro.
+
+**Ganho:** todas as métricas passam a vir de projetos públicos MIT, sem ressalva. O argumento de reprodutibilidade que motivou esta ADR volta a valer integralmente.
 
 ## Emenda de 23/09/2026 — inclusão do P8
 A contingência prevista para o risco R-12 foi antecipada. O projeto próprio `CONTOSO - Painel de Análise de Vendas Online` entrou no dataset como **P8** (varejo online), passando o dataset de 7 para 8 projetos.
 
-**Motivo:** ao converter o primeiro PBIP real (G-2), o modelo mostrou problemas de modelagem logo na primeira leitura — tempo automático ligado com 5 tabelas de data geradas, apesar de já existir uma `DimCalendar`. Esperar até a semana 4 para descobrir que as amostras da Microsoft são limpas demais custaria tempo que o cronograma não tem.
+**Motivo:** ao converter o primeiro PBIP real (G-2), o modelo mostrou problemas de modelagem logo na primeira leitura — tempo automático ligado com 4 tabelas de data geradas, apesar de já existir uma `DimCalendar`. Esperar até a semana 4 para descobrir que as amostras da Microsoft são limpas demais custaria tempo que o cronograma não tem.
 
 **Custo da decisão, assumido explicitamente:** P8 não é reprodutível por terceiros, o que enfraquece o argumento de reprodutibilidade que motivou esta ADR. Mitigação: toda métrica reportada na monografia deve aparecer também na forma "apenas P1–P7", de modo que nenhuma conclusão dependa do P8. A verificação de privacidade exigida pelo R-12 foi feita e está registrada em `eval/dataset.md`.
 
@@ -18,7 +29,7 @@ A avaliação precisa de 5 a 8 projetos PBIP de domínios de negócio diferentes
 ## Decisão
 Usar os PBIX públicos do repositório **`microsoft/powerbi-desktop-samples`** (licença **MIT**, confirmada via API do GitHub em 22/09/2026), convertidos manualmente para PBIP em formato TMSL (`model.bim`).
 
-### Dataset proposto — 7 projetos, 7 domínios
+### Dataset — 7 projetos, 7 domínios
 | PBIP_ID | Arquivo de origem | Pasta no repositório | Domínio |
 |---|---|---|---|
 | P1 | `AdventureWorks Sales.pbix` | `2026 Power BI Samples Revamp` | Vendas B2B / varejo |

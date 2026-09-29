@@ -1,7 +1,7 @@
 # Fase 1 — Viabilidade e Planejamento
 
 **Projeto:** powerbi-ai-auditor · **Status do documento:** **APROVADO no gate da Fase 1** em 22/09/2026
-**Data:** 22/09/2026 · **Revisado em:** 22/09/2026 (verificação de fontes e do ambiente) · **Autor:** Fred (com apoio do Claude)
+**Data:** 22/09/2026 · **Revisado em:** 29/09/2026 (P8 como estudo de caso, API paga liberada, critério de regras, limitações detalhadas) · **Autor:** Fred (com apoio do Claude)
 
 > **Revisão de 22/09/2026.** As seções 1 e 2 foram conferidas contra a documentação oficial e passam a **VALIDADO**. A seção 3 foi corrigida com o ambiente real medido (GPU de 6 GB, Python 3.11) — ver ADR-002. A seção 8 foi refeita: o repositório `MicrosoftDocs/powerbi-docs` não existe publicamente — ver ADR-004. O dataset de avaliação passou a ser de amostras públicas MIT — ver ADR-005.
 
@@ -82,7 +82,7 @@ Todos os itens rodam nativamente no Windows 11 com **Python 3.11.9**, que já es
 
 6 GB de VRAM é o limite exato, não folga: um modelo 7–8B em Q4_K_M ocupa ~4,7–5,0 GB só de pesos, e o cache de contexto soma em cima disso. Com contexto de 8k o Ollama descarrega camadas para a CPU e a latência sobe. Por isso o `num_ctx` fica fixado em 4096 no candidato de 7B, e existe um candidato de 3B que cabe inteiro na VRAM. Modelos de 13B+ estão descartados. Embeddings + Chroma ficam abaixo de 1 GB e o Streamlit abaixo de 0,5 GB, ambos em RAM.
 
-**Regra de fallback do LLM:** se no spike os dois candidatos locais levarem mais de ~60 s por achado ou falharem na citação obrigatória em mais de 2 de 5 testes, adotar API paga com teto de US$ 10 no projeto inteiro (ADR-006, a abrir se necessário). O código usa uma interface `LLMClient` com duas implementações, para a troca ser uma linha de configuração.
+**Regra de fallback do LLM:** se no spike os dois candidatos locais levarem mais de ~60 s por achado ou falharem na citação obrigatória em mais de 2 de 5 testes, adotar API paga com teto de US$ 10 no projeto inteiro (ADR-006, a abrir se necessário). **Confirmado em 29/09/2026 que não há restrição ao uso de API paga**, o que torna esse fallback um caminho efetivamente disponível e reduz o impacto do risco R-02. O código usa uma interface `LLMClient` com duas implementações, para a troca ser uma linha de configuração.
 
 **Idioma do pipeline:** o corpus é em inglês e o `bge-small-en-v1.5` é monolíngue, mas a interface e o relatório são em português. Portanto as **consultas de recuperação são geradas em inglês** (cada regra carrega suas palavras-chave em inglês) e o **LLM redige a saída em português**. Isso evita trocar para um modelo multilíngue de ~2 GB.
 
@@ -119,7 +119,7 @@ Escala: Complexidade e Risco (B/M/A), Valor para o TCC (B/M/A).
 | F23 | Métricas em runtime (VertiPaq/DAX Studio/XMLA) | A | A | M | Trabalhos Futuros |
 | F24 | Entrada PBIX | A | A | B | Trabalhos Futuros |
 
-Meta de regras do MVP: **20 a 25 regras**. Qualidade e rastreabilidade valem mais que quantidade.
+Meta de regras do MVP: **20 a 25 regras**. Qualidade e rastreabilidade valem mais que quantidade. Desde 29/09/2026 a escolha de quais regras implementar segue o **critério de detectabilidade** definido em `backlog.md`: as cotas por categoria acima são estimativas, não metas.
 
 ## 5. Arquitetura e fluxo ponta a ponta
 
@@ -261,3 +261,43 @@ Regras de governança da base, válidas para todas as fontes:
 | ADR-004 | Coleta da base RAG por páginas públicas do Learn | Aceita |
 | ADR-005 | Dataset de avaliação: amostras públicas da Microsoft (MIT) | Aceita |
 | ADR-006 | Adoção de API paga para o LLM | A abrir apenas se o spike da semana 2 reprovar os dois modelos locais |
+
+---
+
+## 11. Limitações declaradas
+
+Registradas aqui para irem íntegras ao capítulo de metodologia da monografia. Declarar o limite e o porquê vale mais, na banca, do que uma cobertura que não se sustenta.
+
+### 11.1 Análise de DAX por heurística, não por parser sintático
+
+A ferramenta reconhece padrões no **texto** das expressões DAX, sem construir uma árvore sintática (AST). A consequência não é uniforme: depende de o problema estar na forma escrita ou no significado da expressão.
+
+| O que a heurística detecta bem | O que ela não alcança |
+|---|---|
+| Divisão com `/` onde caberia `DIVIDE` | Transição de contexto implícita em `CALCULATE` dentro de iteradores |
+| `FILTER` aplicado sobre uma tabela inteira | Semântica de `CALCULATE` aninhado e ordem de aplicação de filtros |
+| Uso de coluna inteira onde caberia uma medida | Escopo de variáveis `VAR` e o valor que cada uma carrega |
+| Funções descontinuadas ou desaconselhadas por nome | Dependência entre medidas encadeadas |
+| Referência a tabelas de data automáticas | Equivalência entre duas expressões escritas de formas diferentes |
+
+Efeito prático: o recall em DAX será menor que em modelagem, e essa diferença deve aparecer **por categoria** na avaliação, não diluída num número único. Uma expressão escrita de forma incomum pode passar despercebida mesmo contendo um problema que a regra cobre em tese. O parser DAX completo está em Trabalhos Futuros (F18).
+
+### 11.2 Performance estática, não medida
+
+A análise infere risco de performance a partir da **estrutura** do modelo, sem executar consulta alguma. Não há conexão XMLA, DAX Studio nem leitura de estatísticas do VertiPaq.
+
+Isso permite apontar, com base no que está declarado no `model.bim`: colunas de alta cardinalidade inferida pelo tipo, colunas calculadas que poderiam estar na origem, tabelas de data automáticas, relacionamentos bidirecionais, tipos de dados mais largos que o necessário, colunas sem referência em nenhuma medida.
+
+E impede afirmar: quanto uma consulta leva, quanto o modelo ocupa em memória depois de comprimido, qual medida domina o tempo de um visual, ou qual o ganho real de aplicar uma recomendação. A ferramenta diz "este padrão tende a custar caro, pela razão X documentada em Y", nunca "isto custa N milissegundos".
+
+A distinção importa na redação das recomendações: elas são **indicações fundamentadas em documentação**, não medições. Métricas em tempo de execução estão em Trabalhos Futuros (F23).
+
+### 11.3 Escopo do artefato analisado
+
+Só o modelo semântico entra na análise. A camada de relatório — páginas, visuais, marcadores — fica fora (F19), ainda que o PBIP do estudo de caso a contenha em formato PBIR. Problemas típicos de relatório, como excesso de visuais por página ou filtros redundantes, não são detectados.
+
+Também fica fora o formato TMDL (F17) e a entrada direta em PBIX (F24): o usuário precisa salvar o projeto como PBIP em TMSL antes de auditar.
+
+### 11.4 Alcance das conclusões da avaliação
+
+O dataset tem 7 projetos. É suficiente para caracterizar o comportamento da ferramenta e comparar categorias de regra entre si, mas não para generalização estatística sobre o universo de modelos Power BI. O ground truth é construído por uma única pessoa, o que introduz viés de anotador — mitigado por exigir referência documental em cada linha, mas não eliminado, já que não há um segundo anotador para medir concordância.

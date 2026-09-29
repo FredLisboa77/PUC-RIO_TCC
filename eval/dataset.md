@@ -1,6 +1,6 @@
 # Dataset de avaliação
 
-**Status:** P8 convertido (23/09/2026). P1–P7 ainda não baixados nem convertidos.
+**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. P1–P7 ainda não baixados nem convertidos.
 **Decisão de origem:** [ADR-005](../docs/adr/ADR-005-dataset-de-avaliacao.md).
 
 ## Origem
@@ -9,9 +9,9 @@
 
 Usar amostras públicas em vez de projetos corporativos é uma decisão metodológica: a banca e qualquer leitor podem baixar exatamente os mesmos arquivos e repetir a avaliação.
 
-**P8** é a exceção deliberada: um projeto construído pelo autor sobre o banco de exemplo público **ContosoRetailDW**. Entrou no dataset porque modelos de amostra da Microsoft tendem a ser limpos demais (risco R-12), enquanto P8 já apresenta problemas reais de modelagem na primeira leitura. Não é reprodutível por terceiros, e por isso **nunca sustenta sozinho uma conclusão** — toda métrica reportada deve aparecer também na forma "apenas P1–P7".
+**P8 não faz parte do dataset de métricas.** Por decisão de 29/09/2026 (ADR-005, segunda emenda), ele é tratado como **estudo de caso qualitativo** em seção própria — ver abaixo. Nenhuma métrica de precisão, recall, Precision@K ou MRR o inclui, o que dispensa a ressalva "apenas P1–P7" que antes teria de acompanhar todo número.
 
-## Os 8 projetos
+## Os 7 projetos do dataset
 
 | PBIP_ID | Arquivo de origem | Pasta no repositório | Domínio |
 |---|---|---|---|
@@ -22,13 +22,14 @@ Usar amostras públicas em vez de projetos corporativos é uma decisão metodol�
 | P5 | `Store Sales.pbix` | `2026 Power BI Samples Revamp` | Varejo / loja física |
 | P6 | `Supply Chain Sample.pbix` | `Sample Reports` | Cadeia de suprimentos |
 | P7 | `Revenue Opportunities.pbix` | `Sample Reports` | Pipeline comercial / CRM |
-| P8 | `CONTOSO - Painel de Análise de Vendas Online.pbix` | — (autoria própria, base ContosoRetailDW) | Varejo online |
 
 P1–P5 vêm da revisão de 2026 e P6–P7 de amostras mais antigas. A mistura é proposital: modelos de épocas diferentes tendem a ter qualidade diferente, o que evita um dataset uniformemente bom ou uniformemente ruim.
 
-### P8 — ficha e verificação de privacidade
+## P8 — estudo de caso (fora das métricas)
 
-Convertido em 23/09/2026 e guardado em `data/pbip/P8_contoso-vendas/` (fora do Git). `definition.pbism` `version` **4.2**; `compatibilityLevel` **1600**.
+Projeto construído pelo autor sobre o banco de exemplo público **ContosoRetailDW**, no domínio de varejo online. Convertido em 23/09/2026 e guardado em `data/pbip/P8_contoso-vendas/` (fora do Git). `definition.pbism` `version` **4.2**; `compatibilityLevel` **1600**.
+
+**Papel no trabalho:** demonstrar a ferramenta em profundidade sobre um modelo real, em vez de somar um ponto às métricas. O achado central já identificado na primeira leitura é o **tempo automático ligado**: quatro tabelas de data geradas pelo Power BI (um `DateTableTemplate_*` e três `LocalDateTable_*`) convivendo com uma `DimCalendar` própria — uma delas gerada sobre a própria coluna de data da `DimCalendar`. O estudo de caso acompanha esse achado de ponta a ponta — detecção pela regra, trecho recuperado, explicação gerada, fonte citada e impacto no modelo.
 
 O `.pbix` de origem **não** está em `data/pbix/`: com 174 MB e o disco C: sem espaço (ver R-14), ele permanece apenas na pasta original do autor. A ferramenta lê o PBIP, não o PBIX, então isso não afeta a avaliação.
 
@@ -79,4 +80,4 @@ Regras de construção:
 
 ## Contingência
 
-O slot P8 já foi usado (ver acima), antecipando a contingência do risco R-12. Se na semana 4 o total de achados no dataset inteiro ainda ficar abaixo de ~40, acrescentar **1 PBIX próprio como P9**, repetindo a mesma verificação de privacidade aplicada ao P8 antes de qualquer commit.
+Com o P8 fora das métricas, o **risco R-12 volta a Aberto**: o dataset depende de amostras da Microsoft que podem ter poucos problemas. Se na semana 4 o total de achados em P1–P7 ficar abaixo de ~40, acrescentar **1 PBIX próprio como P9**, repetindo a verificação de privacidade aplicada ao P8 antes de qualquer commit. Diferente do P8, o P9 entraria no dataset de métricas, e aí a ressalva "apenas P1–P7" voltaria a ser necessária — razão para só recorrer a ele se o gatilho de fato disparar.

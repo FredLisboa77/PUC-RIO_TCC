@@ -1,12 +1,12 @@
 # Registro de Riscos
 
 Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
-Última atualização: **23/09/2026** (G-2 concluído; projeto movido para D:).
+Última atualização: **29/09/2026** (decisões sobre P8, API paga e critério de regras).
 
 | ID | Risco | P | I | Mitigação | Gatilho | Status |
 |---|---|---|---|---|---|---|
 | R-01 | Microsoft torna TMDL padrão e os novos saves deixam de gerar `model.bim` | M | A | Manter o preview desligado; congelar a versão do Power BI Desktop usada no dataset; a interface `load_model()` permite acrescentar TMDL depois | PBIP salvo sem `model.bim` | Aberto |
-| R-02 | LLM local insuficiente na GPU de 6 GB | **A** | A | Spike da semana 2 com dois níveis (7B q4 com `num_ctx=4096` e 3B); ADR-003 limita o dano porque o LLM não decide achados; fallback para API com teto de US$ 10 | > 60 s por achado **ou** < 4/5 citações válidas | Aberto |
+| R-02 | LLM local insuficiente na GPU de 6 GB | **A** | A | Spike da semana 2 com dois níveis (7B q4 com `num_ctx=4096` e 3B); ADR-003 limita o dano porque o LLM não decide achados; fallback para API paga com teto de US$ 10, **sem restrição institucional** (confirmado em 29/09/2026) | > 60 s por achado **ou** < 4/5 citações válidas | Aberto, impacto reduzido de A para **M** |
 | R-03 | Heurísticas regex em DAX/M geram falsos positivos | A | M | Regras conservadoras; teste positivo e negativo por regra; falsos positivos entram na avaliação em vez de serem escondidos | Precisão < 0,7 na semana 8 | Aberto |
 | R-04 | Ground truth tardio ou enviesado | M | A | Montar o GT na semana 8, antes de ver os resultados finais; justificar cada linha com referência; não fabricar problemas | GT incompleto na semana 9 | Aberto |
 | R-05 | Termos de uso de SQLBI/DAX Guide restringem a cópia | **B** | M | Lista curta e curada (10–15 artigos); cópia local em `rag/store/` fora do Git; citação com URL e data | Termos proibirem armazenamento local | Aberto |
@@ -16,11 +16,16 @@ Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
 | R-09 | Poucos PBIP públicos para demo | B | B | `microsoft/powerbi-desktop-samples`, licença MIT confirmada, é a base do dataset (ADR-005) | — | **Resolvido** |
 | R-10 | `TabularEditor/BestPracticeRules` não tem arquivo de licença | M | M | Usar apenas como referência conceitual com citação da URL; nunca copiar os `BPARules-*.json` nem reproduzir o texto das regras; ancorar cada regra numa página do Learn (ADR-004) | Qualquer trecho copiado literalmente | Aberto |
 | R-11 | Projeto dentro do OneDrive (sincronização de `.venv`, ChromaDB e Chromium) | B | M | Cópia de trabalho movida para fora do OneDrive em 22/09/2026 e realocada para `D:\dev\powerbi-ai-auditor` em 23/09/2026 (ver R-14); GitHub é o backup | Erro de arquivo bloqueado ou sincronização lenta | **Mitigado** |
-| R-12 | Amostras públicas da Microsoft têm poucos problemas, reduzindo a significância da avaliação | M | M | Contingência antecipada em 23/09/2026: P8 próprio já incluído no dataset (ADR-005, emenda). Slot P9 continua de reserva para a semana 4 | Menos de ~40 achados no dataset inteiro na semana 4 | **Mitigado** |
+| R-12 | Amostras públicas da Microsoft têm poucos problemas, reduzindo a significância da avaliação | M | M | Em 29/09/2026 o P8 saiu do dataset e virou estudo de caso (ADR-005, 2ª emenda), o que **desfez** a mitigação anterior. Resta o slot **P9**, a decidir na semana 4 | Menos de ~40 achados em P1–P7 na semana 4 | **Aberto** (era Mitigado) |
 | R-13 | Extrator de HTML do Learn quebra com mudança de layout do site | B | M | Guardar o HTML bruto em `rag/store/raw/` para reprocessar sem rebaixar; testes sobre 3 páginas de referência | Extração devolve texto vazio ou com navegação | Aberto |
 | R-14 | Disco C: praticamente sem espaço (chegou a 0 byte livre em 23/09/2026, de 475 GB) | A | A | Projeto movido para `D:\dev\powerbi-ai-auditor`; `OLLAMA_MODELS`, `PLAYWRIGHT_BROWSERS_PATH` e `HF_HOME` apontados para o D:; limpeza em C: feita pelo Fred em 23/09/2026, devolvendo o disco a **38,8 GB livres**. Reavaliar se C: cair abaixo de 15 GB | Menos de 15 GB livres em C:; erro "No space left on device" | **Mitigado** |
 
-## Mudanças nesta revisão (22/09/2026)
+## Mudanças nesta revisão (29/09/2026)
+- **R-02** mantém P=A, mas o **impacto cai de A para M**: foi confirmado que não há restrição ao uso de API paga, então o fallback deixa de ser um plano incerto e passa a ser uma troca de configuração com custo limitado a US$ 10.
+- **R-12** volta de **Mitigado para Aberto**: o P8 saiu do dataset de métricas e virou estudo de caso, desfazendo a mitigação de 23/09. A contingência P9 segue disponível, com o mesmo gatilho na semana 4.
+- **R-03** ganha uma mitigação adicional: o critério de seleção de regras passou a priorizar detectabilidade (ver `backlog.md`, decisão de 29/09/2026), o que tende a reduzir falsos positivos por construção.
+
+## Mudanças na revisão de 22/09/2026
 - **R-02** subiu de P=M para **P=A**: a GPU foi medida e tem exatamente 6144 MiB de VRAM, que é o limite para um modelo 7–8B quantizado, não folga.
 - **R-05** caiu de P=M para **P=B**: o `robots.txt` de sqlbi.com e dax.guide foi verificado e não bloqueia páginas de artigo.
 - **R-06** caiu de P=A para **P=B** e passou a **Mitigado**: o dataset virou amostra pública MIT (ADR-005) e o `.gitignore` da raiz foi criado e testado com `git check-ignore`.
