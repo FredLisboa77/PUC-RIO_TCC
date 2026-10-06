@@ -1,7 +1,7 @@
 # Registro de Riscos
 
 Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
-Última atualização: **29/09/2026** (spike de LLM concluído; R-02 resolvido).
+Última atualização: **06/10/2026** (verificação de âncoras reduziu o conjunto de regras; R-12 e R-03 revisados).
 
 | ID | Risco | P | I | Mitigação | Gatilho | Status |
 |---|---|---|---|---|---|---|
@@ -16,9 +16,14 @@ Probabilidade (P) e Impacto (I): B/M/A. Atualizar na Revisão Semanal.
 | R-09 | Poucos PBIP públicos para demo | B | B | `microsoft/powerbi-desktop-samples`, licença MIT confirmada, é a base do dataset (ADR-005) | — | **Resolvido** |
 | R-10 | `TabularEditor/BestPracticeRules` não tem arquivo de licença | M | M | Usar apenas como referência conceitual com citação da URL; nunca copiar os `BPARules-*.json` nem reproduzir o texto das regras; ancorar cada regra numa página do Learn (ADR-004) | Qualquer trecho copiado literalmente | Aberto |
 | R-11 | Projeto dentro do OneDrive (sincronização de `.venv`, ChromaDB e Chromium) | B | M | Cópia de trabalho movida para fora do OneDrive em 22/09/2026 e realocada para `D:\dev\powerbi-ai-auditor` em 23/09/2026 (ver R-14); GitHub é o backup | Erro de arquivo bloqueado ou sincronização lenta | **Mitigado** |
-| R-12 | Amostras públicas da Microsoft têm poucos problemas, reduzindo a significância da avaliação | M | M | Em 29/09/2026 o P8 saiu do dataset e virou estudo de caso (ADR-005, 2ª emenda), o que **desfez** a mitigação anterior. Resta o slot **P9**, a decidir na semana 4 | Menos de ~40 achados em P1–P7 na semana 4 | **Aberto** (era Mitigado) |
+| R-12 | Amostras públicas da Microsoft têm poucos problemas, reduzindo a significância da avaliação | M | **A** | Em 29/09/2026 o P8 saiu do dataset e virou estudo de caso (ADR-005, 2ª emenda), o que **desfez** a mitigação anterior. Resta o slot **P9**, a decidir na semana 4. Em 06/10/2026 o conjunto estrutural caiu de 8 para 7 regras e de 24 para 15 achados em P8, por exigência de âncora verificada — o que reduz o rendimento esperado em P1–P7 | Menos de ~40 achados em P1–P7 na semana 4. Referência nova: 7 regras produzem 15 achados no P8, um modelo reconhecidamente problemático | **Aberto** (era Mitigado) |
 | R-13 | Extrator de HTML do Learn quebra com mudança de layout do site | B | M | Guardar o HTML bruto em `rag/store/raw/` para reprocessar sem rebaixar; testes sobre 3 páginas de referência | Extração devolve texto vazio ou com navegação | Aberto |
 | R-14 | Disco C: praticamente sem espaço (chegou a 0 byte livre em 23/09/2026, de 475 GB) | A | A | Projeto movido para `D:\dev\powerbi-ai-auditor`; `OLLAMA_MODELS`, `PLAYWRIGHT_BROWSERS_PATH` e `HF_HOME` apontados para o D:; limpeza em C: feita pelo Fred em 23/09/2026, devolvendo o disco a **38,8 GB livres**. Reavaliar se C: cair abaixo de 15 GB | Menos de 15 GB livres em C:; erro "No space left on device" | **Mitigado** |
+
+## Mudanças nesta revisão (06/10/2026 — verificação de âncoras)
+- **R-12** mantém P=M, mas o **impacto sobe de M para A**. O conjunto estrutural passou de 8 regras e 24 achados em P8 para 7 regras e 15 achados, porque três regras não sobreviveram à verificação de âncora (`backlog.md`, 06/10/2026). Menos regras no grupo 1 significa menos achados esperados em P1–P7, e o R-12 já estava Aberto desde que o P8 saiu do dataset. O gatilho da semana 4 ganha referência concreta: se o P8, que é um modelo visivelmente problemático, rende 15 achados, os sete projetos da Microsoft dificilmente rendem 40 sem as regras de DAX. **Ação imediata:** rodar as sete regras sobre P1–P7 assim que os PBIP existirem, em vez de esperar a semana 8.
+- **R-03** ganha segunda mitigação por construção: a exigência de âncora verificada (`backlog.md`, 06/10/2026) eliminou a única regra do grupo estrutural que dependia de convenção de nomenclatura, e o critério passa a valer também para as regras de DAX das próximas etapas — onde o risco de falso positivo é o mais alto.
+- **R-10** reforçado na prática: a regra de coluna-chave agregável, herdada conceitualmente do BPA, foi descartada justamente por não ter âncora própria no Learn. O risco de depender de um repositório sem licença se manifestou como ausência de fundamento, não como cópia de texto.
 
 ## Mudanças nesta revisão (29/09/2026, tarde — spike)
 - **R-02** passa a **Resolvido**. Era o único risco com probabilidade alta e impacto alto do projeto. O 7B cabe na VRAM com folga de ~0,7 GB e responde 10x mais rápido que o limite. Não há mais dependência de API paga.
