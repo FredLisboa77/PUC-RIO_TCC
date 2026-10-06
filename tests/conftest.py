@@ -11,6 +11,9 @@ from pathlib import Path
 
 import pytest
 
+from core.model import ModeloSemantico
+from core.parser_bim import ler_modelo
+
 MODELO_MINIMO = {
     "name": "SemanticModel",
     "compatibilityLevel": 1600,
@@ -64,3 +67,134 @@ def escrever_pbip(
 def pbip_minimo(tmp_path: Path) -> Path:
     """Um PBIP válido em TMSL, sem tabelas."""
     return escrever_pbip(tmp_path)
+
+
+def coluna(
+    nome: str,
+    *,
+    tipo_dado: str = "string",
+    tipo: str | None = None,
+    expressao: str | None = None,
+    resumir_por: str = "none",
+    oculta: bool = False,
+    annotations: dict[str, str] | None = None,
+) -> dict:
+    """Uma coluna TMSL. `tipo` é o `type`: `calculated`, `calculatedTableColumn`."""
+    bruto: dict = {"name": nome, "dataType": tipo_dado, "summarizeBy": resumir_por}
+    if tipo is not None:
+        bruto["type"] = tipo
+    if expressao is not None:
+        bruto["expression"] = expressao
+    if oculta:
+        bruto["isHidden"] = True
+    if annotations:
+        bruto["annotations"] = _annotations(annotations)
+    return bruto
+
+
+def medida(nome: str, expressao: str = "1") -> dict:
+    return {"name": nome, "expression": expressao}
+
+
+def particao(
+    nome: str = "particao",
+    *,
+    tipo: str = "m",
+    expressao: str = "let Fonte = 1 in Fonte",
+) -> dict:
+    return {
+        "name": nome,
+        "mode": "import",
+        "source": {"type": tipo, "expression": expressao},
+    }
+
+
+def tabela(
+    nome: str,
+    *,
+    colunas: list[dict] | tuple = (),
+    medidas: list[dict] | tuple = (),
+    particoes: list[dict] | tuple = (),
+    data_category: str | None = None,
+    annotations: dict[str, str] | None = None,
+) -> dict:
+    bruto: dict = {
+        "name": nome,
+        "columns": list(colunas),
+        "measures": list(medidas),
+        "partitions": list(particoes),
+    }
+    if data_category is not None:
+        bruto["dataCategory"] = data_category
+    if annotations:
+        bruto["annotations"] = _annotations(annotations)
+    return bruto
+
+
+def relacionamento(
+    origem: str,
+    coluna_origem: str,
+    destino: str,
+    coluna_destino: str,
+    *,
+    bidirecional: bool = False,
+    cross_filtering: str | None = None,
+    cardinalidade_origem: str | None = None,
+    cardinalidade_destino: str | None = None,
+) -> dict:
+    """Um relacionamento TMSL.
+
+    `cross_filtering` existe para exercitar valores que não são
+    `bothDirections`, como `automatic`.
+    """
+    bruto: dict = {
+        "name": f"{origem}-{destino}-{coluna_origem}",
+        "fromTable": origem,
+        "fromColumn": coluna_origem,
+        "toTable": destino,
+        "toColumn": coluna_destino,
+    }
+    if bidirecional:
+        bruto["crossFilteringBehavior"] = "bothDirections"
+    elif cross_filtering is not None:
+        bruto["crossFilteringBehavior"] = cross_filtering
+    if cardinalidade_origem is not None:
+        bruto["fromCardinality"] = cardinalidade_origem
+    if cardinalidade_destino is not None:
+        bruto["toCardinality"] = cardinalidade_destino
+    return bruto
+
+
+def modelo_tmsl(tabelas=(), relacionamentos=()) -> dict:
+    return {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": list(tabelas),
+            "relationships": list(relacionamentos),
+        },
+    }
+
+
+def _annotations(pares: dict[str, str]) -> list[dict]:
+    return [{"name": n, "value": v} for n, v in pares.items()]
+
+
+@pytest.fixture
+def ler(tmp_path: Path):
+    """Escreve um `model.bim` sintético e devolve o modelo já parseado.
+
+    As regras recebem `ModeloSemantico`, não dicionário. Passar pelo parser nos
+    testes garante que o que a regra lê é o que o parser produz.
+    """
+
+    def _ler(tabelas=(), relacionamentos=()) -> ModeloSemantico:
+        caminho = tmp_path / "model.bim"
+        caminho.write_text(
+            json.dumps(modelo_tmsl(tabelas, relacionamentos), ensure_ascii=False),
+            encoding="utf-8",
+        )
+        return ler_modelo(caminho)
+
+    return _ler
