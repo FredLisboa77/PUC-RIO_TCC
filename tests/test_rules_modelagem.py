@@ -6,6 +6,7 @@ observados no P8.
 """
 
 from core.rules.modelagem import (
+    dimensao_de_data_nao_marcada,
     relacionamento_bidirecional,
     tabela_sem_relacionamento,
     tempo_automatico_ligado,
@@ -170,3 +171,63 @@ def test_mod003_considera_relacionada_a_tabela_ligada_so_a_uma_automatica(ler):
     )
 
     assert list(tabela_sem_relacionamento(modelo)) == []
+
+
+def test_mod005_marca_dimensao_de_data_sem_data_category(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
+            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")]),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
+    )
+
+    achados = list(dimensao_de_data_nao_marcada(modelo))
+
+    assert [a.evidencia.objeto for a in achados] == ["DimCalendar"]
+    assert achados[0].id_regra == "MOD-005"
+    assert achados[0].evidencia.detalhe["dataCategory"] is None
+
+
+def test_mod005_nao_marca_dimensao_de_data_ja_marcada(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
+            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")], data_category="Time"),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
+    )
+
+    assert list(dimensao_de_data_nao_marcada(modelo)) == []
+
+
+def test_mod005_ignora_tabelas_de_data_automaticas(ler):
+    """Review Focus 1: em P8 isso valeria 3 achados inventados.
+
+    `DimPromotion[StartDate] → LocalDateTable_x[Date]` é `dateTime → dateTime` e
+    a tabela automática não tem `dataCategory`. Sem o filtro de escopo, MOD-005
+    marcaria exatamente os objetos que MOD-001 já aponta — e pediria ao autor
+    para marcar como tabela de data algo que ele não criou.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("DimPromotion", colunas=[coluna("StartDate", tipo_dado="dateTime")]),
+            tabela("LocalDateTable_x", colunas=[coluna("Date", tipo_dado="dateTime")],
+                   annotations={"__PBI_LocalDateTable": "true"}),
+        ],
+        relacionamentos=[relacionamento("DimPromotion", "StartDate", "LocalDateTable_x", "Date")],
+    )
+
+    assert list(dimensao_de_data_nao_marcada(modelo)) == []
+
+
+def test_mod005_ignora_relacionamento_que_nao_e_entre_datas(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+            tabela("DimStore", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "StoreKey", "DimStore", "StoreKey")],
+    )
+
+    assert list(dimensao_de_data_nao_marcada(modelo)) == []

@@ -13,8 +13,10 @@ from core.rules.base import Achado, Evidencia
 from core.rules.escopo import (
     ANOTACOES_DATA_AUTOMATICA,
     anotacoes,
+    dimensao_de_data,
     relacionamentos_em_escopo,
     tabela_automatica_de_data,
+    tabela_por_nome,
     tabelas_em_escopo,
     um_para_um,
 )
@@ -178,5 +180,67 @@ def tabela_sem_relacionamento(modelo: ModeloSemantico) -> Iterator[Achado]:
             mensagem=(
                 f"A tabela '{t.nome}' não participa de nenhum relacionamento do "
                 "modelo."
+            ),
+        )
+
+
+@regra(
+    id="MOD-005",
+    titulo="Dimensão de data não está marcada como tabela de data",
+    categoria="modelagem",
+    severidade="media",
+    url_canonica="https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-date-tables",
+    termos_consulta=[
+        "mark as date table",
+        "set and use date tables",
+        "date table validation unique contiguous",
+        "classic time intelligence functions",
+    ],
+    recomendacao_padrao=(
+        "Marque a tabela como tabela de data (Mark as date table) e indique a coluna "
+        "de data. Com as funções clássicas de inteligência temporal, a marcação é "
+        "obrigatória; ela também é necessária quando os relacionamentos com a tabela "
+        "de data usam colunas de outro tipo, como chaves substitutas inteiras no "
+        "formato aaaammdd. Ao marcar, o Power BI remove as tabelas de data "
+        "automáticas que havia criado — então visuais e expressões apoiados nelas "
+        "precisam ser revisados. A coluna de data precisa ter valores únicos, sem "
+        "nulos, contíguos e com o mesmo horário em todos os valores, e ser do tipo "
+        "Data ou Data/hora. Se o modelo usa a inteligência temporal baseada em "
+        "calendário, a marcação pode não ser necessária."
+    ),
+    nota_de_verificacao=(
+        "A detecção assume que a marcação aparece no TMSL como dataCategory=\"Time\" "
+        "na tabela, consistente com Table.DataCategory do TOM e com o P8, onde "
+        "nenhuma tabela está marcada e nenhuma tem dataCategory. Pendente de "
+        "confirmação empírica: marcar a DimCalendar no Desktop, salvar o PBIP e "
+        "comparar o model.bim."
+    ),
+)
+def dimensao_de_data_nao_marcada(modelo: ModeloSemantico) -> Iterator[Achado]:
+    """Uma ocorrência por dimensão de data em escopo sem `dataCategory: "Time"`.
+
+    A dimensão é identificada estruturalmente (`escopo.dimensao_de_data`), e não
+    por nome: é o lado "um" de um relacionamento entre duas colunas `dateTime`.
+    """
+    for nome in sorted(dimensao_de_data(modelo)):
+        t = tabela_por_nome(modelo, nome)
+        if t is None or t.data_category == "Time":
+            continue
+        yield Achado(
+            id_regra="MOD-005",
+            evidencia=Evidencia(
+                tipo_objeto="tabela",
+                objeto=t.nome,
+                tabela=t.nome,
+                detalhe={
+                    "dataCategory": t.data_category,
+                    "colunas_de_data": [
+                        c.nome for c in t.colunas if c.tipo_dado == "dateTime"
+                    ],
+                },
+            ),
+            mensagem=(
+                f"A tabela '{t.nome}' funciona como dimensão de data do modelo, mas "
+                "não está marcada como tabela de data."
             ),
         )
