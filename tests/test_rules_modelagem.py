@@ -7,7 +7,9 @@ observados no P8.
 
 from core.rules.modelagem import (
     dimensao_de_data_nao_marcada,
+    dimensao_em_floco_de_neve,
     relacionamento_bidirecional,
+    relacionamento_um_para_um,
     tabela_sem_relacionamento,
     tempo_automatico_ligado,
 )
@@ -231,3 +233,95 @@ def test_mod005_ignora_relacionamento_que_nao_e_entre_datas(ler):
     )
 
     assert list(dimensao_de_data_nao_marcada(modelo)) == []
+
+
+def test_mod006_marca_a_dimensao_intermediaria_da_cadeia(ler):
+    """A cadeia do P8: FactOnlineSales → DimProduct → DimProductSubcategory."""
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("ProductKey", tipo_dado="int64")]),
+            tabela("DimProduct", colunas=[coluna("ProductKey", tipo_dado="int64")]),
+            tabela("DimProductSubcategory", colunas=[coluna("SubKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("FactOnlineSales", "ProductKey", "DimProduct", "ProductKey"),
+            relacionamento("DimProduct", "SubKey", "DimProductSubcategory", "SubKey"),
+        ],
+    )
+
+    achados = list(dimensao_em_floco_de_neve(modelo))
+
+    assert [a.evidencia.objeto for a in achados] == ["DimProduct"]
+    assert achados[0].id_regra == "MOD-006"
+    assert achados[0].evidencia.detalhe["aponta_para"] == ["DimProductSubcategory"]
+
+
+def test_mod006_nao_marca_estrela_simples(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+            tabela("DimStore", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+            tabela("DimCustomer", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("FactOnlineSales", "StoreKey", "DimStore", "StoreKey"),
+            relacionamento("FactOnlineSales", "CustomerKey", "DimCustomer", "CustomerKey"),
+        ],
+    )
+
+    assert list(dimensao_em_floco_de_neve(modelo)) == []
+
+
+def test_mod006_nao_confunde_um_para_um_com_floco_de_neve(ler):
+    """Review Focus 2: num um-para-um nenhuma ponta é lado "muitos".
+
+    No P8, `DimGeography → DimCustomer` é um-para-um. Presumir que o lado `from`
+    é sempre "muitos" faria a `DimCustomer` aparecer como intermediária de uma
+    cadeia que não existe.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+            tabela("DimCustomer", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+            tabela("DimGeography", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("FactOnlineSales", "CustomerKey", "DimCustomer", "CustomerKey"),
+            relacionamento("DimGeography", "CustomerKey", "DimCustomer", "CustomerKey",
+                           cardinalidade_origem="one"),
+        ],
+    )
+
+    assert list(dimensao_em_floco_de_neve(modelo)) == []
+
+
+def test_mod007_marca_relacionamento_um_para_um(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("DimGeography", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+            tabela("DimCustomer", colunas=[coluna("CustomerKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("DimGeography", "CustomerKey", "DimCustomer", "CustomerKey",
+                           bidirecional=True, cardinalidade_origem="one"),
+        ],
+    )
+
+    achados = list(relacionamento_um_para_um(modelo))
+
+    assert len(achados) == 1
+    assert achados[0].id_regra == "MOD-007"
+    assert achados[0].evidencia.tipo_objeto == "relacionamento"
+    assert achados[0].evidencia.detalhe["cardinalidade"] == "um-para-um"
+
+
+def test_mod007_nao_marca_muitos_para_um(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+            tabela("DimStore", colunas=[coluna("StoreKey", tipo_dado="int64")]),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "StoreKey", "DimStore", "StoreKey")],
+    )
+
+    assert list(relacionamento_um_para_um(modelo)) == []

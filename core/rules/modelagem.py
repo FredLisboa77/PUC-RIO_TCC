@@ -14,6 +14,8 @@ from core.rules.escopo import (
     ANOTACOES_DATA_AUTOMATICA,
     anotacoes,
     dimensao_de_data,
+    lado_muitos,
+    lado_um,
     relacionamentos_em_escopo,
     tabela_automatica_de_data,
     tabela_por_nome,
@@ -242,5 +244,129 @@ def dimensao_de_data_nao_marcada(modelo: ModeloSemantico) -> Iterator[Achado]:
             mensagem=(
                 f"A tabela '{t.nome}' funciona como dimensão de data do modelo, mas "
                 "não está marcada como tabela de data."
+            ),
+        )
+
+
+@regra(
+    id="MOD-006",
+    titulo="Dimensão em floco de neve",
+    categoria="modelagem",
+    severidade="baixa",
+    url_canonica="https://learn.microsoft.com/en-us/power-bi/guidance/star-schema",
+    termos_consulta=[
+        "snowflake dimension",
+        "normalized dimension tables",
+        "denormalize into single table",
+        "relationship filter propagation chain",
+    ],
+    recomendacao_padrao=(
+        "Avalie consolidar as tabelas da dimensão numa só. Em geral os benefícios de "
+        "uma única tabela superam os de várias: o modelo carrega menos tabelas, o "
+        "que é melhor em armazenamento e desempenho; as cadeias de propagação de "
+        "filtro ficam mais curtas; o painel de dados apresenta menos tabelas a quem "
+        "cria o relatório; e passa a ser possível criar uma hierarquia que atravesse "
+        "os níveis da dimensão, o que não se faz com colunas de tabelas diferentes. "
+        "O floco de neve pode ser escolha deliberada, por exemplo quando a origem "
+        "dos dados já é normalizada — o custo é o acima."
+    ),
+)
+def dimensao_em_floco_de_neve(modelo: ModeloSemantico) -> Iterator[Achado]:
+    """Uma ocorrência por tabela que é lado "um" de um relacionamento e lado
+    "muitos" de outro: a intermediária de uma cadeia dimensão-para-dimensão.
+
+    Os lados saem da cardinalidade, nunca de `from`/`to`. Num um-para-um
+    nenhuma das pontas é lado "muitos", então ele não forma cadeia.
+    """
+    relacionamentos = relacionamentos_em_escopo(modelo)
+    um: set[str] = set()
+    muitos: set[str] = set()
+    for r in relacionamentos:
+        um |= lado_um(r)
+        muitos |= lado_muitos(r)
+
+    for nome in sorted(um & muitos):
+        aponta_para = sorted(
+            {
+                destino
+                for r in relacionamentos
+                if nome in lado_muitos(r)
+                for destino in lado_um(r)
+            }
+        )
+        recebe_de = sorted(
+            {
+                origem
+                for r in relacionamentos
+                if nome in lado_um(r)
+                for origem in lado_muitos(r)
+            }
+        )
+        yield Achado(
+            id_regra="MOD-006",
+            evidencia=Evidencia(
+                tipo_objeto="tabela",
+                objeto=nome,
+                tabela=nome,
+                detalhe={"aponta_para": aponta_para, "recebe_de": recebe_de},
+            ),
+            mensagem=(
+                f"A tabela '{nome}' é filtrada por {', '.join(recebe_de)} e filtra "
+                f"{', '.join(aponta_para)}: é o elo intermediário de uma dimensão "
+                "em floco de neve."
+            ),
+        )
+
+
+@regra(
+    id="MOD-007",
+    titulo="Relacionamento um-para-um",
+    categoria="modelagem",
+    severidade="media",
+    url_canonica="https://learn.microsoft.com/en-us/power-bi/guidance/relationships-one-to-one",
+    termos_consulta=[
+        "one-to-one relationship guidance",
+        "row data spans across tables",
+        "merge queries consolidate tables",
+        "degenerate dimension",
+    ],
+    recomendacao_padrao=(
+        "Quando os dados de uma mesma entidade estão repartidos em duas tabelas, "
+        "evite o relacionamento um-para-um e consolide as duas numa só: mescle as "
+        "consultas no Power Query com junção externa à esquerda, desabilite a carga "
+        "da segunda consulta, substitua os valores ausentes por um valor explícito e "
+        "crie as hierarquias cabíveis. Manter as duas tabelas gera excesso de tabelas "
+        "no painel de dados, dificulta encontrar campos relacionados, impede "
+        "hierarquias entre níveis e produz resultados inesperados quando as linhas "
+        "não casam exatamente. Se quiser preservar a organização dos campos, use "
+        "pastas de exibição em vez de tabelas separadas. Há um cenário legítimo: a "
+        "dimensão degenerada, derivada de uma tabela de fatos para separar as colunas "
+        "usadas em filtro e agrupamento das usadas em soma."
+    ),
+    nota_de_verificacao=(
+        "Todo relacionamento um-para-um é obrigatoriamente bidirecional — não é "
+        "possível configurar de outro jeito —, por isso MOD-002 o exclui e o achado "
+        "pertence a esta regra."
+    ),
+)
+def relacionamento_um_para_um(modelo: ModeloSemantico) -> Iterator[Achado]:
+    """Uma ocorrência por relacionamento com cardinalidade "um" nas duas pontas."""
+    for r in relacionamentos_em_escopo(modelo):
+        if not um_para_um(r):
+            continue
+        yield Achado(
+            id_regra="MOD-007",
+            evidencia=Evidencia(
+                tipo_objeto="relacionamento",
+                objeto=_nome_do_relacionamento(r),
+                tabela=r.tabela_origem,
+                detalhe={
+                    "cardinalidade": "um-para-um",
+                    "crossFilteringBehavior": r.bruto.get("crossFilteringBehavior"),
+                },
+            ),
+            mensagem=(
+                f"O relacionamento {_nome_do_relacionamento(r)} é um-para-um: as "
+                "duas tabelas descrevem a mesma entidade."
             ),
         )
