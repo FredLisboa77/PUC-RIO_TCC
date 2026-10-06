@@ -186,3 +186,85 @@ Ollama 0.34.4 instalado via winget. Os dois candidatos da ADR-002 foram baixados
 - **Consequência para o cronograma:** com 6 s por achado, o pipeline inteiro sobre um modelo grande fica em torno de 10 minutos na etapa de geração. O cache de resultados (F16) continua útil para a demo, mas deixa de ser necessidade.
 - **Situação das fases:** Fase 1 encerrada. Fase 2 em andamento, com ingestão e parser prontos.
 - **Próximo passo:** semana 4 — as regras determinísticas, começando pelas estruturais.
+
+## 06/10/2026 — Fase 2, semana 4 — motor de regras e as oito regras estruturais
+
+Segundo bloco de código de produto, em TDD. **87 testes passando.**
+
+**O trabalho que mais rendeu não foi o código.** Antes de implementar, cada regra
+teve a âncora conferida no Microsoft Learn. Isso eliminou três das oito regras
+propostas e mudou uma quarta:
+
+- **PERF-004** (tabela calculada em DAX) caiu porque a página que a sustentaria
+  **recomenda** tabelas de data em `CALENDAR`/`CALENDARAUTO`. Em P8 seu único
+  achado era a `DimCalendar`: 100% do que a regra produzia seria refutado pela
+  fonte citada.
+- **PERF-002** (coluna-chave agregável) caiu por falta de passagem citável. A
+  frase próxima no Learn é contextual a outro exemplo, e a origem da regra era o
+  BPA do Tabular Editor, recusado em 22/09 por licença (R-10). Os 5 objetos que
+  ela apontava voltam no backlog como candidata "coluna sem uso".
+- **MOD-004** (relacionamento entre tipos diferentes) caiu sem âncora e com
+  dúvida sobre o produto permitir criar a condição.
+- **PERF-001** passou a excluir a dimensão de data: 6 dos seus 7 achados em P8
+  eram as colunas de calendário da `DimCalendar`, que a documentação recomenda
+  acrescentar.
+
+Entraram três regras com passagem verbatim: **MOD-005** (dimensão de data não
+marcada), **MOD-006** (dimensão em floco de neve) e **MOD-007** (relacionamento
+um-para-um). A regra passou a constar do `backlog.md`: sem passagem citável, a
+regra não entra.
+
+**MOD-007 nasceu de um detalhe de cardinalidade.** O P8 tem um relacionamento com
+`fromCardinality: "one"` explícito — `DimGeography[CustomerKey] →
+DimCustomer[CustomerKey]` é um-para-um. Disso vieram duas correções: ele não é elo
+de floco de neve, porque num um-para-um nenhuma ponta é lado "muitos"; e MOD-002
+não pode marcá-lo, porque a documentação diz que todo um-para-um é
+obrigatoriamente bidirecional — o achado teria recomendação impossível de
+cumprir. O problema real é o um-para-um, e MOD-007 o afirma com a recomendação
+que a documentação de fato dá.
+
+**O que foi entregue:**
+- `core/rules/base.py` — `RegraMeta`, `Evidencia`, `Achado`. O `RegraMeta` se
+  recusa a existir sem URL canónica, termos de consulta e recomendação padrão
+  com texto real. O achado carrega só a ocorrência: o catálogo é fonte única.
+- `core/rules/registry.py` — decorador `@regra` e registro; ID duplicado é erro
+  na importação.
+- `core/rules/escopo.py` — as exclusões, sob um princípio: auditar o que o autor
+  escreveu. Tabelas de data automáticas, tabelas só de medidas, parâmetros
+  hipotéticos, tabelas de cluster e colunas de agrupamento ficam fora, cada uma
+  por predicado em TMSL e nenhuma por nome de objeto.
+- `core/rules/modelagem.py` e `performance.py` — as oito regras.
+- `core/rules/runner.py` — ordem estável (severidade, ID, objeto) e isolamento
+  de erro por regra, com `regras_com_falha` no resultado.
+- `core/rules/catalogo.py` — `python -m core.rules.catalogo` imprime a tabela de
+  regras da monografia. As URLs canónicas são também as fontes que a RAG precisa
+  conter (G-8).
+
+**Validação contra o P8:** 15 achados, com as contagens travadas em teste —
+MOD-001: 4, MOD-002: 3, MOD-003: 2, MOD-005: 1, MOD-006: 2, MOD-007: 1,
+PERF-001: 1, PERF-003: 1. As regras encadeiam uma causa, e não só listam
+sintomas: a `DimCalendar` nunca foi marcada como tabela de data, então o Power BI
+gerou uma tabela de data local para a própria `DimCalendar[Data]`.
+
+**Correção no modelo interno:** o parser passou a normalizar a cardinalidade do
+relacionamento (`one`/`many` → `um`/`muitos`), que antes misturava os dois
+vocabulários, e a expor `type`, `summarizeBy`, `dataCategory` e `source.type`.
+
+**Um defeito encontrado na execução:** o runner acumulava os achados com
+`list.extend` direto sobre o gerador da regra. Como `extend` acrescenta item a
+item, uma regra que levantasse exceção **depois** de já ter produzido achados
+deixaria metade da saída no resultado — e a falha apareceria em
+`regras_com_falha` com as contagens já contaminadas. Os achados de cada regra
+passam agora por uma lista local: saída parcial de regra com defeito é descartada
+inteira.
+
+- **Pendência:** confirmar empiricamente que a marcação de tabela de data aparece
+  como `dataCategory: "Time"` no TMSL — marcar a `DimCalendar` no Desktop, salvar
+  o PBIP e comparar o `model.bim`. A regra está no catálogo com nota de
+  verificação até lá.
+- **Atenção ao R-12:** o conjunto rende 15 achados no P8, um modelo visivelmente
+  problemático. O gatilho da semana 4 é "menos de ~40 achados em P1–P7". Rodar as
+  oito regras sobre P1–P7 assim que os PBIP existirem deixou de ser tarefa da
+  semana 8.
+- **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
+  detectabilidade), sobre o motor já provado.
