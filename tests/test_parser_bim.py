@@ -195,3 +195,88 @@ def test_tolera_propriedades_desconhecidas_e_secoes_ausentes(tmp_path):
     assert modelo.relacionamentos == []
     # A propriedade desconhecida continua acessível para as regras.
     assert modelo.tabelas[0].colunas[0].bruto["naoConhecida"] is True
+
+
+def test_le_as_propriedades_que_as_regras_precisam(tmp_path):
+    """`type`, `summarizeBy`, `dataCategory` e `source.type` viram campos próprios."""
+    caminho = modelo_com(
+        tmp_path,
+        {
+            "tables": [
+                {
+                    "name": "DimCalendar",
+                    "dataCategory": "Time",
+                    "columns": [
+                        {"name": "Data", "dataType": "dateTime", "summarizeBy": "none"},
+                        {
+                            "name": "Ano",
+                            "dataType": "string",
+                            "type": "calculated",
+                            "summarizeBy": "none",
+                            "expression": "YEAR([Data])",
+                        },
+                        {"name": "Valor", "dataType": "double", "summarizeBy": "sum"},
+                    ],
+                    "partitions": [
+                        {
+                            "name": "p",
+                            "mode": "import",
+                            "source": {"type": "calculated", "expression": "CALENDAR(1, 2)"},
+                        }
+                    ],
+                }
+            ],
+            "relationships": [],
+        },
+    )
+
+    modelo = ler_modelo(caminho)
+    tabela = modelo.tabelas[0]
+    data, ano, valor = tabela.colunas
+
+    assert tabela.data_category == "Time"
+    assert data.tipo is None
+    assert ano.tipo == "calculated"
+    assert valor.resumir_por == "sum"
+    assert data.resumir_por == "none"
+    assert tabela.particoes[0].tipo_origem == "calculated"
+
+
+def test_normaliza_a_cardinalidade_do_relacionamento(tmp_path):
+    """O TMSL grava `one`/`many`; o padrão ausente é muitos-para-um.
+
+    O P8 tem um relacionamento com `fromCardinality: "one"` explícito, que é
+    um-para-um. Presumir muitos-para-um faria MOD-006 e MOD-007 errarem.
+    """
+    caminho = modelo_com(
+        tmp_path,
+        {
+            "tables": [],
+            "relationships": [
+                {"name": "padrao", "fromTable": "F", "fromColumn": "k", "toTable": "D", "toColumn": "k"},
+                {
+                    "name": "um-para-um",
+                    "fromTable": "A",
+                    "fromColumn": "k",
+                    "toTable": "B",
+                    "toColumn": "k",
+                    "fromCardinality": "one",
+                },
+                {
+                    "name": "explicito",
+                    "fromTable": "F2",
+                    "fromColumn": "k",
+                    "toTable": "D2",
+                    "toColumn": "k",
+                    "fromCardinality": "many",
+                    "toCardinality": "one",
+                },
+            ],
+        },
+    )
+
+    padrao, um_para_um, explicito = ler_modelo(caminho).relacionamentos
+
+    assert (padrao.cardinalidade_origem, padrao.cardinalidade_destino) == ("muitos", "um")
+    assert (um_para_um.cardinalidade_origem, um_para_um.cardinalidade_destino) == ("um", "um")
+    assert (explicito.cardinalidade_origem, explicito.cardinalidade_destino) == ("muitos", "um")

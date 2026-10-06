@@ -20,6 +20,13 @@ DirecaoFiltro = Literal["um_sentido", "ambos_sentidos"]
 class Coluna(BaseModel):
     nome: str
     tipo_dado: str | None = None
+    tipo: str | None = None
+    """`type` do TMSL: `calculated` numa coluna calculada em DAX,
+    `calculatedTableColumn` numa coluna de tabela calculada, ausente numa coluna
+    vinda da origem. Não confundir com `tipo_dado`, que é o `dataType`."""
+    resumir_por: str | None = None
+    """`summarizeBy`: a agregação implícita que o Power BI oferece ao autor do
+    relatório. `none` significa que a coluna não é somável por padrão."""
     expressao: str | None = None
     """DAX da coluna calculada; `None` numa coluna comum."""
     oculta: bool = False
@@ -44,6 +51,9 @@ class Particao(BaseModel):
     nome: str
     modo: str | None = None
     """`import`, `directQuery`, `dual`… conforme o TMSL."""
+    tipo_origem: str | None = None
+    """`source.type`: `m` numa partição de Power Query, `calculated` numa
+    tabela calculada em DAX."""
     origem: str | None = None
     """Expressão M da partição, quando a origem é do tipo `m`."""
     bruto: dict[str, Any] = Field(default_factory=dict, repr=False)
@@ -52,6 +62,8 @@ class Particao(BaseModel):
 class Tabela(BaseModel):
     nome: str
     oculta: bool = False
+    data_category: str | None = None
+    """`dataCategory`: vale `Time` numa tabela marcada como tabela de data."""
     colunas: list[Coluna] = Field(default_factory=list)
     medidas: list[Medida] = Field(default_factory=list)
     particoes: list[Particao] = Field(default_factory=list)

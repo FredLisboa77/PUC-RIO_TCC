@@ -37,6 +37,8 @@ def _coluna(bruto: dict) -> Coluna:
     return Coluna(
         nome=bruto.get("name", ""),
         tipo_dado=bruto.get("dataType"),
+        tipo=bruto.get("type"),
+        resumir_por=bruto.get("summarizeBy"),
         expressao=_texto(bruto.get("expression")),
         oculta=bool(bruto.get("isHidden", False)),
         bruto=bruto,
@@ -60,6 +62,7 @@ def _particao(bruto: dict) -> Particao:
     return Particao(
         nome=bruto.get("name", ""),
         modo=bruto.get("mode"),
+        tipo_origem=origem.get("type"),
         origem=_texto(origem.get("expression")),
         bruto=bruto,
     )
@@ -70,11 +73,28 @@ def _tabela(bruto: dict) -> Tabela:
     return Tabela(
         nome=nome,
         oculta=bool(bruto.get("isHidden", False)),
+        data_category=bruto.get("dataCategory"),
         colunas=[_coluna(c) for c in bruto.get("columns", [])],
         medidas=[_medida(m, nome) for m in bruto.get("measures", [])],
         particoes=[_particao(p) for p in bruto.get("partitions", [])],
         bruto=bruto,
     )
+
+
+CARDINALIDADE = {"one": "um", "many": "muitos"}
+
+
+def _cardinalidade(valor: Any, padrao: str) -> str:
+    """Normaliza `fromCardinality`/`toCardinality` para o vocabulário interno.
+
+    Ausentes, os dois significam muitos-para-um: o lado `from` é "muitos" e o
+    lado `to` é "um". Quando presentes vêm em inglês. As regras dependem disso:
+    um `fromCardinality: "one"` explícito descreve um relacionamento
+    um-para-um, e tratá-lo como muitos-para-um inverteria os lados.
+    """
+    if valor is None:
+        return padrao
+    return CARDINALIDADE.get(str(valor), str(valor))
 
 
 def _relacionamento(bruto: dict) -> Relacionamento:
@@ -91,8 +111,8 @@ def _relacionamento(bruto: dict) -> Relacionamento:
         coluna_destino=bruto.get("toColumn", ""),
         direcao_filtro="ambos_sentidos" if bidirecional else "um_sentido",
         ativo=bool(bruto.get("isActive", True)),
-        cardinalidade_origem=bruto.get("fromCardinality", "muitos"),
-        cardinalidade_destino=bruto.get("toCardinality", "um"),
+        cardinalidade_origem=_cardinalidade(bruto.get("fromCardinality"), "muitos"),
+        cardinalidade_destino=_cardinalidade(bruto.get("toCardinality"), "um"),
         bruto=bruto,
     )
 
