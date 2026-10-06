@@ -7,7 +7,7 @@
 
 ## 1. Objetivo e contexto
 
-A semana 3 entregou a ingestão do PBIP e o parser do `model.bim` para o modelo interno (`core/model.py`). Esta etapa entrega o **motor de regras** e as **primeiras sete regras estruturais**, de modelagem e performance estática.
+A semana 3 entregou a ingestão do PBIP e o parser do `model.bim` para o modelo interno (`core/model.py`). Esta etapa entrega o **motor de regras** e as **primeiras oito regras estruturais**, de modelagem e performance estática.
 
 A ADR-003 fixa que as regras determinísticas são a **única fonte de achados** — o LLM apenas explica e recomenda, e precisa citar um trecho recuperado. Isso faz do motor de regras a origem de tudo que o pipeline produz: o que a regra não detecta não existe no relatório, e precisão e recall da ferramenta são, por construção, precisão e recall das regras.
 
@@ -59,27 +59,36 @@ A `Evidencia` é o que vai ao prompt como evidência e ao relatório como prova.
 
 `id_regra`, `evidencia` e `mensagem` — a frase da ocorrência específica, escrita pela regra. Nada mais (D-6). Os metadados são resolvidos pelo `id_regra` contra o registro.
 
-## 4. As sete regras, com âncora verificada
+## 4. As oito regras, com âncora verificada
 
 Contagens medidas no P8 (`data/pbip/P8_contoso-vendas`) em 06/10/2026. Todas as âncoras foram lidas no Learn nesta data; a passagem citável está transcrita abaixo da tabela.
 
 | ID | Regra | Detecção no TMSL | P8 | Sev. |
 |---|---|---|---|---|
 | MOD-001 | Tempo automático de data ligado | annotations `__PBI_TemplateDateTable` / `__PBI_LocalDateTable` | 4 | alta |
-| MOD-002 | Relacionamento bidirecional | `crossFilteringBehavior: bothDirections` | 4 | alta |
+| MOD-002 | Relacionamento bidirecional | `crossFilteringBehavior: bothDirections`, exceto se for um-para-um | 3 | alta |
 | MOD-003 | Tabela sem relacionamento | tabela ausente de `relationships` | 2 | baixa |
 | MOD-005 | Dimensão de data não marcada como tabela de data | é o lado "um" de relacionamento `dateTime → dateTime` e não tem `dataCategory: "Time"` | 1 | media |
 | MOD-006 | Dimensão em floco de neve | tabela no lado "um" de um relacionamento e no lado "muitos" de outro | 2 | baixa |
+| MOD-007 | Relacionamento um-para-um | cardinalidade "um" nas duas pontas | 1 | media |
 | PERF-001 | Coluna calculada em DAX | `type: calculated` na coluna | 1 | media |
 | PERF-003 | Coluna de ponto flutuante somada | `dataType: double` com `summarizeBy: sum` | 1 | baixa |
 
 Total: **15 achados em P8**, de 19 tabelas das quais 11 ficam em escopo.
 
+**A cardinalidade tem de ser lida, não presumida, e ela produziu MOD-007.** No TMSL, `fromCardinality` ausente significa `many` e `toCardinality` ausente significa `one` — o muitos-para-um, que é o normal. O P8 tem um relacionamento com `fromCardinality: "one"` explícito: `DimGeography[CustomerKey] → DimCustomer[CustomerKey]` é **um-para-um**.
+
+Isso tem duas consequências. A primeira é que ele **não** é elo de floco de neve: num um-para-um nenhuma das pontas é lado "muitos", então `DimCustomer` não entra em MOD-006, que fica em 2. A segunda é que MOD-002 **não pode** marcá-lo: a página de bidirecional diz que *"All one-to-one relationships must be bi-directional—it isn't possible to configure otherwise"*, logo um achado de bidirecional ali teria recomendação impossível de cumprir — o defeito que derrubou PERF-004. O problema real é o próprio um-para-um, e é MOD-007 que o afirma, com a recomendação que a documentação de fato dá: consolidar as duas tabelas numa só.
+
+Por isso as regras leem `cardinalidade_origem` e `cardinalidade_destino` e deduzem os lados, nunca usam `from`/`to` como se fossem "muitos" e "um". O parser normaliza `one`/`many` para `um`/`muitos` (seção 8).
+
 ### Âncoras
 
 **MOD-001** — `guidance/auto-date-time` e `guidance/import-modeling-data-reduction`: *"If the Auto date/time option isn't relevant to your projects, disable the global Auto date/time option"*; *"The hidden tables are in fact calculated tables that increase the size of the model."*
 
-**MOD-002** — `guidance/relationships-bidirectional-filtering`: *"Generally, we recommend that you minimize the use of bi-directional relationships. That's because they can negatively impact on model query performance, and possibly deliver confusing experiences for your report users."* A recomendação padrão precisa citar os três cenários que a página admite (um-para-um, ponte muitos-para-muitos, análise dimensão-a-dimensão) e a alternativa que ela prefere nos dois últimos: `CROSSFILTER` na definição da medida, em vez da propriedade do relacionamento.
+**MOD-002** — `guidance/relationships-bidirectional-filtering`: *"Generally, we recommend that you minimize the use of bi-directional relationships. That's because they can negatively impact on model query performance, and possibly deliver confusing experiences for your report users."* A recomendação padrão precisa citar os dois cenários restantes que a página admite (ponte muitos-para-muitos e análise dimensão-a-dimensão) e a alternativa que ela prefere em ambos: `CROSSFILTER` na definição da medida, em vez da propriedade do relacionamento. O terceiro cenário da página, o um-para-um, é **exclusão** da regra, não exceção na recomendação: ali a configuração é imposta pelo produto e o achado pertence a MOD-007.
+
+**MOD-007** — `guidance/relationships-one-to-one`: *"When possible, we recommend you avoid creating one-to-one model relationships when row data spans across model tables."* A página lista as quatro consequências e dá a recomendação concreta: mesclar as consultas no Power Query, desabilitar a carga da segunda, substituir valores ausentes e criar hierarquias. Declara também a exceção que a recomendação padrão precisa trazer — a **dimensão degenerada**, derivada de uma tabela de fatos, é cenário legítimo de um-para-um. Em P8 o caso é o outro, o de dados da mesma entidade repartidos em duas tabelas (`DimCustomer` e `DimGeography`), que é exatamente o que a página recomenda evitar.
 
 **MOD-003** — `guidance/star-schema`: *"We also recommend that you strive to deliver the right number of tables with the right relationships in place."* **É a âncora mais fraca do conjunto**: recomendação geral, não artigo dedicado. Daí a severidade baixa. Se a Fase 3 mostrar que o trecho recuperado não sustenta a explicação, a regra é candidata a sair.
 
@@ -97,7 +106,9 @@ A detecção assume que a marcação de tabela de data aparece no TMSL como `dat
 
 ### O que o P8 ganhou com este conjunto
 
-As regras encadeiam uma causa, e não só listam sintomas: a `DimCalendar` nunca foi marcada como tabela de data (MOD-005), então o Power BI gerou uma tabela de data local para a própria `DimCalendar[Data]` — uma das quatro de MOD-001. E dois dos quatro relacionamentos bidirecionais de MOD-002 são exatamente os elos da cadeia floco de neve de MOD-006 (`FactOnlineSales → DimProduct → DimProductSubcategory → DimProductCategory`). O estudo de caso passa a ter uma narrativa, não um inventário.
+As regras encadeiam causas, e não só listam sintomas. A `DimCalendar` nunca foi marcada como tabela de data (MOD-005), então o Power BI gerou uma tabela de data local para a própria `DimCalendar[Data]` — uma das quatro de MOD-001.
+
+E os quatro relacionamentos bidirecionais do modelo se explicam por outras duas regras: dois são elos da cadeia floco de neve de produto (`FactOnlineSales → DimProduct → DimProductSubcategory → DimProductCategory`, MOD-006), um é fato-para-dimensão, e o quarto é bidirecional porque é um-para-um (MOD-007) — não por escolha do autor. Três achados de MOD-002 e três causas distintas, o que é melhor material de análise que quatro ocorrências da mesma regra. O estudo de caso passa a ter uma narrativa, não um inventário.
 
 ## 5. Exclusões — `core/rules/escopo.py`
 
@@ -148,7 +159,7 @@ O decorador `@regra(...)` e o registro. ID duplicado é erro **na importação**
 - Itera o registro em ordem de ID e concatena os achados.
 - **Ordenação determinística** da saída: severidade (alta → baixa), depois ID da regra, depois nome do objeto. A avaliação da Fase 5 compara listas; ordem instável viraria diferença falsa entre execuções.
 - **Isolamento de erro:** uma regra que levanta exceção não derruba a auditoria. O runner captura, registra e segue.
-- Por isso o retorno é um `ResultadoRegras` com `achados` e `regras_com_falha`, e não uma lista nua: a interface precisa poder dizer "6 de 7 regras executadas" em vez de entregar menos achados em silêncio.
+- Por isso o retorno é um `ResultadoRegras` com `achados` e `regras_com_falha`, e não uma lista nua: a interface precisa poder dizer "7 de 8 regras executadas" em vez de entregar menos achados em silêncio.
 - Em teste, qualquer regra em `regras_com_falha` é falha do teste. O isolamento protege o usuário final, não a suíte.
 
 ### `core/rules/catalogo.py`
@@ -163,7 +174,7 @@ TDD, como na semana 3: teste primeiro, visto falhar, depois a implementação m�
 
 1. **Uma fixture sintética por regra** — mínima, com o caso positivo e o negativo. É aqui que cada exclusão da seção 5 é provada: um `model.bim` com uma tabela só de medidas produz zero achado de MOD-003, e uma dimensão de data com colunas calculadas produz zero achado de PERF-001.
 2. **Testes do motor, independentes das regras** — ID duplicado rejeitado; regra que explode é isolada e aparece em `regras_com_falha`; ordenação estável; catálogo completo.
-3. **Regressão contra o P8**, pulada quando `data/` não existe, como os quatro testes atuais. Trava as sete contagens da seção 4. Se uma mudança futura fizer PERF-001 saltar de 1 para 35, o teste acusa que as exclusões quebraram.
+3. **Regressão contra o P8**, pulada quando `data/` não existe, como os quatro testes atuais. Trava as oito contagens da seção 4. Se uma mudança futura fizer PERF-001 saltar de 1 para 35, o teste acusa que as exclusões quebraram.
 
 ## 8. Arquivos
 
@@ -171,7 +182,17 @@ TDD, como na semana 3: teste primeiro, visto falhar, depois a implementação m�
 
 **Tocados:** `tests/conftest.py` — `escrever_pbip` passa a aceitar relacionamentos e annotations nas fixtures; `tests/test_pbip_real.py` — as contagens do P8.
 
-`core/model.py` ganha apenas o que faltar: `Tabela.data_category` (MOD-005 precisa dele) e as annotations acessíveis por `bruto`, que já estão. `Tabela.hierarquias` não é necessária e não entra.
+`core/model.py` e `core/parser_bim.py` ganham apenas o que as oito regras precisam:
+
+| Campo | TMSL | Quem precisa |
+|---|---|---|
+| `Coluna.tipo` | `type` | escopo (`calculatedTableColumn`) e PERF-001 (`calculated`) |
+| `Coluna.resumir_por` | `summarizeBy` | PERF-003 |
+| `Tabela.data_category` | `dataCategory` | MOD-005 |
+| `Particao.tipo_origem` | `source.type` | escopo (parâmetro hipotético) |
+| `Relacionamento.cardinalidade_*` | `fromCardinality` / `toCardinality` | **correção:** hoje o parser repassa o valor em inglês e usa um padrão em português, misturando os dois vocabulários. Passa a normalizar `one`/`many` para `um`/`muitos`. MOD-006 depende disso |
+
+As annotations continuam acessíveis por `bruto`, com um único leitor (`escopo.anotacoes`). `Tabela.hierarquias` não é necessária e não entra.
 
 ## 9. Fora de escopo
 
@@ -195,14 +216,14 @@ Três das oito regras propostas no design original caíram ao conferir a documen
 
 ### Consequência para o R-12
 
-O conjunto saiu de 8 regras e 24 achados em P8 para **7 regras e 15 achados** — ganho de precisão, perda de volume. O R-12 (poucos achados em P1–P7) piora com isso. A pendência de baixar os 7 PBIX já é da semana 4; assim que existirem, rodar as sete regras sobre eles transforma o R-12 de palpite em número e decide se o P9 deixa de ser opcional.
+O conjunto saiu de 8 regras e 24 achados em P8 para **8 regras e 15 achados** — mesmo número de regras, nove achados a menos, e nenhum deles refutável pela fonte citada. O R-12 (poucos achados em P1–P7) piora com isso. A pendência de baixar os 7 PBIX já é da semana 4; assim que existirem, rodar as oito regras sobre eles transforma o R-12 de palpite em número e decide se o P9 deixa de ser opcional.
 
 ## 10. Critérios de aceite
 
 1. `pytest` verde, com os 15 testes atuais intactos.
-2. As sete regras registradas, cada uma com a URL canónica da seção 4, termos de consulta em inglês e recomendação padrão **contendo as exceções que a fonte declara**.
+2. As oito regras registradas, cada uma com a URL canónica da seção 4, termos de consulta em inglês e recomendação padrão **contendo as exceções que a fonte declara**.
 3. `avaliar()` sobre o P8 produz exatamente as 15 ocorrências da seção 4, com `regras_com_falha` vazio.
-4. `python -m core.rules.catalogo` imprime as sete regras.
+4. `python -m core.rules.catalogo` imprime as oito regras.
 5. Cada exclusão da seção 5 provada por fixture sintética.
 6. A pendência empírica de MOD-005 (`dataCategory: "Time"`) resolvida, ou a regra marcada como provisória no catálogo.
 7. `progress-log.md`, `backlog.md` e `README.md` atualizados; a ADR-003 citada onde a recomendação padrão é exigida.
