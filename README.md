@@ -104,7 +104,7 @@ python eval/spike_llm.py qwen2.5:3b qwen2.5:7b-instruct-q4_K_M
 pytest
 ```
 
-Os testes montam PBIP sintéticos em pasta temporária. Os quatro testes que leem o PBIP real são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório.
+Os testes montam PBIP sintéticos em pasta temporária. Os nove testes que leem o PBIP real são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório — e com eles vai embora a rede de regressão das exclusões de escopo, que é o que trava as 15 ocorrências medidas.
 
 ## Nota sobre dados
 
