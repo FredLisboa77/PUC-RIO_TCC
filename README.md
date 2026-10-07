@@ -22,7 +22,7 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 
 O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
 
-Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, e o motor de regras determinísticas com as 8 primeiras regras estruturais — 15 achados no PBIP real usado como estudo de caso. 87 testes passando.
+Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, e o motor de regras determinísticas com as 8 primeiras regras estruturais — 15 achados no PBIP real usado como estudo de caso. 100 testes passando.
 
 Cada regra declara a página do Microsoft Learn que a sustenta, e `python -m core.rules.catalogo` imprime o catálogo. Regra sem essa âncora não entra no registro: a verificação das fontes antes de escrever código eliminou três das oito regras originalmente propostas, uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito.
 

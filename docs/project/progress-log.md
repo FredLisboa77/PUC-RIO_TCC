@@ -189,7 +189,7 @@ Ollama 0.34.4 instalado via winget. Os dois candidatos da ADR-002 foram baixados
 
 ## 06/10/2026 — Fase 2, semana 4 — motor de regras e as oito regras estruturais
 
-Segundo bloco de código de produto, em TDD. **87 testes passando.**
+Segundo bloco de código de produto, em TDD. **100 testes passando.**
 
 **O trabalho que mais rendeu não foi o código.** Antes de implementar, cada regra
 teve a âncora conferida no Microsoft Learn. Isso eliminou três das oito regras
@@ -266,5 +266,29 @@ inteira.
   problemático. O gatilho da semana 4 é "menos de ~40 achados em P1–P7". Rodar as
   oito regras sobre P1–P7 assim que os PBIP existirem deixou de ser tarefa da
   semana 8.
+**A revisão final achou seis defeitos de precisão que o P8 não exibe**, todos
+corrigidos com teste que falhou primeiro. Os dois que mais importam:
+
+- **A dimensão de data de chave substituta inteira era invisível.** `dimensao_de_data`
+  só reconhecia relacionamento `dateTime → dateTime`, e a convenção de data
+  warehouse usa inteiro no formato `aaaammdd`. Com a dimensão invisível, PERF-001
+  voltava a marcar as colunas de calendário que a documentação recomenda
+  acrescentar — o defeito que derrubou PERF-004, reaberto por outra porta, e que
+  teria contaminado a medição de P1–P7 desta semana. Agora são três sinais: o
+  relacionamento entre datas, `dataCategory: "Time"`, e partição calculada
+  começando em `CALENDAR`/`CALENDARAUTO`.
+- **Uma dimensão calculada com uma medida pendurada saía inteira da auditoria.**
+  Toda coluna de tabela calculada é `calculatedTableColumn`, então o único sinal
+  que separava a `_Medidas` de uma dimensão de verdade era ter medida. O limite
+  de uma coluna resolveu.
+
+Os outros quatro: MOD-006 tratava um-para-um e muitos-para-muitos como cadeia de
+floco de neve e emitia mensagem com buraco no lugar do nome da tabela; a busca da
+severidade na ordenação estava fora do isolamento de erro, de modo que um
+`id_regra` digitado errado matava a auditoria inteira; `"annotations": null`
+derrubava as oito regras de uma vez; e MOD-002 afirmava "filtra nos dois
+sentidos" sobre relacionamento inativo, que não filtra nada até
+`USERELATIONSHIP`. As 15 ocorrências do P8 não mudaram com nenhuma das correções.
+
 - **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
   detectabilidade), sobre o motor já provado.
