@@ -66,10 +66,10 @@ Contagens medidas no P8 (`data/pbip/P8_contoso-vendas`) em 06/10/2026. Todas as 
 | ID | Regra | Detecção no TMSL | P8 | Sev. |
 |---|---|---|---|---|
 | MOD-001 | Tempo automático de data ligado | annotations `__PBI_TemplateDateTable` / `__PBI_LocalDateTable` | 4 | alta |
-| MOD-002 | Relacionamento bidirecional | `crossFilteringBehavior: bothDirections`, exceto se for um-para-um | 3 | alta |
+| MOD-002 | Relacionamento bidirecional | `crossFilteringBehavior: bothDirections`, exceto um-para-um e inativo | 3 | alta |
 | MOD-003 | Tabela sem relacionamento | tabela ausente de `relationships` | 2 | baixa |
 | MOD-005 | Dimensão de data não marcada como tabela de data | é o lado "um" de relacionamento `dateTime → dateTime` e não tem `dataCategory: "Time"` | 1 | media |
-| MOD-006 | Dimensão em floco de neve | tabela no lado "um" de um relacionamento e no lado "muitos" de outro | 2 | baixa |
+| MOD-006 | Dimensão em floco de neve | tabela no lado "um" de um relacionamento e no lado "muitos" de outro, desconsiderando um-para-um, muitos-para-muitos e inativos | 2 | baixa |
 | MOD-007 | Relacionamento um-para-um | cardinalidade "um" nas duas pontas | 1 | media |
 | PERF-001 | Coluna calculada em DAX | `type: calculated` na coluna | 1 | media |
 | PERF-003 | Coluna de ponto flutuante somada | `dataType: double` com `summarizeBy: sum` | 1 | baixa |
@@ -141,9 +141,26 @@ A exclusão de parâmetro hipotético existe por si, e não pelo acaso de a tabe
 
 Nenhuma regra reimplementa esse julgamento. Como o parser guarda o TMSL de origem em `bruto`, as annotations estão acessíveis sem reabrir o arquivo — o campo existe para isso.
 
+### Correções da revisão final — 06/10/2026
+
+A revisão de contexto fresca do branch achou quatro defeitos de precisão que o P8 não exibe. Todos corrigidos com teste que falhou primeiro:
+
+| Defeito | Efeito se não corrigido | Correção |
+|---|---|---|
+| `dimensao_de_data` só reconhecia relacionamento `dateTime → dateTime` | A dimensão de data da convenção de data warehouse — chave substituta inteira no formato `aaaammdd` — ficava invisível, e PERF-001 voltava a marcar as colunas de calendário que a documentação recomenda acrescentar. É o defeito que derrubou PERF-004, reaberto por outra porta, e teria contaminado a medição em P1–P7 | Três sinais, qualquer um bastando: o relacionamento entre datas, `dataCategory: "Time"`, ou partição calculada começando em `CALENDAR`/`CALENDARAUTO` |
+| `tabela_apenas_de_medidas` exigia só "tem medida e nenhuma coluna de dados" | *Toda* coluna de tabela calculada é `calculatedTableColumn`, então bastava o autor pendurar uma medida numa dimensão calculada para a tabela inteira sair da auditoria, em silêncio | Acrescentado o limite de uma coluna, que é o que separa o padrão `_Medidas` de uma dimensão de verdade |
+| MOD-006 usava `lado_um` direto, que devolve as duas pontas de um um-para-um | Uma tabela cujo único papel "um" vem de um um-para-um passava por elo intermediário de uma cadeia inexistente — e a mensagem saía com um buraco no lugar do nome da tabela, porque o lado "muitos" do um-para-um é vazio. O mesmo acontecia por um elo muitos-para-muitos | MOD-006 descarta um-para-um e muitos-para-muitos do cálculo da cadeia, e exige as duas pontas antes de emitir o achado |
+| `anotacoes` usava `bruto.get("annotations", [])` | `"annotations": null` num `model.bim` editado à mão levantava `TypeError` dentro de `fora_de_escopo`, derrubando as oito regras de uma vez: auditoria vazia, oito entradas em `regras_com_falha` | `or []` em vez de valor padrão |
+
+**Decisão sobre relacionamento inativo.** MOD-002 e MOD-006 passam a ignorar relacionamentos com `isActive: false`. A página de bidirecional argumenta a partir de desempenho de consulta e de ambiguidade de filtro, e nenhum dos dois existe enquanto o relacionamento não é ativado por `USERELATIONSHIP`; dizer que ele "filtra nos dois sentidos" seria afirmar o que não acontece. MOD-007 continua marcando o um-para-um inativo, porque ali o problema é o desenho — duas tabelas para a mesma entidade — e não a propagação. O P8 não tem relacionamento inativo, então nenhuma contagem muda; dimensão com papéis múltiplos, que é onde o caso aparece, é padrão comum.
+
+**Isolamento de erro reforçado.** A busca da severidade na ordenação acontecia fora do `try` por regra: um achado rotulado com um `id_regra` que não existe no registro levantava `KeyError` em `avaliar()` depois de todas as regras já terem rodado — em vez de uma regra isolada, a auditoria inteira morria. A validação passou para dentro do isolamento, e regra que rotula errado os próprios achados vira `FalhaDeRegra`.
+
 **Riscos residuais, declarados.** Vão para o ground truth da Fase 5 e para o capítulo de limitações (seção 11 do plano da Fase 1):
 
 - **MOD-003 marca `Tabela de Regressão Linear`**, tabela de Power Query sem relacionamento. É achado real, não falso positivo, mas depende de intenção que o `model.bim` não registra. Somado à âncora fraca, é a regra mais frágil do conjunto.
+- **Comentário de bloco `/* */` antes de `GENERATESERIES`** derrota o predicado de parâmetro hipotético, que só salta linhas de `//`. O Power BI escreve a expressão sem comentário, então a probabilidade é baixa, mas o efeito é um falso positivo de MOD-003 sem aviso.
+- **PERF-003 não aplica a exclusão de coluna gerada por agrupamento**, que PERF-001 aplica. Sem efeito no P8, onde as quatro colunas de agrupamento são de texto; uma coluna numérica agrupada e somada faria a regra culpar o autor por DAX que a interface escreveu.
 - As exclusões por annotation são **específicas do que o Power BI gera hoje**. Uma versão futura que mude o nome de uma annotation reabre o falso positivo em silêncio. Os testes de P8 travam as contagens e é por lá que a quebra apareceria.
 
 ## 6. O motor

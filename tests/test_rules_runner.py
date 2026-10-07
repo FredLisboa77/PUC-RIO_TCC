@@ -95,3 +95,31 @@ def test_registro_vazio_devolve_resultado_vazio():
     assert resultado.achados == []
     assert resultado.regras_com_falha == []
     assert resultado.total_de_regras == 0
+
+
+# --- correções da revisão final ---
+
+
+def test_isola_regra_que_rotula_achado_com_id_de_outra_regra():
+    """A busca da severidade acontecia fora do isolamento.
+
+    Um `id_regra` digitado errado no corpo da regra (MOD-9O1 com a letra O, por
+    exemplo) levantava `KeyError` dentro do `sort` de `avaliar`, depois de todas
+    as regras já terem rodado: em vez de uma regra isolada, a auditoria inteira
+    morria com traceback.
+    """
+    registro = Registro()
+
+    @regra(id="MOD-901", severidade="alta", registro=registro, **CAMPOS)
+    def rotula_errado(modelo):
+        return [_achado("MOD-9O1", "DimProduct")]
+
+    @regra(id="MOD-902", severidade="alta", registro=registro, **CAMPOS)
+    def funciona(modelo):
+        return [_achado("MOD-902", "DimStore")]
+
+    resultado = avaliar(ModeloSemantico(), registro=registro)
+
+    assert [a.id_regra for a in resultado.achados] == ["MOD-902"]
+    assert [f.id_regra for f in resultado.regras_com_falha] == ["MOD-901"]
+    assert "MOD-9O1" in resultado.regras_com_falha[0].erro

@@ -18,6 +18,9 @@ ANOTACOES_DATA_AUTOMATICA = ("__PBI_TemplateDateTable", "__PBI_LocalDateTable")
 ANOTACAO_ANALISE_GERADA = "ClusterMappingTable"
 ANOTACAO_COLUNA_GERADA = "GroupingDesignState"
 FUNCAO_PARAMETRO_HIPOTETICO = "GENERATESERIES"
+FUNCAO_TABELA_DE_DATA = "CALENDAR"
+"""Cobre `CALENDAR` e `CALENDARAUTO`, as duas funções que a documentação
+recomenda para gerar a tabela de data do modelo."""
 
 
 def anotacoes(bruto: dict) -> dict[str, str]:
@@ -26,9 +29,13 @@ def anotacoes(bruto: dict) -> dict[str, str]:
     O parser guarda o TMSL de origem em `bruto` justamente para isto: a
     annotation não foi normalizada, mas está acessível sem reabrir o arquivo.
     """
+    # `or []` em vez de valor padrão: `annotations` pode existir com valor nulo
+    # num `model.bim` editado à mão, e iterar `None` levantaria `TypeError` aqui
+    # — em `fora_de_escopo`, o que derrubaria todas as regras de uma vez e
+    # entregaria auditoria vazia.
     return {
         item.get("name", ""): item.get("value", "")
-        for item in bruto.get("annotations", [])
+        for item in (bruto.get("annotations") or [])
         if isinstance(item, dict)
     }
 
@@ -54,8 +61,13 @@ def tabela_apenas_de_medidas(t: Tabela) -> bool:
     Numa tabela dessas todas as colunas são `calculatedTableColumn` — a coluna
     fictícia que o Power BI cria para a tabela existir. É padrão consagrado para
     organizar medidas, não defeito.
+
+    O limite de uma coluna é o que separa esse padrão de uma dimensão calculada
+    de verdade: *toda* coluna de tabela calculada é `calculatedTableColumn`, de
+    modo que sem ele bastaria o autor pendurar uma medida numa dimensão
+    calculada para a tabela inteira sair da auditoria, em silêncio.
     """
-    if not t.medidas:
+    if not t.medidas or len(t.colunas) > 1:
         return False
     return all(c.tipo == "calculatedTableColumn" for c in t.colunas)
 
@@ -161,17 +173,54 @@ def lado_muitos(r: Relacionamento) -> set[str]:
     return lados
 
 
+def tabela_de_data_marcada(t: Tabela) -> bool:
+    """A tabela foi marcada como tabela de data (Mark as date table)."""
+    return t.data_category == "Time"
+
+
+def tabela_de_data_em_dax(t: Tabela) -> bool:
+    """Tabela de data construída em DAX com `CALENDAR` ou `CALENDARAUTO`.
+
+    A página de orientação sobre tempo automático recomenda essas duas funções
+    para gerar a tabela de data do modelo, então a expressão é assinatura de
+    dimensão de data. `startswith("CALENDAR")` cobre as duas.
+    """
+    for p in t.particoes:
+        if p.tipo_origem != "calculated":
+            continue
+        if _primeira_linha_util(p.origem).upper().startswith(FUNCAO_TABELA_DE_DATA):
+            return True
+    return False
+
+
 def dimensao_de_data(modelo: ModeloSemantico) -> set[str]:
     """Tabelas que servem de dimensão de data no modelo.
 
-    Critério estrutural: estar no lado "um" de um relacionamento cujas duas
-    pontas são `dateTime`. Serve a dois propósitos opostos — é o alvo de MOD-005
-    e a exclusão de PERF-001 —, e é por isso que mora aqui.
+    Três sinais estruturais, qualquer um deles bastando:
+
+    1. estar no lado "um" de um relacionamento cujas duas pontas são `dateTime`;
+    2. estar marcada como tabela de data (`dataCategory: "Time"`);
+    3. ser tabela calculada com `CALENDAR` ou `CALENDARAUTO`.
+
+    O primeiro sozinho deixava invisível a dimensão de data da convenção de data
+    warehouse, cuja chave é um inteiro no formato aaaammdd — justamente o caso em
+    que a documentação diz que marcar a tabela é necessário. E com ela invisível,
+    PERF-001 voltava a marcar as colunas de calendário que a mesma documentação
+    recomenda acrescentar.
+
+    Serve a dois propósitos opostos — é o alvo de MOD-005 e a exclusão de
+    PERF-001 —, e é por isso que mora aqui.
     """
     dimensoes: set[str] = set()
+
     for r in relacionamentos_em_escopo(modelo):
         tipo_origem = tipo_da_coluna(modelo, r.tabela_origem, r.coluna_origem)
         tipo_destino = tipo_da_coluna(modelo, r.tabela_destino, r.coluna_destino)
         if tipo_origem == "dateTime" and tipo_destino == "dateTime":
             dimensoes |= lado_um(r)
+
+    for t in tabelas_em_escopo(modelo):
+        if tabela_de_data_marcada(t) or tabela_de_data_em_dax(t):
+            dimensoes.add(t.nome)
+
     return dimensoes

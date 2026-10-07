@@ -6,7 +6,7 @@ Seis dos sete achados que a regra produzia no P8 eram padrão recomendado.
 """
 
 from core.rules.performance import coluna_calculada_em_dax, ponto_flutuante_somado
-from conftest import coluna, relacionamento, tabela
+from conftest import coluna, particao, relacionamento, tabela
 
 
 def test_perf001_marca_coluna_calculada_em_dax(ler):
@@ -123,3 +123,35 @@ def test_perf003_ignora_tabela_fora_de_escopo(ler):
     )
 
     assert list(ponto_flutuante_somado(modelo)) == []
+
+
+
+# --- correções da revisão final ---
+
+
+def test_perf001_ignora_dimensao_de_data_com_chave_inteira(ler):
+    """A dimensão de data da convenção de data warehouse.
+
+    `FactSales[DateKey] int64 → DimCalendar[DateKey] int64` é o padrão Kimball.
+    Sem reconhecê-la, PERF-001 marca as colunas de calendário que a página de
+    tempo automático recomenda acrescentar — achado refutado pela fonte citada.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="int64")]),
+            tabela(
+                "DimCalendar",
+                colunas=[
+                    coluna("DateKey", tipo_dado="int64"),
+                    coluna("Ano", tipo="calculated", expressao="YEAR([Data])"),
+                    coluna("Mês", tipo="calculated", expressao="FORMAT([Data], \"MMMM\")"),
+                ],
+                particoes=[particao(tipo="calculated", expressao="CALENDAR(DATE(2020,1,1), DATE(2024,12,31))")],
+            ),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "DateKey")],
+    )
+
+    assert list(coluna_calculada_em_dax(modelo)) == []
+
+

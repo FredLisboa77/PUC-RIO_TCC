@@ -325,3 +325,130 @@ def test_mod007_nao_marca_muitos_para_um(ler):
     )
 
     assert list(relacionamento_um_para_um(modelo)) == []
+
+
+# --- correções da revisão final ---
+
+
+def test_mod006_nao_marca_tabela_cujo_unico_papel_um_vem_de_um_para_um(ler):
+    """O dual do Review Focus 2, que o P8 não exibe.
+
+    `lado_um` devolve as duas pontas de um um-para-um, e com razão — as duas são
+    lado "um". Mas MOD-006 não pode usar isso: se o único papel "um" de uma
+    tabela vem de um um-para-um, não há cadeia dimensão-para-dimensão. Pior, o
+    achado saía com a frase quebrada ("é filtrada por  e filtra Z"), porque o
+    lado "muitos" do um-para-um é vazio.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("DimGeography", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("DimCustomer", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("DimCountry", colunas=[coluna("k", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("DimGeography", "k", "DimCustomer", "k", cardinalidade_origem="one"),
+            relacionamento("DimCustomer", "k", "DimCountry", "k"),
+        ],
+    )
+
+    assert list(dimensao_em_floco_de_neve(modelo)) == []
+
+
+def test_mod006_nao_marca_cadeia_cujo_elo_e_muitos_para_muitos(ler):
+    """O outro caminho para a frase quebrada, e para o achado errado.
+
+    Num muitos-para-muitos `lado_um` é vazio, então uma tabela que é lado "um"
+    noutro relacionamento entrava na interseção com um dos lados da cadeia
+    vazio — e a mensagem saía com um buraco onde devia haver nome de tabela.
+    Uma cadeia precisa das duas pontas.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("Vendedor", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("Regiao", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("FactVendas", colunas=[coluna("k", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("Vendedor", "k", "Regiao", "k",
+                           cardinalidade_origem="many", cardinalidade_destino="many"),
+            relacionamento("FactVendas", "k", "Vendedor", "k"),
+        ],
+    )
+
+    for achado in dimensao_em_floco_de_neve(modelo):
+        assert achado.evidencia.detalhe["aponta_para"], achado.mensagem
+        assert achado.evidencia.detalhe["recebe_de"], achado.mensagem
+
+
+def test_mod002_ignora_relacionamento_inativo(ler):
+    """Relacionamento inativo não propaga filtro nenhum até `USERELATIONSHIP`.
+
+    A página argumenta a partir de desempenho de consulta e de ambiguidade de
+    filtro, e nenhum dos dois existe num relacionamento inativo. Dizer que ele
+    "filtra nos dois sentidos" seria afirmar o que não acontece.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DataPedido", tipo_dado="dateTime")]),
+            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")]),
+        ],
+        relacionamentos=[
+            relacionamento("FactOnlineSales", "DataPedido", "DimCalendar", "Data",
+                           bidirecional=True, ativo=False),
+        ],
+    )
+
+    assert list(relacionamento_bidirecional(modelo)) == []
+
+
+def test_mod006_ignora_relacionamento_inativo(ler):
+    """Sem propagação de filtro não há cadeia de floco de neve."""
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("DimProduct", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("DimProductSubcategory", colunas=[coluna("k", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("FactOnlineSales", "k", "DimProduct", "k"),
+            relacionamento("DimProduct", "k", "DimProductSubcategory", "k", ativo=False),
+        ],
+    )
+
+    assert list(dimensao_em_floco_de_neve(modelo)) == []
+
+
+def test_mod007_marca_um_para_um_mesmo_inativo(ler):
+    """Aqui o problema é o desenho, não a propagação: duas tabelas para a mesma
+    entidade continuam sendo duas tabelas, com o relacionamento ativo ou não."""
+    modelo = ler(
+        tabelas=[
+            tabela("DimGeography", colunas=[coluna("k", tipo_dado="int64")]),
+            tabela("DimCustomer", colunas=[coluna("k", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("DimGeography", "k", "DimCustomer", "k",
+                           cardinalidade_origem="one", ativo=False),
+        ],
+    )
+
+    assert len(list(relacionamento_um_para_um(modelo))) == 1
+
+
+def test_mod005_marca_dimensao_de_data_com_chave_inteira(ler):
+    """O caso em que a própria recomendação de MOD-005 diz que marcar é preciso."""
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="int64")]),
+            tabela(
+                "DimCalendar",
+                colunas=[coluna("DateKey", tipo_dado="int64")],
+                particoes=[particao(tipo="calculated", expressao="CALENDARAUTO()")],
+            ),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "DateKey")],
+    )
+
+    achados = list(dimensao_de_data_nao_marcada(modelo))
+
+    assert [a.evidencia.objeto for a in achados] == ["DimCalendar"]

@@ -141,6 +141,7 @@ def relacionamento(
     cross_filtering: str | None = None,
     cardinalidade_origem: str | None = None,
     cardinalidade_destino: str | None = None,
+    ativo: bool = True,
 ) -> dict:
     """Um relacionamento TMSL.
 
@@ -162,6 +163,8 @@ def relacionamento(
         bruto["fromCardinality"] = cardinalidade_origem
     if cardinalidade_destino is not None:
         bruto["toCardinality"] = cardinalidade_destino
+    if not ativo:
+        bruto["isActive"] = False
     return bruto
 
 

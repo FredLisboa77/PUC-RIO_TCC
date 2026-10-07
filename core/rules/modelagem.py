@@ -109,9 +109,14 @@ def relacionamento_bidirecional(modelo: ModeloSemantico) -> Iterator[Achado]:
 
     Num um-para-um a bidirecionalidade é imposta pelo produto — "it isn't
     possible to configure otherwise" —, então o achado pertence a MOD-007.
+
+    Relacionamento inativo também fica fora: a página argumenta a partir de
+    desempenho de consulta e de ambiguidade de filtro, e nenhum dos dois existe
+    enquanto o relacionamento não é ativado por `USERELATIONSHIP`. Dizer que ele
+    "filtra nos dois sentidos" seria afirmar o que não acontece.
     """
     for r in relacionamentos_em_escopo(modelo):
-        if r.direcao_filtro != "ambos_sentidos" or um_para_um(r):
+        if r.direcao_filtro != "ambos_sentidos" or um_para_um(r) or not r.ativo:
             continue
         yield Achado(
             id_regra="MOD-002",
@@ -275,10 +280,17 @@ def dimensao_em_floco_de_neve(modelo: ModeloSemantico) -> Iterator[Achado]:
     """Uma ocorrência por tabela que é lado "um" de um relacionamento e lado
     "muitos" de outro: a intermediária de uma cadeia dimensão-para-dimensão.
 
-    Os lados saem da cardinalidade, nunca de `from`/`to`. Num um-para-um
-    nenhuma das pontas é lado "muitos", então ele não forma cadeia.
+    Os lados saem da cardinalidade, nunca de `from`/`to`.
+
+    Dois tipos de relacionamento ficam fora do cálculo da cadeia. O um-para-um,
+    porque `lado_um` devolve as duas pontas dele — corretamente, as duas são lado
+    "um" — e usar isso aqui faria uma tabela cujo único papel "um" vem de um
+    um-para-um passar por elo intermediário de uma cadeia que não existe. E o
+    inativo, porque sem propagação de filtro não há cadeia a percorrer.
     """
-    relacionamentos = relacionamentos_em_escopo(modelo)
+    relacionamentos = [
+        r for r in relacionamentos_em_escopo(modelo) if r.ativo and not um_para_um(r)
+    ]
     um: set[str] = set()
     muitos: set[str] = set()
     for r in relacionamentos:
@@ -302,6 +314,12 @@ def dimensao_em_floco_de_neve(modelo: ModeloSemantico) -> Iterator[Achado]:
                 for origem in lado_muitos(r)
             }
         )
+        if not aponta_para or not recebe_de:
+            # Cadeia precisa das duas pontas. Um lado vazio acontece quando o
+            # papel vem de um muitos-para-muitos, onde não há lado "um": não é
+            # elo intermediário, e a mensagem sairia com um buraco no lugar do
+            # nome da tabela.
+            continue
         yield Achado(
             id_regra="MOD-006",
             evidencia=Evidencia(

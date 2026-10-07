@@ -62,6 +62,18 @@ def avaliar(
             # com defeito é pior que saída nenhuma — ela falsearia as contagens
             # da Fase 5 sem que nada aparecesse.
             da_regra = list(reg.avaliador(id_regra)(modelo))
+            # Validar aqui, dentro do isolamento: a busca da severidade na
+            # ordenação é feita por `id_regra`, e um achado rotulado com um ID
+            # que não existe no registro levantaria `KeyError` lá fora, depois
+            # de todas as regras já terem rodado — em vez de uma regra isolada,
+            # a auditoria inteira morreria. Regra que rotula errado os próprios
+            # achados é regra com defeito.
+            errados = {a.id_regra for a in da_regra if a.id_regra != id_regra}
+            if errados:
+                raise ValueError(
+                    f"a regra {id_regra} rotulou achados com outro id: "
+                    f"{sorted(errados)}"
+                )
         except Exception as erro:  # noqa: BLE001 — isolar é o objetivo
             logger.exception("a regra %s falhou", id_regra)
             falhas.append(

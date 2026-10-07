@@ -240,3 +240,98 @@ def test_lados_do_relacionamento_respeitam_a_cardinalidade(ler):
     assert lado_um(de_um_para_um) == {"DimGeography", "DimCustomer"}
     assert lado_muitos(de_um_para_um) == set()
     assert um_para_um(de_um_para_um)
+
+
+# --- correções da revisão final ---
+
+
+def test_anotacoes_tolera_annotations_nulo(ler):
+    """`"annotations": null` num `model.bim` editado à mão.
+
+    `bruto.get("annotations", [])` devolve `None` quando a chave existe com
+    valor nulo, e iterar `None` levanta `TypeError` — em `fora_de_escopo`, o que
+    derruba todas as oito regras e entrega auditoria vazia.
+    """
+    modelo = ler(tabelas=[tabela("T")])
+    modelo.tabelas[0].bruto["annotations"] = None
+
+    assert anotacoes(modelo.tabelas[0].bruto) == {}
+    assert nomes_em_escopo(modelo) == {"T"}
+
+
+def test_tabela_calculada_com_medida_e_varias_colunas_continua_em_escopo(ler):
+    """Uma dimensão calculada em DAX não sai do escopo por carregar uma medida.
+
+    Toda coluna de tabela calculada é `calculatedTableColumn`, então o único
+    sinal que separava a `_Medidas` de uma dimensão de verdade era ter medida.
+    Basta o autor pendurar uma medida numa dimensão calculada para a tabela
+    inteira deixar de ser auditada, em silêncio.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimProdutoCalc",
+                colunas=[
+                    coluna("ProductKey", tipo="calculatedTableColumn", tipo_dado="int64"),
+                    coluna("Nome", tipo="calculatedTableColumn"),
+                    coluna("Preco", tipo="calculatedTableColumn", tipo_dado="double", resumir_por="sum"),
+                ],
+                medidas=[medida("Preço Médio")],
+                particoes=[particao(tipo="calculated", expressao="SELECTCOLUMNS(DimProduct, ...)")],
+            )
+        ]
+    )
+
+    assert not tabela_apenas_de_medidas(modelo.tabelas[0])
+    assert nomes_em_escopo(modelo) == {"DimProdutoCalc"}
+
+
+def test_dimensao_de_data_reconhece_tabela_marcada_como_tabela_de_data(ler):
+    """`dataCategory: "Time"` é a marcação; ela identifica a dimensão sozinha."""
+    modelo = ler(
+        tabelas=[
+            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")], data_category="Time"),
+        ]
+    )
+
+    assert dimensao_de_data(modelo) == {"DimCalendar"}
+
+
+def test_dimensao_de_data_reconhece_tabela_de_data_com_chave_inteira(ler):
+    """A convenção de data warehouse: chave substituta inteira no formato aaaammdd.
+
+    Sem este sinal, a dimensão de data fica invisível, e PERF-001 volta a marcar
+    as colunas de calendário que a documentação recomenda acrescentar — o
+    defeito que derrubou PERF-004.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="int64")]),
+            tabela(
+                "DimCalendar",
+                colunas=[
+                    coluna("DateKey", tipo_dado="int64"),
+                    coluna("Ano", tipo="calculated", expressao="YEAR([Data])"),
+                ],
+                particoes=[particao(tipo="calculated", expressao="CALENDAR(DATE(2020,1,1), DATE(2024,12,31))")],
+            ),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "DateKey")],
+    )
+
+    assert dimensao_de_data(modelo) == {"DimCalendar"}
+
+
+def test_dimensao_de_data_nao_confunde_outra_tabela_calculada(ler):
+    """`SUMMARIZE` não é tabela de data; só `CALENDAR`/`CALENDARAUTO` são."""
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "ResumoVendas",
+                colunas=[coluna("Ano", tipo="calculatedTableColumn")],
+                particoes=[particao(tipo="calculated", expressao="SUMMARIZE(FactOnlineSales, ...)")],
+            )
+        ]
+    )
+
+    assert dimensao_de_data(modelo) == set()
