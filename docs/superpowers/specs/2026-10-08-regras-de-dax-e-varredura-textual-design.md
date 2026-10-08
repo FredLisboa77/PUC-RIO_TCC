@@ -188,16 +188,36 @@ Sítio não lido é prova de ausência que não existe.
 
 **Fora desta fase** (D-8). Zero ocorrência no P8. Permanece candidata registrada no `backlog.md`.
 
-## 6. Rendimento esperado, assumido explicitamente
+## 6. Rendimento esperado — hipótese, e a verificação que ela exige
 
-O grupo 2 **quase não move a contagem do P8**: PERF-005 entre 0 e 5, DAX-001 zero, DAX-002 entre 0 e 6. É plausível que a fase inteira acrescente menos achados que a MOD-001 sozinha.
+**Hipótese:** o grupo 2 quase não move a contagem do P8 — PERF-005 entre 0 e 5, DAX-001 zero, DAX-002 entre 0 e 6. É plausível que a etapa inteira acrescente menos achados que a MOD-001 sozinha.
 
-Isso é característica do modelo, não das regras. O autor do P8 usa `DIVIDE`, não usa `FILTER`, e seus defeitos são **estruturais** — tempo automático ligado, bidirecionais, floco de neve. O grupo 1 era onde eles estavam.
+A hipótese tem fundamento: o autor do P8 usa `DIVIDE` 11 vezes, não usa `FILTER` nenhuma, e seus defeitos conhecidos são **estruturais** — tempo automático ligado, bidirecionais, floco de neve. O grupo 1 era onde eles estavam.
 
-Duas consequências assumidas:
+### Zero tem duas causas, e elas não se distinguem sem verificação
 
-1. **Para a monografia é resultado.** Regra com âncora forte que se cala corretamente sustenta o relato de precisão, e conversa com D-1.
-2. **Para o R-12 o prognóstico piora.** Se o grupo 2 rende pouco até num modelo problemático, o gatilho de ~40 achados em P1–P7 fica mais distante e o slot **P9** fica mais provável. Reforça converter P1–P7 logo, como já recomendava `status.md`.
+| Causa do zero | O que significa | O que sustenta na monografia |
+|---|---|---|
+| **Ausência de defeito** — não há o que achar | Precisão | "A regra se cala corretamente" é resultado defensável |
+| **Cegueira da regra** — há o que achar e a regra não vê | Falso negativo | O argumento se **inverte**: é limitação, não precisão |
+
+Os números da seção 1 vieram de **sondagem descartável com expressão regular improvisada**, feita antes de o lexer existir. Ela serve para orientar o desenho; **não serve para afirmar precisão.** Concluir precisão a partir dela repetiria, em outra escala, o defeito da MOD-005: tirar de uma evidência uma conclusão que ela não sustenta.
+
+### Procedimento de verificação, antes de qualquer afirmação de precisão
+
+Executado **depois** de o lexer e as regras existirem, e antes de a seção de resultados da monografia ser escrita:
+
+| Regra | Como verificar que o zero é verdadeiro |
+|---|---|
+| **DAX-001** | Tokenizar as 137 expressões em escopo com o **lexer**, não com regex, e contar tokens `OPERADOR` de valor `/`. Zero medido pelo lexer é zero verdadeiro. Se houver algum, a sondagem estava errada e o rendimento muda |
+| **PERF-005** | Verificar coluna por coluna, nos oito sítios, as candidatas que a regra aponta **e** uma amostra das que ela não aponta — a segunda metade é o que detecta cegueira. Travar a contagem só depois (ver seção 7) |
+| **DAX-002** | Inspecionar manualmente as 6 ocorrências de `SUMX` e classificar cada uma: iteração desnecessária, ou iteração legítima sobre expressão de várias colunas. O denominador da precisão é essa classificação, não a contagem de `SUMX` |
+
+Enquanto esse procedimento não rodar, a afirmação de precisão **não entra** na monografia nem no `status.md`. O que se registra é o número medido, com a causa do zero identificada caso a caso.
+
+### Consequência que não depende da verificação
+
+**Para o R-12 o prognóstico piora de todo jeito.** Qualquer que seja a causa do zero, o grupo 2 não traz achados em volume no P8; e se nem num modelo reconhecidamente problemático ele rende, o gatilho de ~40 achados em P1–P7 fica mais distante e o slot **P9** fica mais provável. Reforça converter P1–P7 logo, como já recomendava o `status.md`.
 
 ## 7. Testes
 
@@ -261,7 +281,8 @@ Até lá, a implementação segue por todo o resto: lexer, varredura, DAX-001, e
 3. Expressão não tokenizada por completo não chega a nenhuma regra, e aparece em `lacunas_de_expressao` com sítio, objeto, posição e trecho.
 4. Cada regra nova tem âncora citável, verificada e transcrita **antes** do código, e a enumeração (a)/(b)/(c) escrita.
 5. Cada regra nova tem teste positivo e negativo, e contagem travada no P8.
-6. A contagem da PERF-005 no P8 é resultado de verificação sítio por sítio, não de estimativa.
-7. Os 15 achados atuais não mudaram, e os 101 testes atuais continuam passando.
-8. `python -m core.rules.catalogo` imprime as regras novas com as URLs do Learn.
-9. `backlog.md`, `riscos.md` e `status.md` atualizados com D-1 e o terceiro teste.
+6. A contagem da PERF-005 no P8 é resultado de verificação sítio por sítio, não de estimativa — incluindo a amostra de colunas que a regra **não** aponta, que é o que detecta cegueira.
+7. Todo zero no P8 tem a causa identificada pelo procedimento da seção 6 — ausência de defeito ou cegueira da regra. Nenhuma afirmação de precisão é escrita antes disso.
+8. Os 15 achados atuais não mudaram, e os 101 testes atuais continuam passando.
+9. `python -m core.rules.catalogo` imprime as regras novas com as URLs do Learn.
+10. `backlog.md`, `riscos.md` e `status.md` atualizados com D-1 e o terceiro teste.
