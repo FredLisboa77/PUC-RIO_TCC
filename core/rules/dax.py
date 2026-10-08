@@ -34,6 +34,15 @@ def _denominador(tokens: list[Token], posicao_da_barra: int) -> list[Token]:
     política do projeto: regra com precisão baixa é pior que regra ausente.
     """
     resto = tokens[posicao_da_barra + 1 :]
+
+    # Sinal unário não muda se o operando é constante: `-3` segue constante,
+    # `-[b]` segue variável. Mas o lexer emite `-` como OPERADOR comum, igual
+    # ao binário, então sem pular o sinal o operando mínimo seria o próprio
+    # sinal — e uma divisão por `-[b]` passaria por constante, calando a regra
+    # justamente no caso que a documentação manda trocar por DIVIDE.
+    while resto and resto[0].tipo is TipoToken.OPERADOR and resto[0].texto in ("-", "+"):
+        resto = resto[1:]
+
     if not resto:
         return []
 

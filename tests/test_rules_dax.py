@@ -1,7 +1,7 @@
 """Testes das regras de DAX por padrão textual."""
 
 from core.rules.dax import divisao_sem_divide
-from tests.conftest import coluna, medida, particao, tabela
+from conftest import coluna, medida, particao, role, tabela
 
 
 def test_dax001_marca_divisao_com_operador(ler):
@@ -150,3 +150,80 @@ def test_dax001_conta_so_as_barras_que_marca(ler):
 
     assert len(achados) == 1
     assert achados[0].evidencia.detalhe["ocorrencias"] == 1
+
+
+def test_dax001_marca_denominador_variavel_com_sinal_unario(ler):
+    """`[a] / -[b]` tem denominador variável, e o sinal não muda isso.
+
+    O lexer emite o `-` unário como OPERADOR comum, igual ao binário. Sem
+    pular o sinal, o operando mínimo seria o próprio `-`, que não contém
+    referência nem identificador — e a regra concluiria "constante" e se
+    calaria exatamente no caso que a fonte manda trocar por DIVIDE.
+
+    `- -[b]` (sinal duplo, DAX válido) cobre o laço: um único `if` pularia só
+    um sinal e devolveria o segundo `-` como operando, repetindo o mesmo erro.
+    Precisa do espaço entre os sinais: `--` colado é comentário de linha para
+    este lexer (ver `core/dax.py`), não dois operadores unários.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "Vendas",
+                medidas=[
+                    medida("Sinal simples", "[a] / -[b]"),
+                    medida("Sinal em funcao", "[a] / -SUM(Vendas[b])"),
+                    medida("Sinal duplo", "[a] / - -[b]"),
+                ],
+            )
+        ]
+    )
+
+    achados = list(divisao_sem_divide(modelo))
+
+    assert sorted(a.evidencia.objeto for a in achados) == [
+        "Vendas[Sinal duplo]",
+        "Vendas[Sinal em funcao]",
+        "Vendas[Sinal simples]",
+    ]
+
+
+def test_dax001_nao_marca_denominador_constante_com_sinal_unario(ler):
+    """`[a] / -3` continua constante: a documentação recomenda o operador."""
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("Razao", "[a] / -3")])])
+
+    assert list(divisao_sem_divide(modelo)) == []
+
+
+def test_dax001_barra_sem_denominador_e_tratada_como_variavel(ler):
+    """Expressão malformada, barra sem nada depois: `_denominador` devolve `[]`.
+
+    `_e_constante` trata o vazio como NÃO constante de propósito — por isso a
+    regra marca em vez de calar diante do que não conseguiu interpretar. Isto
+    pina esse comportamento: se `_e_constante` fosse simplificada um dia para
+    um `not any(...)` ingênuo, `[]` passaria a ser vacuamente constante e a
+    regra cegaria em silêncio, sem que nenhum outro teste quebrasse.
+    """
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("Pendurada", "[a] /")])])
+
+    achados = list(divisao_sem_divide(modelo))
+
+    assert len(achados) == 1
+    assert achados[0].evidencia.detalhe["ocorrencias"] == 1
+
+
+def test_dax001_marca_divisao_em_role(ler):
+    """O sítio `role` mapeia para `tipo_objeto='modelo'` — `TipoObjeto` não tem
+    um valor dedicado a RLS. Sem este teste, um erro na chave `"role"` de
+    `TIPO_DE_OBJETO` só apareceria ao auditar um PBIP real com segurança de
+    linha definida.
+    """
+    modelo = ler(
+        tabelas=[tabela("Vendas", colunas=[coluna("Regiao"), coluna("Meta")])],
+        roles=[role("Gerente", tabela="Vendas", filtro="[Regiao] / [Meta] > 1")],
+    )
+
+    achados = list(divisao_sem_divide(modelo))
+
+    assert len(achados) == 1
+    assert achados[0].evidencia.objeto == "Gerente:Vendas"
+    assert achados[0].evidencia.tipo_objeto == "modelo"
