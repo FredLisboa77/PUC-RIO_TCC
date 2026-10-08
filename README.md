@@ -15,12 +15,12 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 | Fase | Período | Status |
 |---|---|---|
 | Fase 1 — Viabilidade e planejamento | Semanas 1–2 | **Concluída em 29/09/2026** — gate aprovado e spike de LLM validado |
-| **Fase 2 — Leitura do PBIP e regras** | Semanas 3–4 | **Em andamento** — ingestão, parser e motor de regras com 8 regras estruturais (08/10/2026) |
-| Fase 3 — RAG e análise com LLM | Semanas 5–8 | Não iniciada |
+| Fase 2 — Leitura do PBIP e regras | Semanas 3–4 | **Concluída em 08/10/2026** — ingestão, parser e motor de regras com 8 regras estruturais, com 2 pendências da semana 4 |
+| **Fase 3 — RAG e análise com LLM** | Semanas 5–8 | **A iniciar** |
 | Fase 4 — Interface e relatório | Semanas 9–10 | Não iniciada |
 | Fase 5 — Avaliação, documentação e banca | Semanas 11–13 | Não iniciada |
 
-O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
+O **resumo de andamento** — o que está pronto, o que ficou pendente e por quê — está em [`docs/project/status.md`](docs/project/status.md). O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico detalhado do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
 
 Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, e o motor de regras determinísticas com as 8 primeiras regras estruturais — 15 achados no PBIP real usado como estudo de caso. 101 testes passando.
 

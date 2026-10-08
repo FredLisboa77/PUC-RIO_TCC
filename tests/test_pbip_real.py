@@ -74,7 +74,7 @@ ESPERADO_P8 = {
     "MOD-001": 4,  # 1 DateTableTemplate + 3 LocalDateTable
     "MOD-002": 3,  # 4 bidirecionais, menos o um-para-um que MOD-007 assume
     "MOD-003": 2,  # DimEmployee e Tabela de Regressão Linear
-    "MOD-005": 1,  # DimCalendar, dimensão de data sem dataCategory
+    "MOD-005": 1,  # DimCalendar, com tempo automático pendurado na coluna de data
     "MOD-006": 2,  # DimProduct e DimProductSubcategory
     "MOD-007": 1,  # DimGeography → DimCustomer
     "PERF-001": 1,  # DimEmployee[Salário]
