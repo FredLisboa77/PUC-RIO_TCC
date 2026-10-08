@@ -145,18 +145,30 @@ O contrato das regras **não muda**: elas continuam devolvendo `Iterable[Achado]
 
 ### 4.5 `core/parser_bim.py` e `core/model.py` — estendidos
 
-Passam a ler os sítios que o terceiro teste obriga e que hoje são invisíveis:
+Sítio não lido é prova de ausência que não existe. Mas "ler todos os sítios" e "não afirmar sem ter lido" são exigências diferentes, e só a segunda é obrigatória — a primeira é um dos jeitos de cumpri-la. Os sítios dividem-se, portanto, em **lidos** e **motivo de abstenção**:
 
-| Sítio | Para quê | Existe no P8? |
+**Lidos nesta etapa** — existem no P8 e são verificáveis contra arquivo real:
+
+| Sítio | Para quê | No P8 |
 |---|---|---|
-| `roles[].tablePermissions[].filterExpression` | Condição de existência da PERF-005 | **Não** — pendente de verificação empírica (D-9) |
-| `tables[].hierarchies[].levels[].column` | 16 referências estruturais a coluna | Sim |
-| `tables[].columns[].sortByColumn` | 10 referências estruturais a coluna | Sim |
-| `tables[].measures[].formatStringDefinition` | Sítio de DAX | Não |
-| `tables[].calculationGroup.calculationItems[]` | Sítio de DAX | Não |
-| `tables[].measures[].detailRowsDefinition` | Sítio de DAX | Não |
+| `tables[].hierarchies[].levels[].column` | Referência estrutural a coluna | 16 |
+| `tables[].columns[].sortByColumn` | Referência estrutural a coluna | 10 |
+| `tables[].columns[].variations[]` | Referência estrutural a coluna | 3 |
+| `roles[].tablePermissions[].filterExpression` | Sítio de DAX; condição de existência da PERF-005 | 0 — **pendente de verificação empírica** (D-9) |
 
-Sítio não lido é prova de ausência que não existe.
+A role é lida, mas **não basta ser lida**: enquanto não se verificar que o Desktop grava o filtro (seção 10), a presença de qualquer role faz a PERF-005 abster-se por completo. Ler sem ter verificado o que a leitura significa seria a repetição exata do defeito da MOD-005.
+
+**Motivo de abstenção, não lidos nesta etapa** — nenhum existe no P8, logo nenhum pode ser verificado contra arquivo real:
+
+| Sítio | Por que não é lido |
+|---|---|
+| `tables[].measures[].formatStringDefinition` | Zero no P8. Implementar contra a especificação, sem arquivo que exercite, é a situação que produziu o defeito da MOD-005 |
+| `tables[].calculationGroup.calculationItems[]` | Idem |
+| `tables[].measures[].detailRowsDefinition` | Idem |
+
+A PERF-005 **se cala por completo** quando qualquer um deles está presente no arquivo, declarando a limitação na `nota_de_verificacao`. É mais honesto que lê-los às cegas: a regra não afirma ausência a partir de varredura que ela sabe incompleta, e a cegueira fica visível em vez de embutida.
+
+Lê-los passa a item de Trabalhos Futuros, condicionado a um PBIP que os contenha — a mesma condição que a role tem hoje.
 
 ## 5. As regras, com o terceiro teste aplicado
 
@@ -169,14 +181,27 @@ Sítio não lido é prova de ausência que não existe.
 - **(c) Sítios** — os oito acima. No P8: 11 relacionamentos, 16 níveis, 10 `sortByColumn`, 3 `variations`, 137 expressões, 0 roles.
 - **Rendimento no P8:** o `backlog.md` estima 5 (chaves substitutas órfãs). **Essa estimativa não será travada em teste sem antes ser reverificada**, porque foi feita sem considerar `sortByColumn` nem hierarquia (seção 7).
 
-### DAX-001 — Divisão com `/` em vez de `DIVIDE`
+### DAX-001 — Divisão com `/` onde o denominador pode ser zero ou BLANK
 
-- **Âncora:** candidata `guidance/dax-divide-function-operator` — o Learn tem página dedicada à escolha entre o operador e a função, o que faria dela a âncora mais forte do conjunto. **Não verificada ainda:** a URL exata e a passagem citável precisam ser confirmadas e transcritas antes do código, como manda o critério de 06/10. Se a página não sustentar a afirmação, a regra não entra.
-- **Afirma por:** **presença** do operador. Passa o terceiro teste direto.
-- **(a) Formas** — divisão é `/`, `DIVIDE()` e `QUOTIENT()`. O defeito é a forma `/`.
-- **(b) Sósias** — `//` de comentário, `/` dentro de string, `/` dentro de nome entre colchetes, `/` em código M.
+- **Âncora: VERIFICADA em 08/10/2026.** `https://learn.microsoft.com/en-us/dax/best-practices/dax-divide-function-operator` — *DIVIDE function vs divide operator (/) in DAX*, página de boas práticas dedicada ao assunto, `ms.date` 25/08/2021, revisada em 13/01/2026. **A URL de `power-bi/guidance/` que esta spec trazia antes não é a canônica**; a página canonicaliza para `/dax/best-practices/`.
+
+- **A verificação mudou a regra, e por pouco não a derrubou.** O enunciado original — "divisão com `/` em vez de `DIVIDE`" — marcaria como defeito algo que a própria página **recomenda**:
+
+  > *"In the case that the denominator is a constant value, we recommend that you use the divide operator. In this case, the division is guaranteed to succeed, and your expression will perform better because it will avoid unnecessary testing."*
+
+  É o defeito que derrubou a PERF-004 em 06/10, reaberto por outra porta. A recomendação da página é **condicional**:
+
+  > *"It's recommended that you use the DIVIDE function whenever the denominator is an expression that could return zero or BLANK."*
+
+  E o fundamento de desempenho vale para os dois lados: *"The performance gain is significant since checking for division by zero is expensive"* a favor de `DIVIDE` sobre `IF`, e *"it will avoid unnecessary testing"* a favor de `/` quando o denominador é constante.
+
+- **Afirma por:** **presença** do operador **com denominador não constante**. Passa o terceiro teste.
+- **(a) Formas** — divisão é `/`, `DIVIDE()` e `QUOTIENT()`. O defeito é a forma `/`, e **só** quando o denominador não é constante.
+- **(b) Sósias** — `//` de comentário, `/` dentro de string, `/` dentro de nome entre colchetes, `/` em código M, **e o denominador constante, que a fonte recomenda**. Este último é o sósia que a verificação revelou e que nenhuma das outras regras tinha.
 - **(c) Sítios** — os de DAX, com `source.type == "calculated"`.
-- **Rendimento no P8:** **zero**, em escopo. As 4 divisões reais estão em tabela de data automática, já excluída. **Isso é resultado, não falha:** uma regra de âncora forte que se cala corretamente num modelo que usa `DIVIDE` 11 vezes é evidência de precisão.
+- **Como se decide "constante":** o denominador é o operando mínimo depois do `/` — um `NUMERO`, ou o grupo entre parênteses que começa ali. É constante se não contiver nenhum token `REFERENCIA` nem `IDENTIFICADOR`. Assim `[a] / 3` e `[a] / (2 * 3)` não são achado, e `[a] / [b]` e `[a] / SUM(x)` são.
+- **Falso negativo declarado:** denominador que é expressão mas nunca retorna zero nem BLANK na prática — `[a] / (1 + ABS([b]))`, por exemplo. A regra marca, porque decidir isso exigiria avaliar a expressão. Vai para a `nota_de_verificacao`.
+- **Rendimento no P8:** **zero**, em escopo. As 4 divisões reais estão em tabela de data automática, já excluída — e são `INT(… / 3)`, denominador constante, que a página recomenda. Confirmar com a regra implementada (seção 6).
 
 ### DAX-002 — Iteração desnecessária
 
