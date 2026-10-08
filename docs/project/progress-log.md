@@ -359,3 +359,88 @@ sentidos" sobre relacionamento inativo, que não filtra nada até
 
 - **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
   detectabilidade), sobre o motor já provado.
+
+## 08/10/2026 — Fase 2, semana 4 — rendimento do grupo 2 no P8, verificado
+
+A spec do grupo 2 proibiu afirmar precisão a partir da sondagem que o
+dimensionou: aquela sondagem usava expressão regular, antes de o lexer
+existir, e é boa para desenhar regra, não para medir rendimento. Esta entrada
+é a remedição com o instrumento real — `core/dax.py` e o que ele alimenta —
+contra o P8, e o registro explícito de qual afirmação cada número sustenta.
+
+**DAX-001 — recontada com o lexer.** A regra devolve zero achados no P8. O
+controle — todo operador `/` nas 105 expressões em escopo, inclusive as de
+denominador constante que a regra deixa passar de propósito — também devolve
+zero: não há nenhuma barra no escopo, constante ou não. O zero é, portanto,
+**confirmado pelo lexer e pelo controle ao mesmo tempo**: não é só a regra
+que cala, é o próprio sinal que não existe no texto auditado.
+
+O arquivo tem, sim, quatro divisões reais — `INT(([MonthNo] + 2) / 3)`,
+repetida nas quatro tabelas de data automáticas, denominador constante,
+exatamente o caso que a documentação recomenda com o operador. Elas não
+entram na conta porque `tabelas_em_escopo` exclui essas tabelas antes de a
+varredura de DAX rodar — é exclusão de escopo, deliberada e já testada, não
+lacuna do lexer nem cegueira de `_e_constante`. Achado novo desta medição: a
+própria Microsoft segue, no template que o Power BI gera, a mesma regra que
+DAX-001 cobra do autor.
+
+**O que esta medição autoriza:** dizer que, no P8, DAX-001 não tem nenhuma
+divisão para marcar, nem dentro nem fora do seu critério de corte — zero
+verdadeiro, causa "ausência de defeito". **O que não autoriza:** dizer que a
+regra "é precisa". Precisão pede um corpus com divisão de denominador
+variável para testar se a regra marca quando deveria, e o P8 não tem esse
+caso — a verificação de precisão aguarda a Fase 5.
+
+**PERF-005 — a medição que a rejeitou, conferida à mão.** `usos_de_coluna`
+segue dando 36 pares (tabela, coluna) sem uso nos oito sítios. Cinco foram
+escolhidas de propósito e conferidas no `model.bim`, sítio por sítio:
+
+- `DimEmployee[EmployeeKey]` (chave substituta órfã) — só aparece na
+  definição da própria coluna e no esquema de Perguntas e Respostas
+  (`ConceptualProperty`); nenhum relacionamento, hierarquia, `sortByColumn`,
+  `variations` ou referência em DAX.
+- `DimCalendar[Trimestre]` (coluna de calendário) — é calculada a partir de
+  `DimCalendar[Nº do Trimestre]`, mas nada referencia `Trimestre` de volta; o
+  `sortByColumn` que a acompanha aponta para `Nº do Trimestre`, não para ela.
+- `DimStore[StoreName]`, `DimCustomer[Education]`, `DimCustomer[Occupation]`
+  (atributos reportáveis) — todas só aparecem na própria definição e no
+  Power Query de origem; nenhuma nos oito sítios.
+
+Nenhuma das cinco tinha uso que a resolução deixou de ver. Conferidas também
+três colunas que a resolução dá como usadas, para o erro oposto — marcar uso
+que não existe, que esconderia coluna genuinamente órfã: `DimStore[StoreKey]`
+(relacionamento com `FactOnlineSales` e DAX de medida), `DimCalendar[Nº do
+Trimestre]` (alvo do `sortByColumn` de `Trimestre` e DAX de coluna calculada)
+e `FactOnlineSales[UnitPrice]` (DAX de seis medidas de faturamento) — as três
+têm uso real no arquivo. **A medição não está contaminada em nenhuma das duas
+direções**, e a rejeição da PERF-005 (08/10/2026, pela cláusula (c) do
+terceiro teste do critério de detectabilidade) permanece sustentada pelo que
+ela mede.
+
+Achado lateral: dos oito sítios, dois nunca marcam nada neste corpus —
+`hierarquia`, porque as quatro hierarquias do modelo pertencem às tabelas de
+data automáticas, fora de escopo; e `dax de role`, porque o P8 não tem role
+nenhuma (`modelo.roles == []`). Não é defeito — é característica deste
+corpus, e fica registrado para que ninguém leia os 36 como se os oito sítios
+tivessem pesado igualmente.
+
+**DAX-002 (iteração desnecessária) — a âncora verificada antes de decidir.**
+A sondagem original contou 6 `SUMX`, 4 `RANKX` e 2 `MINX` em escopo; o lexer
+confirma as três contagens. As seis ocorrências de `SUMX` foram classificadas
+à mão: todas multiplicam `FactOnlineSales[SalesQuantity]` por
+`FactOnlineSales[UnitPrice]` linha a linha (uma delas soma um termo antes de
+multiplicar) — nenhuma é substituível por `SUM` sobre uma única coluna.
+**Seis em seis são iteração legítima; zero são candidatas a DAX-002.** Isso
+não sustenta nem rejeita a regra: só diz que o P8 não a exercitaria. DAX-002
+continua não implementada, agora por decisão informada por essa
+classificação, e não por falta de verificação.
+
+**Validação:** 189 testes passando (os 186 anteriores, mais os três que
+travam esta medição: o controle de DAX-001 sem nenhuma barra em escopo, a
+classificação das seis `SUMX`, e a conferência à mão das cinco colunas
+escolhidas e das três usadas).
+
+- **Próximo passo:** atualizar os documentos de projeto (`backlog.md`,
+  `riscos.md`, `status.md`, `README.md`) com o terceiro teste do critério de
+  detectabilidade e com estas contagens — **nesta mesma entrada**, estendida,
+  não numa segunda entrada de mesma data.

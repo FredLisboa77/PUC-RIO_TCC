@@ -192,6 +192,55 @@ def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
     }
 
 
+def test_dax001_tem_zero_confirmado_pelo_controle(modelo):
+    """O rendimento de DAX-001 é zero, e aqui é o controle que diz por quê.
+
+    Medido em 08/10/2026 (Tarefa 9). `operadores(..., "/")` sobre as 105
+    expressões em escopo não encontra nenhuma barra — não só a regra cala,
+    como não há nenhuma divisão, de denominador constante ou não, para a
+    regra ter deixado passar sem marcar. As 4 divisões reais do arquivo
+    (`INT(([MonthNo] + 2) / 3)`, denominador constante) ficam fora porque
+    pertencem às tabelas de data automáticas, excluídas do escopo por
+    `tabelas_em_escopo` — não por lacuna do lexer nem por cegueira de
+    `_e_constante`. Sem este controle, o zero da regra seria indistinguível
+    de falso negativo; com ele, é zero verdadeiro.
+    """
+    from core.dax import operadores
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+    barras = [t for e in v.expressoes for t in operadores(e.tokens, "/")]
+
+    assert barras == []
+
+
+def test_sumx_no_p8_sao_todas_iteracoes_legitimas(modelo):
+    """O denominador de qualquer afirmação futura de precisão sobre DAX-002.
+
+    Medido em 08/10/2026 (Tarefa 9): classificação manual das 6 ocorrências de
+    `SUMX` em escopo — a mesma contagem da sondagem com expressão regular que
+    motivou a DAX-002, agora confirmada pelo lexer. Todas as seis multiplicam
+    duas colunas distintas linha a linha
+    (`FactOnlineSales[SalesQuantity] * FactOnlineSales[UnitPrice]`, uma delas
+    com um termo adicional somado antes da multiplicação); nenhuma seria
+    substituível por `SUM` sobre uma única coluna. DAX-002 nunca foi
+    implementada porque esta verificação não tinha sido feita; feita agora, o
+    resultado — zero iteração desnecessária em seis — não sustenta nem rejeita
+    a regra. Só diz que este corpus não a exercitaria.
+    """
+    from core.dax import chamadas
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+    ocorrencias = [args for e in v.expressoes for args in chamadas(e.tokens, "SUMX")]
+
+    assert len(ocorrencias) == 6
+    for args in ocorrencias:
+        expressao = " ".join(t.texto for t in args[1])
+        assert "SalesQuantity" in expressao
+        assert "UnitPrice" in expressao
+
+
 def test_os_usos_de_coluna_no_p8(modelo):
     """Quantas colunas em escopo não têm nenhum uso.
 
@@ -257,3 +306,43 @@ def test_os_usos_de_coluna_no_p8(modelo):
 
     assert len(sem_uso) == 36
     assert sem_uso == esperado
+
+
+def test_a_conferencia_a_mao_das_36_colunas_sem_uso(modelo):
+    """A verificação da Tarefa 9 (08/10/2026): a metade que detecta contaminação.
+
+    O teste anterior trava o número; este trava o que foi conferido à mão no
+    `model.bim`, contra as cinco colunas escolhidas de propósito — uma chave
+    órfã, uma coluna de calendário e três atributos reportáveis — mais três
+    colunas que a resolução dá como usadas. Nenhuma das cinco tinha uso que a
+    resolução não viu (`grep` no `model.bim` pelos oito sítios confirma:
+    `DimEmployee[EmployeeKey]` só aparece na definição da própria coluna e no
+    esquema de Perguntas e Respostas, nunca em relacionamento, hierarquia,
+    `sortByColumn`, `variations` ou DAX; o mesmo para as outras quatro). E as
+    três usadas têm uso real: `DimStore[StoreKey]` no relacionamento com
+    `FactOnlineSales` e em DAX de medida, `DimCalendar[Nº do Trimestre]` como
+    alvo de `sortByColumn` de `Trimestre` e em DAX de coluna calculada,
+    `FactOnlineSales[UnitPrice]` em seis medidas de faturamento. A medição que
+    rejeitou a PERF-005 não está contaminada em nenhuma das duas direções.
+    """
+    from core.rules.referencias import usos_de_coluna
+
+    usos = usos_de_coluna(modelo)
+
+    escolhidas_sem_uso = [
+        ("DimEmployee", "EmployeeKey"),  # chave substituta órfã
+        ("DimCalendar", "Trimestre"),  # coluna de calendário
+        ("DimStore", "StoreName"),  # atributo reportável
+        ("DimCustomer", "Education"),  # atributo reportável
+        ("DimCustomer", "Occupation"),  # atributo reportável
+    ]
+    for chave in escolhidas_sem_uso:
+        assert usos[chave] == set(), chave
+
+    usadas = {
+        ("DimStore", "StoreKey"): {"relacionamento", "dax de medida"},
+        ("DimCalendar", "Nº do Trimestre"): {"ordenacao", "dax de coluna calculada"},
+        ("FactOnlineSales", "UnitPrice"): {"dax de medida"},
+    }
+    for chave, sitios_esperados in usadas.items():
+        assert usos[chave] == sitios_esperados, chave
