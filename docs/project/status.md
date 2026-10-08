@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** fim da semana 4 de 13 · **Atualizado em:** 08/10/2026
+**Posição:** fim da semana 5 de 13 — Fase 2 encerrada, incluindo o grupo 2 de DAX · **Atualizado em:** 08/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -13,14 +13,19 @@
 
 ## 1. Resumo em cinco linhas
 
-As duas primeiras fases estão concluídas. A ferramenta já lê um projeto PBIP real,
-normaliza o modelo semântico e aponta 15 problemas de boas práticas nele, com cada
-regra ancorada numa página do Microsoft Learn. São 101 testes automatizados
-passando. O maior risco técnico do projeto — rodar um LLM na GPU disponível — foi
-resolvido por medição, não por estimativa. **Dois itens da semana 4 ficaram
-abertos** e são o assunto que mais precisa de decisão agora: a contagem de regras
-está em 8 de 20–25, e os sete projetos públicos do dataset ainda não foram
-convertidos, o que mantém o risco R-12 sem avaliação.
+As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de regras
+de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
+um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
+práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
+Learn. São **189 testes** automatizados passando. O maior risco técnico do
+projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
+estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
+(D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
+rejeitou uma regra de alto valor esperado (PERF-005) por falta de evidência
+suficiente — e **essa rejeição, não a contagem, é o resultado que a monografia
+defende**. O item que mais precisa de decisão agora é outro: os sete projetos
+públicos do dataset ainda não foram convertidos, e isso deixou de ser recomendação
+e passou a **bloqueio** para decidir a Fase 3 (R-12, seção 4.2).
 
 ---
 
@@ -29,15 +34,24 @@ convertidos, o que mantém o risco R-12 sem avaliação.
 | Fase | Semanas | Status | Fechamento |
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
-| F2 — Leitura do PBIP e regras | 3–4 | **Concluída, com 2 pendências** | 08/10/2026 — motor de regras mergeado na `main` |
-| F3 — RAG e análise com LLM | 5–8 | **A iniciar** | Revisão de meio de projeto na semana 8 |
+| F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX na branch `fase2-regras-de-dax`, a integrar) |
+| F3 — RAG e análise com LLM | 6–8 | **A iniciar** | Revisão de meio de projeto na semana 8 |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
-**Posição no calendário:** o projeto começou em 22/09/2026. Em 08/10/2026 estamos
-na terceira semana de calendário tendo concluído o trabalho previsto para a
-quarta semana do roadmap — ou seja, **cerca de uma semana à frente do cronograma em
-tempo**, e atrasado em um entregável específico (seção 4).
+**Posição no calendário, e o uso da folga que a atualização anterior reportou:**
+o projeto começou em 22/09/2026. Na atualização de 06/10/2026 estávamos cerca de
+uma semana à frente do cronograma em tempo — terceira semana de calendário,
+trabalho da quarta semana do roadmap já concluído. **Esta etapa consumiu essa
+folga.** O grupo 2 de regras de DAX é trabalho da Fase 2, mas foi executado na
+**semana 5 do roadmap**, que estava reservada ao primeiro entregável da Fase 3 (o
+catálogo de fontes `rag/sources.yaml`). A troca foi deliberada: gastar a folga
+para fechar o conjunto de regras com rigor — formulando e aplicando o terceiro
+teste do critério de detectabilidade antes de escrever código — em vez de começar
+a Fase 3 com o conjunto de regras incompleto. **Ao final desta etapa o projeto
+está em dia com o roadmap, não mais adiantado**, e a Fase 3 começa na semana 6.
+Se a semana 7 atrasar, o primeiro corte continua sendo o já previsto — reduzir as
+regras de M, depois abrir mão do PDF (R-07).
 
 ---
 
@@ -46,16 +60,19 @@ tempo**, e atrasado em um entregável específico (seção 4).
 | Entregável | Evidência |
 |---|---|
 | Ingestão de PBIP (pasta ou `.zip`), com validação de estrutura | Testes sobre PBIP sintéticos montados em pasta temporária |
-| Parser do `model.bim` (TMSL) para modelo interno normalizado | Lê o P8 real: 19 tabelas, 93 medidas, 106 colunas, 35 colunas calculadas, 11 relacionamentos, `compatibilityLevel` 1600 |
+| Parser do `model.bim` (TMSL) para modelo interno normalizado, agora incluindo hierarquias, `sortByColumn`, `variations` e roles de RLS | Lê o P8 real: 19 tabelas, 93 medidas, 106 colunas, 35 colunas calculadas, 11 relacionamentos, `compatibilityLevel` 1600 |
 | Motor de regras determinísticas, com ordem estável e isolamento de erro por regra | Uma regra que falhe não derruba a auditoria, e sua saída parcial é descartada inteira |
-| 8 regras estruturais, cada uma com âncora no Microsoft Learn | `python -m core.rules.catalogo` imprime o catálogo com as URLs |
-| Suíte de testes | **101 testes passando**, dos quais 9 leem o PBIP real |
+| Lexer de DAX (`core/dax.py`) — leitura de texto livre, não mais hipótese | **137 de 137** expressões DAX do P8 tokenizadas, **zero** token `DESCONHECIDO` — o número que substitui "usamos expressões regulares" |
+| Varredura de DAX com lacuna declarada (`core/rules/expressoes.py`) | **105 de 105** expressões em escopo de autor cobertas, **0 lacunas** no P8; o runner agora declara essa cobertura junto dos achados |
+| 9 regras, cada uma com âncora no Microsoft Learn (8 estruturais + DAX-001) | `python -m core.rules.catalogo` imprime o catálogo com as URLs |
+| Suíte de testes | **189 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
-### As 8 regras e o que acharam no P8
+### As 9 regras e o que acharam no P8
 
 O P8 é o projeto `CONTOSO — Painel de Análise de Vendas Online`, usado como
-**estudo de caso** (não entra nas métricas — ver seção 5). Total: **15 achados**,
-com as contagens travadas em teste de regressão.
+**estudo de caso** (não entra nas métricas — ver seção 5). Total: **15 achados,
+sem mudança nesta etapa** — a regra nova (DAX-001) rendeu zero no P8 —, com as
+contagens travadas em teste de regressão.
 
 | ID | Regra | Severidade | Achados no P8 |
 |---|---|---|---|
@@ -67,6 +84,7 @@ com as contagens travadas em teste de regressão.
 | MOD-007 | Relacionamento um-para-um | média | 1 |
 | PERF-001 | Coluna calculada em DAX | média | 1 |
 | PERF-003 | Coluna de ponto flutuante somada | baixa | 1 |
+| DAX-001 | Divisão com o operador `/` onde o denominador pode ser zero ou BLANK | média | 0 — confirmado pelo lexer e por um controle sobre toda barra em escopo; causa é ausência do padrão no texto, não cegueira da regra (ver seção 4.1) |
 
 **O resultado encadeia causa, e não só lista sintomas:** a `DimCalendar` nunca foi
 marcada como tabela de data (MOD-005), e é justamente por isso que o Power BI
@@ -76,64 +94,86 @@ monografia.
 
 ---
 
-## 4. Pendências abertas da semana 4 — precisam de decisão
+## 4. O que esta etapa decidiu, e o que segue em aberto
 
-### 4.1 Contagem de regras: 8 de 20–25
+### 4.1 D-1: a contagem de regras deixou de ser meta e passou a ser resultado
 
-O roadmap previa "20–25 regras determinísticas" na semana 4. A meta **não mudou**
-(`backlog.md`), mas a ordem de implementação passou a seguir o critério de
-**detectabilidade**, decidido em 29/09/2026: entram primeiro as regras cujo
-problema é identificável de forma confiável no `model.bim`.
+O roadmap previa "20–25 regras determinísticas" na semana 4, e a atualização
+anterior deste documento ainda reportava essa meta como pendência (8 de 20–25).
+Essa pendência está **resolvida — por decisão, não por chegar ao número**:
 
 | Grupo | Conteúdo | Situação |
 |---|---|---|
-| 1 | Regras estruturais (modelagem, performance estática) | **Completo — são as 8 entregues** |
-| 2 | Regras de DAX com padrão textual inequívoco | **Próximo passo** |
-| 3 | Regras de DAX dependentes de contexto | Só se sobrar orçamento (sem parser sintático, a heurística erra muito) |
-| 4 | Regras de M | No MVP, mas são o primeiro corte sob pressão de prazo (R-07) |
+| 1 | Regras estruturais (modelagem, performance estática) | **Completo — 8 regras** |
+| 2 | Regras de DAX com padrão textual inequívoco | **Fechado nesta etapa — 1 regra (DAX-001)** |
+| 3 | Regras de DAX dependentes de contexto | Fora do MVP (sem parser sintático, a heurística erra muito) |
+| 4 | Regras de M | Segue no MVP, primeiro corte sob pressão de prazo (R-07) |
 
-**Por que 8 e não mais no grupo 1:** em 06/10/2026 passou a valer uma segunda
-condição, anterior à detectabilidade — uma regra só entra se existir **passagem
-citável do Microsoft Learn** que a sustente, lida antes de qualquer código. Isso
-**eliminou 3 das 8 regras estruturais propostas**, uma delas porque a página que a
-sustentaria recomendava exatamente o que a regra marcaria como defeito. A exigência
-custou a leitura de cinco páginas e evitou escrever o código de três regras
-indefensáveis.
+Em 06/10/2026 passou a valer uma segunda condição, anterior à detectabilidade —
+âncora citável do Microsoft Learn, verificada antes do código — que eliminou 3 das
+8 regras estruturais propostas e reescreveu a MOD-005 (ela lia uma propriedade que
+o Power BI Desktop nunca grava no arquivo).
 
-Em 08/10/2026 a mesma exigência derrubou uma nona versão de regra, por um motivo
-novo: MOD-005 lia uma propriedade (`dataCategory: "Time"`) que **o Power BI Desktop
-nunca escreve** no arquivo. Ela tinha âncora e era decidível no TMSL, mas marcaria
-como defeituosa também a dimensão corretamente configurada. Foi reescrita sobre
-evidência que de fato existe no arquivo.
+Nesta etapa (08/10/2026) o critério ganhou um **terceiro teste**, formulado a
+partir da lição da MOD-005: suficiência de evidência, em três cláusulas — (a)
+todas as formas da condição, (b) todos os sósias do sinal, (c) todos os sítios
+onde o sinal pode morar. Afirmação por ausência exige as três completas
+(`backlog.md`). Esse teste teve seu **primeiro caso de rejeição**: a **PERF-005**
+("coluna sem uso") tinha âncora já transcrita e era a regra de maior rendimento
+esperado da etapa — e ainda assim foi recusada, antes do código, porque a
+documentação que a sustenta justifica uma coluna por servir ao **relatório ou** à
+estrutura do modelo, e a camada de relatório (F19) a ferramenta não lê. Medido no
+P8: de 36 colunas sem uso estrutural, apenas **5** são defensáveis (chaves
+substitutas órfãs); **3** são colunas de calendário que a própria documentação
+recomenda manter; e **~25** são atributos reportáveis quase certamente em uso em
+visuais. Precisão projetada **~24%**, contra o gatilho de 0,7 do R-03.
 
-> **Consequência para a metodologia da monografia:** o critério de detectabilidade
-> precisa de um terceiro teste, além de "existe âncora no Learn" e "é decidível no
-> TMSL" — **a propriedade que a regra lê é escrita pela ferramenta que gera a
-> entrada.** Das 8 regras, MOD-005 foi a única a passar nos dois primeiros e falhar
-> no terceiro, e a falha só apareceu por verificação contra um arquivo real.
+A **DAX-001** (divisão com `/` onde o denominador não é constante) entrou com
+âncora verificada no mesmo dia — e a verificação quase a derrubou pelo mesmo
+motivo: o enunciado original marcaria como defeito exatamente o que a
+documentação recomenda quando o denominador é constante. A regra que entrou no
+código afirma apenas sobre denominador não constante. Seu rendimento no P8 é
+**zero**, e o zero foi confirmado por duas medidas independentes — a regra e um
+controle sobre toda divisão em escopo —, não apenas pela ausência de achado da
+regra.
 
-### 4.2 Dataset P1–P7 não convertido, e o risco R-12 sem avaliação
+A **DAX-003** (`FILTER` sobre tabela inteira) ficou de fora desta etapa: zero
+ocorrência nas 105 expressões em escopo do P8, sem evidência real para ancorar o
+teste. Fica candidata registrada. A **DAX-002** (iteração desnecessária) segue sem
+âncora verificada; a etapa classificou à mão as 6 ocorrências de `SUMX` do P8 e
+nenhuma é iteração desnecessária — o que não decide a regra a favor nem contra,
+só confirma que o P8 não a exerceria.
+
+**O resultado, para a monografia:** mantendo a exigência de âncora e o terceiro
+teste, o cenário otimista sem o grupo 3 soma por volta de **18 regras**, não
+20–25. A diferença não é um déficit de esforço — é o critério funcionando: a
+monografia defende as **9 regras** entregues e usa as regras recusadas (PERF-005,
+e antes dela três regras estruturais e a convenção de nomenclatura) como evidência
+do próprio método.
+
+### 4.2 Dataset P1–P7 não convertido — de recomendação a bloqueio (R-12)
 
 O entregável da semana 4 incluía "relatório de achados em JSON para todos os PBIP".
 **Só o P8 foi analisado.** Os sete projetos públicos da Microsoft (P1–P7, licença
-MIT) ainda não foram convertidos para PBIP.
-
-Isso mantém em aberto o **R-12** — o risco de maior impacto hoje:
+MIT) ainda não foram convertidos para PBIP. Isso mantém em aberto o **R-12** — e
+esta etapa o agravou, ao invés de dar mais tempo para resolvê-lo:
 
 > *As amostras públicas da Microsoft têm poucos problemas, reduzindo a
 > significância da avaliação.*
 
-O gatilho definido para a semana 4 é **menos de ~40 achados em P1–P7**, e ele não
-pôde ser medido. A referência concreta é desfavorável: se o P8, um modelo
-reconhecidamente problemático, rende 15 achados com as 8 regras, é improvável que
-os sete projetos da Microsoft somem 40 sem as regras de DAX.
+A PERF-005 era a única regra desta etapa com rendimento esperado no P8. Com ela
+recusada, o grupo 2 inteiro soma ao P8 apenas o que a DAX-001 rendeu — **zero**.
+Isso confirma, por um caminho que a hipótese inicial não previa, que o grupo 2
+quase não move a contagem do P8 mesmo este sendo um modelo reconhecidamente
+problemático. O gatilho definido para a semana 4 (**menos de ~40 achados em
+P1–P7**) continua sem poder ser medido, e a referência concreta piorou: 9 regras
+produzem os mesmos 15 achados que as 8 estruturais produziam.
 
-**Contingência prevista:** o slot **P9** — um segundo projeto próprio no dataset.
-
-**Recomendação:** converter P1–P7 e rodar as 8 regras sobre eles **antes de
-avançar na Fase 3**, em vez de esperar a semana 8 como no plano original. É uma
-medição de poucas horas que decide se o P9 entra, e essa decisão fica mais cara a
-cada semana.
+**Consequência: R-12 é hoje o risco mais urgente do projeto.** O slot de
+contingência **P9** passou de provável a **quase certo**, e converter P1–P7
+**deixou de ser recomendação e passou a bloqueio** para decidir o que entra na
+Fase 3 — não é mais uma medição que pode esperar; é a medição que a decisão da
+Fase 3 depende de ter.
 
 ---
 
@@ -164,17 +204,24 @@ pendência 4.2 urgente.
 | **Mitigado** | R-06 (dados sensíveis), R-08 (dependências no Windows, parcial), R-11 (OneDrive), R-14 (disco C: cheio) |
 | **Aberto** | R-01, R-03, R-04, R-05, R-07, R-10, R-12, R-13 |
 
-### Os dois que merecem atenção agora
+### O que merece atenção agora
 
-**R-12 — significância da avaliação** · P=M, I=**Alto** · ver seção 4.2.
-É o risco de maior impacto em aberto, e o único cujo gatilho já venceu sem medição.
+**R-12 — significância da avaliação** · P=**A**, I=**A** · ver seção 4.2.
+**É hoje o risco mais urgente do projeto.** Era o de maior impacto em aberto;
+nesta etapa a probabilidade também subiu para Alta, porque o grupo 2 de DAX —
+a última frente que poderia ter adicionado achados ao P8 antes de P1–P7
+existirem — rendeu zero (PERF-005 recusada antes do código, DAX-001 medida em
+zero). O gatilho da semana 4 (~40 achados em P1–P7) já venceu sem poder ser
+medido, e converter P1–P7 passou de recomendação a bloqueio.
 
 **R-03 — falsos positivos em heurísticas de DAX** · P=Alta, I=M.
-O risco se materializa justamente no **grupo 2**, que é o próximo passo. Duas
-mitigações já estão de pé: teste positivo e negativo por regra, e a exigência de
-âncora verificada, que no grupo estrutural eliminou a única regra dependente de
-convenção de nomenclatura. O episódio do MOD-005 mostra que a exigência funciona
-— e que precisa do terceiro teste descrito em 4.1.
+O risco se materializou no **grupo 2**, fechado nesta etapa, e ganhou uma
+terceira mitigação por construção: `core/dax.py` é um lexer, não expressão
+regular sobre texto bruto, com cobertura medida contra o P8 — 137 de 137
+expressões tokenizadas sem token desconhecido, 105 de 105 em escopo sem lacuna.
+O episódio da MOD-005, e depois o da PERF-005, mostram que a exigência de
+âncora e o terceiro teste do critério de detectabilidade (seção 4.1) funcionam
+mesmo sob incentivo para ignorá-los.
 
 ### Riscos que já custaram trabalho real
 
@@ -202,10 +249,9 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Converter P1–P7 e rodar as 8 regras** | Decide o R-12 e o slot P9. Gatilho da semana 4 já vencido; custa poucas horas e encarece a cada semana (seção 4.2) |
-| 2 | Formalizar o terceiro teste do critério de detectabilidade | A lição do MOD-005 deve valer **antes** de escolher as regras de DAX, não depois (seção 4.1) |
-| 3 | Regras de DAX por padrão textual (grupo 2) | Caminho para a meta de 20–25, sobre o motor já provado |
-| 4 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 5. As URLs canónicas das 8 regras já são, por construção, parte do catálogo que a RAG precisa conter |
+| 1 | **Converter P1–P7 e rodar as 9 regras** | Não é mais recomendação — é **bloqueio** para decidir a Fase 3 (R-12, seção 4.2). Gatilho da semana 4 já vencido há duas etapas |
+| 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS |
+| 3 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 6, que agora começa um roadmap-week depois do planejado (seção 2). As URLs canónicas das 9 regras já são, por construção, parte do catálogo que a RAG precisa conter |
 
 ---
 
@@ -217,14 +263,19 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 101 testes (os 9 do PBIP real são pulados sem data/)
-python -m core.rules.catalogo     # as 8 regras com as URLs do Microsoft Learn
+pytest                            # 189 testes (os que leem o PBIP real são pulados sem data/)
+python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 ```
 
-Os 9 testes que leem o PBIP real são **pulados** automaticamente numa cópia limpa
+Os testes que leem o PBIP real são **pulados** automaticamente numa cópia limpa
 do repositório, porque `data/` não é versionado — o PBIP contém o modelo de um
-projeto real. São eles que travam as 15 ocorrências medidas.
+projeto real. São eles que travam as 15 ocorrências medidas, a cobertura do
+lexer (137 de 137 expressões, zero desconhecida) e a cobertura da varredura de
+DAX (105 de 105 em escopo, 0 lacunas).
 
 **Repositório:** <https://github.com/FredLisboa77/PUC-RIO_TCC>
-A Fase 2 foi desenvolvida na branch `fase2-motor-de-regras`, preservada no remoto
-como registro do recorte da fase.
+As 8 regras estruturais foram desenvolvidas na branch `fase2-motor-de-regras`,
+já mergeada na `main` e preservada no remoto como registro do recorte daquela
+etapa. O grupo 2 de DAX (lexer, varredura, resolução de uso e DAX-001) foi
+desenvolvido na branch `fase2-regras-de-dax`, ainda não mergeada no momento
+deste fechamento de documentos.

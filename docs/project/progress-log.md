@@ -454,7 +454,55 @@ travam esta medição: o controle de DAX-001 sem nenhuma barra em escopo, a
 classificação das seis `SUMX`, e a conferência à mão das cinco colunas
 escolhidas e das três usadas).
 
-- **Próximo passo:** atualizar os documentos de projeto (`backlog.md`,
-  `riscos.md`, `status.md`, `README.md`) com o terceiro teste do critério de
-  detectabilidade e com estas contagens — **nesta mesma entrada**, estendida,
-  não numa segunda entrada de mesma data.
+**Fechamento da etapa: documentos de projeto atualizados.** `backlog.md`,
+`riscos.md`, `status.md` e `README.md` passam a refletir o estado final do
+grupo 2, nesta mesma entrada — não numa segunda entrada da mesma data.
+
+- **O que foi entregue:** `backlog.md` ganhou o **D-1** (a contagem de
+  20–25 regras deixa de ser meta e passa a ser resultado, com a aritmética
+  que leva a ~18 no cenário otimista sem o grupo 3), a âncora da DAX-001
+  transcrita com data de acesso, a DAX-002 e a DAX-003 registradas como
+  candidatas (a primeira aguardando âncora, com o zero de seis `SUMX` contra
+  ela; a segunda adiada por zero ocorrência de `FILTER` no P8), e **F25** em
+  Trabalhos Futuros — recusar-se a declarar o grupo de DAX completo enquanto
+  houver lacuna aberta (D-7). `riscos.md` ganhou a terceira mitigação do
+  R-03 (o lexer, com a cobertura medida abaixo) e o prognóstico da seção 6 da
+  spec sobre o R-12. `status.md` foi reescrito com as 9 regras, os 189
+  testes, o uso da folga da semana 5, e R-12 como o risco mais urgente do
+  projeto — sem nenhuma afirmação de precisão alem das que esta entrada e a
+  anterior autorizam (DAX-001: zero confirmado, não "regra precisa"; PERF-005:
+  ~24% é a precisão **projetada** que fundamentou a rejeição, não medida de
+  uma regra que existe). `README.md` ganhou a contagem de regras, de testes
+  e a Fase 3 como em andamento.
+
+- **O terceiro teste, e de onde veio:** formulado nesta mesma etapa (seção 3
+  da spec de 08/10/2026), a partir da lição da MOD-005 (06/10) — ela passava
+  nas duas condições já em vigor (âncora citável, decidibilidade no TMSL) e
+  ainda marcaria a dimensão corretamente configurada. O terceiro teste exige
+  suficiência de evidência em três cláusulas — (a) todas as formas da
+  condição, (b) todos os sósias do sinal, (c) todos os sítios onde o sinal
+  pode morar — e afirmação por ausência exige as três completas. Na MOD-005
+  ele **corrigiu** a regra; na PERF-005, registrada mais acima nesta entrada,
+  foi o primeiro caso em que **rejeitou** uma regra inteira, antes do código,
+  mesmo sendo a de maior rendimento esperado da etapa.
+
+- **O número de cobertura do lexer**, medido contra o P8: **137 de 137**
+  expressões DAX (93 medidas, 35 colunas calculadas, 9 partições calculadas)
+  tokenizadas com **zero** token `DESCONHECIDO` — o número que substitui
+  "usamos expressões regulares" na monografia. A varredura que alimenta as
+  regras cobre **105 de 105** expressões em escopo de autor, com **0
+  lacunas** — as 32 expressões restantes (137 − 105) pertencem a tabelas
+  fora de escopo (automáticas, de cluster, de parâmetro hipotético), não a
+  falha do lexer.
+
+- **Pendências que seguem abertas:**
+  - A verificação empírica de se o Power BI Desktop grava
+    `roles[].tablePermissions[].filterExpression` no `model.bim` (D-9).
+    Menos urgente do que quando foi registrada, porque a PERF-005 — a regra
+    que dependia dela — foi recusada; mas o sítio já é lido por
+    `usos_de_coluna` e pode sustentar regra futura de RLS.
+  - A conversão de P1–P7 para PBIP. Deixou de ser recomendação e passou a
+    **bloqueio** para a decisão da Fase 3: com a PERF-005 recusada e a
+    DAX-001 em zero, o grupo 2 não somou nenhum achado ao P8, e o gatilho de
+    ~40 achados em P1–P7 (semana 4) continua sem poder ser medido — ver
+    `riscos.md`, R-12.

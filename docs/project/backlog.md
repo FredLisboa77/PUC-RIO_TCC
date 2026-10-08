@@ -1,13 +1,13 @@
 # Backlog e Controle de Escopo
 
-Última atualização: 08/10/2026 (PERF-005 recusada pelo terceiro teste do critério de detectabilidade; forma estreita registrada como candidata futura).
+Última atualização: 08/10/2026 (fechamento da Fase 2: D-1 — contagem de regras passa a resultado —, âncora da DAX-001 transcrita, DAX-002 e DAX-003 registradas como candidatas, F25 em Trabalhos Futuros).
 
 ## MVP aprovado
 F01–F16, conforme a matriz em `fase1-viabilidade-e-planejamento.md`.
 
 ## Critério de seleção de regras — decidido em 29/09/2026
 
-A meta continua sendo **20 a 25 regras**, mas a escolha de *quais* regras implementar deixa de ser por cota fixa por categoria e passa a seguir a **detectabilidade**: entram primeiro as regras cujo problema pode ser identificado de forma confiável a partir do `model.bim`, porque são as que produzem auditoria de valor real e menos falsos positivos.
+A meta era **20 a 25 regras** (revisado por D-1 em 08/10/2026, abaixo — a contagem final deixou de ser meta), mas a escolha de *quais* regras implementar deixa de ser por cota fixa por categoria e passa a seguir a **detectabilidade**: entram primeiro as regras cujo problema pode ser identificado de forma confiável a partir do `model.bim`, porque são as que produzem auditoria de valor real e menos falsos positivos.
 
 Ordem de prioridade que isso implica:
 
@@ -34,6 +34,26 @@ A MOD-005 (06/10) foi o caso que motivou o teste: passava nos dois critérios an
 
 A PERF-005 é o segundo caso em que o terceiro teste muda o resultado, e o primeiro em que o resultado é **rejeição**, não correção. Era a regra de maior rendimento esperado da etapa, com âncora já transcrita dois dias antes (ver abaixo); a cláusula (c) a derrubou mesmo com esse incentivo para ignorá-la — o critério se provou sobre o caso em que custava mais caro aplicá-lo.
 
+## D-1 — a contagem de 20–25 regras deixa de ser meta e passa a ser resultado, decidido em 08/10/2026
+
+A meta de "20 a 25 regras determinísticas" vem do planejamento da Fase 1 (`fase1-viabilidade-e-planejamento.md`, entregável do F2) e, até 29/09/2026, de uma cota fixa por categoria — 8 DAX, 4 M, 6 modelagem, 5 performance, que somava 23. Essa cota foi substituída pelo critério de detectabilidade no próprio 29/09, e as duas exigências que entraram depois — âncora citável verificada antes do código (06/10) e o terceiro teste de suficiência de evidência (acima, 08/10) — cortaram mais do que a cota teria cortado: a verificação de âncora de 06/10 trocou três candidatas estruturais sem passagem citável por duas novas que a tinham (MOD-006, MOD-007), chegando às **8** regras estruturais que valem hoje; do grupo 2, só a DAX-001 entrou — a PERF-005 foi recusada antes do código e a DAX-002 segue sem âncora verificada.
+
+**A aritmética:** mantendo as duas exigências, o cenário otimista — sem abrir o grupo 3 (DAX dependente de contexto, onde a heurística erra sem parser sintático) e sem afrouxar a exigência de âncora — soma por volta de **18 regras**, não 20–25: as 8 estruturais do grupo 1 (fechado), a DAX-001 (fechada), quando muito mais 1–2 do resto do grupo 2 que ainda dependem de âncora a verificar (DAX-002) ou já foram adiadas por falta de rendimento no corpus real (DAX-003, abaixo), e o grupo 4 (regras de M, ainda não atacado, primeiro corte sob pressão de prazo por R-07). Chegar a 20–25 exigiria uma das duas alternativas que o projeto já recusou, em 29/09 e 06/10: aceitar o grupo 3, ou relaxar a exigência de âncora.
+
+**Decisão:** a contagem final deixa de ser **meta** e passa a ser **resultado** do método. A monografia defende o conjunto menor — hoje 9 regras — e usa as regras descartadas (candidatas abaixo e o log de alertas) como evidência do próprio método, não como déficit a desculpar. Uma regra ausente por falta de âncora ou de evidência suficiente é um resultado do critério funcionando, não uma lacuna de esforço.
+
+## Âncora da DAX-001 — verificada e transcrita em 08/10/2026 (Tarefa 8)
+
+**URL canônica:** <https://learn.microsoft.com/en-us/dax/best-practices/dax-divide-function-operator> — *DIVIDE function vs divide operator (/) in DAX*, página de boas práticas do Microsoft Learn, `ms.date` 25/08/2021, revisada em 13/01/2026. **Acesso em 08/10/2026.** A URL de `power-bi/guidance/` que a sondagem inicial usara não é a canônica — a página canonicaliza para `/dax/best-practices/`.
+
+Passagens transcritas:
+
+> "It's recommended that you use the DIVIDE function whenever the denominator is an expression that could return zero or BLANK."
+
+> "In the case that the denominator is a constant value, we recommend that you use the divide operator. In this case, the division is guaranteed to succeed, and your expression will perform better because it will avoid unnecessary testing."
+
+**A verificação mudou a regra, e por pouco não a derrubou.** O enunciado original — "divisão com `/` em vez de `DIVIDE`" — marcaria como defeito o que a própria página **recomenda** quando o denominador é constante: o mesmo erro que derrubou a PERF-004 em 06/10, reaberto por outra porta. A regra que entrou no código afirma apenas sobre denominador **não constante**, condição que as duas passagens acima sustentam juntas.
+
 ## Candidatas a regra — registradas, não implementadas
 
 | Candidata | Âncora | Situação |
@@ -41,6 +61,8 @@ A PERF-005 é o segundo caso em que o terceiro teste muda o resultado, e o prime
 | **Relacionamento entre tipos diferentes** (ex-MOD-004) | Nenhuma encontrada em `desktop-create-and-manage-relationships` nem em `desktop-data-types` | Bloqueada por duas perguntas: existe passagem citável? E o Desktop permite criar esse relacionamento, ou valida os tipos e torna a condição inexistente em modelo real? |
 | **Tabela calculada em DAX** (ex-PERF-004) | Contra-indicada: `guidance/auto-date-time` recomenda `CALENDAR`/`CALENDARAUTO` | Descartada, não adiada. Só voltaria numa forma estreita que exclua tabelas de data, e aí não sobra achado em P8 |
 | **Chave substituta órfã sem uso** (forma estreita da PERF-005, recusada em 08/10) | A mesma `guidance/import-modeling-data-reduction` — a reverificar: a passagem transcrita justifica a coluna por servir ao **relatório ou** à estrutura, e uma forma estreita que só afirme sobre o segundo propósito precisa de passagem própria, ainda não encontrada | Bloqueada por duas perguntas: existe passagem citável para a forma estreita? E existe predicado **estrutural** que separe chave substituta de atributo comum sem recorrer a convenção de nome (`Key`/`ID`), que o projeto recusou em 06/10 por falta de âncora (R-10)? Sem as duas, a regra não entra |
+| **DAX-002 — Iteração desnecessária** | A verificar — sem passagem citável, a regra não entra, pela mesma exigência de 06/10 | Não implementada nesta etapa, por decisão informada e não por falta de verificação: das 6 ocorrências de `SUMX` em escopo no P8, **zero** são iteração desnecessária — todas multiplicam duas colunas linha a linha (uma soma um termo antes de multiplicar), nenhuma substituível por `SUM` sobre uma coluna só (medido em 08/10/2026, Tarefa 9). O número não decide a favor nem contra a regra; diz apenas que o P8 não a exerceria. Fica como candidata, aguardando âncora |
+| **DAX-003 — `FILTER` sobre tabela inteira** | Ainda a verificar | **Adiada** (D-8, spec de 08/10/2026). Zero ocorrência de `FILTER` nas 105 expressões em escopo do P8 — sem teste de regressão real contra arquivo e sem evidência para a monografia. Permanece candidata registrada, a decidir quando P1–P7 existirem |
 
 ## Trabalhos Futuros
 | ID | Item | Motivo da exclusão |
@@ -53,6 +75,7 @@ A PERF-005 é o segundo caso em que o terceiro teste muda o resultado, e o prime
 | F22 | Framework multiagente | ADR-003 |
 | F23 | Métricas em runtime (VertiPaq, DAX Studio, XMLA) | Fora do escopo do MVP |
 | F24 | Entrada em PBIX e conversão automática | Fora do escopo do MVP |
+| F25 | Recusar-se a declarar o grupo de DAX completo enquanto houver lacuna aberta (`lacunas_de_expressao`) | D-7 (spec de 08/10/2026): projeto acadêmico, avisar a lacuna no resultado já basta. Interromper a auditoria por lacuna exigiria lógica de bloqueio fora do MVP, e nenhum corpus do dataset hoje exerce lacuna real para desenhar o refinamento contra arquivo observado |
 
 ## Log de alertas de escopo
 | Data | Sugestão | Decisão |
