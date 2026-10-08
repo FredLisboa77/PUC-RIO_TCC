@@ -190,16 +190,21 @@ def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
 def test_os_usos_de_coluna_no_p8(modelo):
     """Quantas colunas em escopo não têm nenhum uso.
 
-    Este número é insumo da PERF-005, e precede a contagem da regra: travá-lo
-    aqui, antes de a regra existir, é o que permite verificar depois se a regra
-    reproduz a medição ou divergiu dela.
-
     Lista medida em 08/10/2026, pelos oito sítios de `usos_de_coluna`. Substitui
     a estimativa de 5 do backlog.md, feita antes de `sortByColumn` e hierarquia
     entrarem na conta. As três colunas `GeographyKey` (DimGeography, DimCustomer,
     DimStore) aparecem sem uso porque o relacionamento DimGeography→DimCustomer
     usa `CustomerKey`, não `GeographyKey` — o mesmo defeito que MOD-007 já aponta.
     Se mudar, a causa precisa ser entendida antes de o número ser atualizado.
+
+    Este número não alimenta mais contagem de regra: a PERF-005, que o
+    consumiria, foi recusada em 08/10/2026 pela cláusula (c) do terceiro teste
+    do critério de detectabilidade — ela afirmaria ausência sobre a camada de
+    relatório (F19), que a ferramenta não lê (`backlog.md`, `riscos.md`,
+    `docs/superpowers/specs/2026-10-08-regras-de-dax-e-varredura-textual-design.md`).
+    O que este teste trava passa a ser a **evidência da rejeição**: das 36
+    colunas, 33 seriam achado da regra recusada, e só 5 são defensáveis (chaves
+    substitutas órfãs) — o resto são falsos positivos prováveis ou confirmados.
     """
     from core.rules.referencias import usos_de_coluna
 

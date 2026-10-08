@@ -1,6 +1,6 @@
 # Backlog e Controle de Escopo
 
-Última atualização: 06/10/2026 (âncora verificada antes do código; três regras descartadas; candidatas registradas).
+Última atualização: 08/10/2026 (PERF-005 recusada pelo terceiro teste do critério de detectabilidade; forma estreita registrada como candidata futura).
 
 ## MVP aprovado
 F01–F16, conforme a matriz em `fase1-viabilidade-e-planejamento.md`.
@@ -26,13 +26,21 @@ A regra nasceu do custo evitado: ao desenhar as sete regras estruturais, conferi
 
 Decorre daí um subproduto: as URLs canónicas das regras são, por construção, as páginas que o `rag/sources.yaml` precisa conter (G-8, semana 5). O catálogo de regras alimenta o catálogo de fontes.
 
+## Terceiro teste do critério de detectabilidade — primeiro caso de rejeição, decidido em 08/10/2026
+
+A etapa de 08/10/2026 formulou um terceiro teste para o critério de detectabilidade (spec `docs/superpowers/specs/2026-10-08-regras-de-dax-e-varredura-textual-design.md`, seção 3): suficiência da evidência, em três cláusulas — (a) todas as formas da condição, (b) todos os sósias do sinal, (c) todos os sítios onde o sinal pode morar. Afirmação por ausência exige as três completas.
+
+A MOD-005 (06/10) foi o caso que motivou o teste: passava nos dois critérios anteriores e ainda assim marcaria uma dimensão corretamente configurada como defeito. Ali o teste **corrigiu** a regra — ela sobreviveu, reescrita.
+
+A PERF-005 é o segundo caso em que o terceiro teste muda o resultado, e o primeiro em que o resultado é **rejeição**, não correção. Era a regra de maior rendimento esperado da etapa, com âncora já transcrita dois dias antes (ver abaixo); a cláusula (c) a derrubou mesmo com esse incentivo para ignorá-la — o critério se provou sobre o caso em que custava mais caro aplicá-lo.
+
 ## Candidatas a regra — registradas, não implementadas
 
 | Candidata | Âncora | Situação |
 |---|---|---|
-| **Coluna sem uso** — coluna que não participa de relacionamento, não é referenciada em DAX e não está em role de RLS | `guidance/import-modeling-data-reduction`, *Remove unnecessary columns*: *"You can probably remove any column that doesn't serve either of these purposes"* — e a página define os dois propósitos (reporting e estrutura do modelo), que são exatamente verificáveis no `model.bim` | Substitui a descartada PERF-002 com afirmação defensável. Cobre os mesmos 5 objetos do P8 (chaves substitutas órfãs: `FactOnlineSales[OnlineSalesKey]`, `DimEmployee[EmployeeKey]`, três `GeographyKey`). Exige varrer medidas e colunas calculadas por referência textual ao nome da coluna — fronteira com o grupo 2 |
 | **Relacionamento entre tipos diferentes** (ex-MOD-004) | Nenhuma encontrada em `desktop-create-and-manage-relationships` nem em `desktop-data-types` | Bloqueada por duas perguntas: existe passagem citável? E o Desktop permite criar esse relacionamento, ou valida os tipos e torna a condição inexistente em modelo real? |
 | **Tabela calculada em DAX** (ex-PERF-004) | Contra-indicada: `guidance/auto-date-time` recomenda `CALENDAR`/`CALENDARAUTO` | Descartada, não adiada. Só voltaria numa forma estreita que exclua tabelas de data, e aí não sobra achado em P8 |
+| **Chave substituta órfã sem uso** (forma estreita da PERF-005, recusada em 08/10) | A mesma `guidance/import-modeling-data-reduction` — a reverificar: a passagem transcrita justifica a coluna por servir ao **relatório ou** à estrutura, e uma forma estreita que só afirme sobre o segundo propósito precisa de passagem própria, ainda não encontrada | Bloqueada por duas perguntas: existe passagem citável para a forma estreita? E existe predicado **estrutural** que separe chave substituta de atributo comum sem recorrer a convenção de nome (`Key`/`ID`), que o projeto recusou em 06/10 por falta de âncora (R-10)? Sem as duas, a regra não entra |
 
 ## Trabalhos Futuros
 | ID | Item | Motivo da exclusão |
@@ -57,6 +65,7 @@ Decorre daí um subproduto: as URLs canónicas das regras são, por construção
 | 06/10/2026 | Manter a regra de tabela calculada em DAX | **Recusada.** A página que a sustentaria recomenda tabelas de data em `CALENDAR`/`CALENDARAUTO`. Em P8, 100% dos seus achados seriam refutados pela fonte citada |
 | 06/10/2026 | Manter a regra de relacionamento entre tipos diferentes | **Adiada.** Sem âncora, e com dúvida sobre o produto permitir criar a condição. Fica como candidata com duas perguntas a resolver |
 | 06/10/2026 | Reduzir a severidade de PERF-004 em vez de descartá-la | **Recusada.** Severidade baixa não resolve achado que a fonte contradiz: o problema não é importância, é fundamento |
+| 08/10/2026 | Implementar a candidata "coluna sem uso" como PERF-005 | **Recusada.** A âncora justifica a coluna por servir ao relatório **ou** à estrutura do modelo, e a camada de relatório é o F19, que a ferramenta não lê — então a regra afirma ausência sobre domínio que não observa, violando a cláusula (c) do terceiro teste. Medido no P8: 33 achados, dos quais 3 são colunas de calendário que a documentação recomenda e ~25 são atributos reportáveis provavelmente em uso em visuais. Precisão estimada ~24%, contra o gatilho de 0,7 do R-03. A resolução de uso (`core/rules/referencias.py`) **fica** como evidência reproduzível da medição e para uso de regra futura |
 
 ## Pendências abertas do gate da Fase 1
 | ID | Pendência | Responsável | Prazo |
