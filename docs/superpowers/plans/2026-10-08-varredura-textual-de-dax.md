@@ -42,7 +42,7 @@ Cinco classes de entrada que a spec implica e que nenhuma tarefa exercitaria sem
 | `core/dax.py` | **novo.** Lexer. Conhece sintaxe de DAX, não conhece modelo |
 | `core/rules/expressoes.py` | **novo.** Enumera onde o DAX mora no modelo; devolve expressões tokenizadas e lacunas. Conhece modelo, não conhece sintaxe |
 | `core/rules/dax.py` | **novo.** DAX-001 e, se a âncora verificar, DAX-002 |
-| `core/rules/performance.py` | PERF-005 acrescentada |
+| `core/rules/performance.py` | **sem mudança** — a PERF-005 foi rejeitada (Tarefa 7) |
 | `core/rules/referencias.py` | **novo.** Resolve onde cada coluna é usada, nos oito sítios. Só a PERF-005 usa, mas é o pedaço mais delicado e merece arquivo e teste próprios |
 | `core/model.py` | `Hierarquia`, `Nivel`, `Role`, `PermissaoDeTabela`; `Coluna.ordenar_por`; `Tabela.hierarquias`; `ModeloSemantico.roles` |
 | `core/parser_bim.py` | Lê hierarquias, `sortByColumn` e roles |
@@ -50,7 +50,9 @@ Cinco classes de entrada que a spec implica e que nenhuma tarefa exercitaria sem
 | `core/rules/todas.py` | Importa `dax` |
 | `tests/conftest.py` | Construtores: `hierarquia`, `nivel`, `role`, e `roles=` em `modelo_tmsl`/`ler` |
 
-**Ordem das tarefas:** 1 (lexer) → 2 (helpers do lexer) → 3 (modelo e parser) → 4 (varredura e lacunas) → 5 (canal de aviso no runner) → 6 (referências) → 7 (PERF-005) → 8 (DAX-001) → 9 (verificação do rendimento) → 10 (documentos).
+**Ordem das tarefas:** 1 (lexer) → 2 (helpers do lexer) → 3 (modelo e parser) → 4 (varredura e lacunas) → 5 (canal de aviso no runner) → 6 (referências) → 7 (**rejeição da PERF-005**) → 8 (DAX-001) → 9 (verificação do rendimento) → 10 (documentos).
+
+**Mudança de escopo em 08/10/2026:** a Tarefa 7 implementava a PERF-005. A medição da Tarefa 6 a rejeitou pela cláusula (c) do terceiro teste — a regra afirma ausência de uso sem poder ler a camada de relatório, onde ~25 das 33 colunas que ela apontaria estão provavelmente em uso. A tarefa passa a registrar a rejeição. **A etapa entrega uma regra nova, a DAX-001**, não duas.
 
 **Bloqueio:** o ramo de RLS da Tarefa 3 e da Tarefa 6 depende da verificação empírica das roles (seção 10 da spec). Enquanto ela não vier, implementar tudo e **deixar a PERF-005 abster-se por completo em modelo com ao menos uma role**, declarando a lacuna. A Tarefa 7 Passo 11 cobre isso.
 
@@ -2082,401 +2084,74 @@ git commit -m "test(rules): colunas sem uso no P8, medidas nos oito sitios"
 
 ---
 
-### Task 7: PERF-005 — Coluna sem uso
+### Task 7: Registrar a rejeição da PERF-005
 
 **Files:**
-- Modify: `core/rules/performance.py`
-- Modify: `core/rules/referencias.py` — acrescenta `tabelas_com_lacuna` e `sitios_de_dax_nao_lidos`, as duas condições de abstenção
+- Modify: `docs/project/backlog.md`
+- Modify: `docs/project/riscos.md`
+- Modify: `docs/superpowers/specs/2026-10-08-regras-de-dax-e-varredura-textual-design.md`
 - Modify: `tests/test_pbip_real.py`
-- Test: `tests/test_rules_performance.py`
 
 **Interfaces:**
-- Consumes: `usos_de_coluna`, `SITIOS_DE_USO` (Tarefa 6); `tabelas_em_escopo`, `coluna_gerada_por_analise` de `escopo.py`; `regra`, `Achado`, `Evidencia`.
-- Produces: a regra `PERF-005` no registro global.
-
-**Antes do Passo 1: a âncora.** A passagem já foi lida e transcrita no `backlog.md` de 06/10, de `guidance/import-modeling-data-reduction`, seção *Remove unnecessary columns*: *"You can probably remove any column that doesn't serve either of these purposes"* — e a página define os dois propósitos, relatório e estrutura do modelo. Reler a página para confirmar que a passagem segue lá e que a URL não mudou. Se tiver mudado, a regra não entra até a âncora ser refeita.
-
-- [ ] **Step 1: Write the failing test**
-
-```python
-def test_perf005_marca_coluna_sem_nenhum_uso(ler):
-    modelo = ler(
-        tabelas=[
-            tabela(
-                "Fato",
-                colunas=[
-                    coluna("ValorUsado", tipo_dado="double"),
-                    coluna("ChaveOrfa", tipo_dado="int64"),
-                ],
-                medidas=[medida("Total", "SUM(Fato[ValorUsado])")],
-            )
-        ]
-    )
-
-    achados = list(coluna_sem_uso(modelo))
-
-    assert [a.evidencia.objeto for a in achados] == ["Fato[ChaveOrfa]"]
-    assert achados[0].id_regra == "PERF-005"
-    assert achados[0].evidencia.detalhe["sitios_verificados"] == list(SITIOS_DE_USO)
-
-
-def test_perf005_nao_marca_coluna_usada_em_qualquer_sitio(ler):
-    """Um uso em qualquer um dos oito basta para a regra se calar."""
-    modelo = ler(
-        tabelas=[
-            tabela(
-                "Data",
-                colunas=[
-                    coluna("MesNome", ordenar_por="MesNumero"),
-                    coluna("MesNumero", tipo_dado="int64"),
-                ],
-                hierarquias=[hierarquia("H", niveis=[nivel("M", "MesNome")])],
-            )
-        ]
-    )
-
-    assert list(coluna_sem_uso(modelo)) == []
-```
-
-- [ ] **Step 2: Run tests to verify they fail**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v -k perf005`
-Expected: FAIL com `NameError: name 'coluna_sem_uso' is not defined`
-
-- [ ] **Step 3: Write the rule**
-
-Em `core/rules/performance.py`, acrescentando aos imports `coluna_gerada_por_analise` (já lá), e `from core.rules.referencias import SITIOS_DE_USO, usos_de_coluna`:
-
-```python
-@regra(
-    id="PERF-005",
-    titulo="Coluna sem uso no modelo",
-    categoria="performance",
-    severidade="media",
-    url_canonica="https://learn.microsoft.com/en-us/power-bi/guidance/import-modeling-data-reduction",
-    termos_consulta=[
-        "remove unnecessary columns",
-        "column not used in report or model structure",
-        "data reduction techniques import modeling",
-        "model size refresh time unused columns",
-    ],
-    recomendacao_padrao=(
-        "Avalie remover a coluna do modelo. A documentação define dois propósitos que "
-        "justificam uma coluna: servir ao relatório, aparecendo num visual, num filtro "
-        "ou numa medida; e sustentar a estrutura do modelo, como chave de "
-        "relacionamento, nível de hierarquia, ordenação de outra coluna ou filtro de "
-        "segurança. Coluna que não serve a nenhum dos dois ocupa espaço, estende o "
-        "tempo de atualização e polui a lista de campos. Antes de remover, confirme "
-        "que ela não é usada em relatórios que não estão neste projeto: esta auditoria "
-        "lê o modelo semântico, e não a camada de relatório."
-    ),
-    nota_de_verificacao=(
-        "A regra afirma por ausência, e por isso varre oito sítios: relacionamento, "
-        "hierarquia, ordenação, variação de data automática, e DAX de medida, de "
-        "coluna calculada, de partição calculada e de filtro de role. Fora do alcance "
-        "da auditoria, e portanto fora da afirmação: o uso da coluna num visual da "
-        "camada de relatório, que não é lida no MVP (F19, Trabalhos Futuros). Numa "
-        "expressão que o lexer não leu por completo, a regra se cala e a lacuna é "
-        "declarada no resultado."
-    ),
-)
-def coluna_sem_uso(modelo: ModeloSemantico) -> Iterator[Achado]:
-    """Uma ocorrência por coluna em escopo sem uso em nenhum dos oito sítios.
-
-    Exclui as colunas geradas pela interface de análise (agrupamento e cluster),
-    pelo mesmo princípio das outras regras: auditar o que o autor escreveu.
-    """
-    usos = usos_de_coluna(modelo)
-
-    for t in tabelas_em_escopo(modelo):
-        for c in t.colunas:
-            if coluna_gerada_por_analise(c):
-                continue
-            if usos.get((t.nome, c.nome)):
-                continue
-            yield Achado(
-                id_regra="PERF-005",
-                evidencia=Evidencia(
-                    tipo_objeto="coluna",
-                    objeto=f"{t.nome}[{c.nome}]",
-                    tabela=t.nome,
-                    detalhe={
-                        "dataType": c.tipo_dado,
-                        "sitios_verificados": list(SITIOS_DE_USO),
-                    },
-                ),
-                mensagem=(
-                    f"A coluna '{c.nome}' da tabela '{t.nome}' não é usada em "
-                    "relacionamento, hierarquia, ordenação nem em nenhuma expressão "
-                    "DAX do modelo."
-                ),
-            )
-```
-
-- [ ] **Step 4: Run tests to verify they pass**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v -k perf005`
-Expected: PASS
-
-- [ ] **Step 5: Write the failing test — a coluna calculada que só a si mesma referencia**
-
-```python
-def test_perf005_nao_considera_a_propria_coluna_como_uso(ler):
-    """Uma coluna calculada que referencia a si mesma não está "em uso" por isso."""
-    modelo = ler(
-        tabelas=[
-            tabela(
-                "Vendas",
-                colunas=[
-                    coluna("Base", tipo_dado="double"),
-                    coluna("Dobro", tipo="calculated", expressao="Vendas[Base] * 2"),
-                ],
-            )
-        ]
-    )
-
-    achados = list(coluna_sem_uso(modelo))
-
-    # `Base` é usada pelo DAX de `Dobro`. `Dobro` não é usada por ninguém.
-    assert [a.evidencia.objeto for a in achados] == ["Vendas[Dobro]"]
-```
-
-- [ ] **Step 6: Run it**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v -k propria`
-Expected: PASS — `usos_de_coluna` marca a coluna *referenciada*, não a que contém a expressão.
-
-- [ ] **Step 7: Write the failing test — the rule stays silent on a gap**
-
-```python
-def test_perf005_cala_sobre_coluna_citada_em_expressao_com_lacuna(ler):
-    """Se o lexer não leu a expressão por completo, a regra não pode concluir
-    ausência de referência — pode ser que a referência esteja no trecho ilegível.
-
-    É o terceiro teste do critério em tempo de execução, e o caso onde o falso
-    positivo seria destrutivo: recomendar apagar uma coluna em uso.
-    """
-    modelo = ler(
-        tabelas=[
-            tabela(
-                "Vendas",
-                colunas=[coluna("Suspeita", tipo_dado="double")],
-                medidas=[medida("Ilegivel", "Vendas[Suspeita] § 1")],
-            )
-        ]
-    )
-
-    assert list(coluna_sem_uso(modelo)) == []
-```
-
-- [ ] **Step 8: Run it to verify it fails**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v -k lacuna`
-Expected: FAIL — a regra marca `Vendas[Suspeita]`, porque a expressão virou lacuna e nenhuma referência dela foi contada.
-
-- [ ] **Step 9: Make the rule abstain on gaps**
-
-A regra não pode concluir ausência quando há lacuna. Em `core/rules/referencias.py`, acrescentar a função que a regra consulta:
-
-```python
-def tabelas_com_lacuna(modelo: ModeloSemantico) -> set[str]:
-    """Tabelas cuja varredura ficou incompleta.
-
-    A PERF-005 se cala sobre as colunas delas: a referência que faltou pode
-    estar justamente no trecho que o lexer não leu, e concluir ausência a partir
-    de uma varredura incompleta é o defeito que o terceiro teste do critério
-    existe para impedir.
-    """
-    varredura = varrer_dax(modelo)
-    return {l.tabela for l in varredura.lacunas if l.tabela}
-```
-
-E na regra, depois de `usos = usos_de_coluna(modelo)`:
-
-```python
-    com_lacuna = tabelas_com_lacuna(modelo)
-```
-
-e, no laço das tabelas, antes do laço das colunas:
-
-```python
-        if t.nome in com_lacuna:
-            continue
-```
-
-Acrescentar `tabelas_com_lacuna` ao import de `referencias` em `performance.py`.
-
-> **Nota de implementação:** isto chama `varrer_dax` duas vezes por auditoria, uma em `usos_de_coluna` e outra em `tabelas_com_lacuna`. Para 137 expressões o custo é irrelevante e a clareza vale mais. Se um PBIP grande mostrar que importa, a correção é a regra receber a varredura já feita — o que muda o contrato das regras, e por isso não se faz agora sem medição.
-
-- [ ] **Step 10: Run tests to verify they pass**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v`
-Expected: PASS
-
-- [ ] **Step 11: Write the failing test — abstenção por sítio de DAX não lido**
-
-```python
-def test_perf005_cala_em_modelo_com_role(ler):
-    """Bloqueio da seção 10 da spec.
-
-    Enquanto não se verificar empiricamente que o Power BI Desktop escreve
-    `roles[].tablePermissions[].filterExpression` no `model.bim`, a regra não
-    pode afirmar ausência num modelo com RLS: se o Desktop não escrever o
-    filtro, a coluna que a role usa pareceria sem uso, e a recomendação seria
-    apagar uma coluna em uso.
-    """
-    modelo = ler(
-        tabelas=[
-            tabela("Vendas", colunas=[coluna("Orfa", tipo_dado="int64"), coluna("Regiao")])
-        ],
-        roles=[role("Vendedor", tabela="Vendas", filtro='Vendas[Regiao] = "Sul"')],
-    )
-
-    assert list(coluna_sem_uso(modelo)) == []
-
-
-def test_perf005_cala_em_modelo_com_grupo_de_calculo(tmp_path):
-    """Três sítios de DAX do TMSL não existem no P8 e não são lidos:
-    `formatStringDefinition`, `calculationGroup.calculationItems` e
-    `detailRowsDefinition`. Qualquer um deles pode referenciar uma coluna.
-
-    A spec é explícita: sítio não lido é prova de ausência que não existe. Então
-    a regra se cala quando qualquer um deles está presente, em vez de concluir
-    ausência a partir de varredura que ela sabe incompleta.
-    """
-    import json
-
-    from core.parser_bim import ler_modelo
-
-    bruto = {
-        "name": "SemanticModel",
-        "compatibilityLevel": 1600,
-        "model": {
-            "culture": "pt-BR",
-            "tables": [
-                {
-                    "name": "Vendas",
-                    "columns": [{"name": "Orfa", "dataType": "int64"}],
-                    "calculationGroup": {
-                        "calculationItems": [
-                            {"name": "YTD", "expression": "CALCULATE([x], Vendas[Orfa])"}
-                        ]
-                    },
-                }
-            ],
-        },
-    }
-    caminho = tmp_path / "model.bim"
-    caminho.write_text(json.dumps(bruto), encoding="utf-8")
-
-    assert list(coluna_sem_uso(ler_modelo(caminho))) == []
-```
-
-- [ ] **Step 12: Implement the abstention, generalized**
-
-Em `core/rules/referencias.py`, a função que detecta sítio de DAX que a varredura não lê:
-
-```python
-SITIOS_NAO_LIDOS = {
-    "formatStringDefinition": "cadeia de formato dinâmica",
-    "calculationGroup": "grupo de cálculo",
-    "detailRowsDefinition": "expressão de linhas de detalhe",
-}
-"""Sítios de DAX que o TMSL admite, que nenhum existe no P8, e que a varredura
-não lê. Cada um pode referenciar uma coluna. Enquanto não forem lidos e
-verificados contra arquivo real, a presença de qualquer um deles impede a
-PERF-005 de afirmar ausência — sítio não lido é prova de ausência que não
-existe (spec de 08/10/2026, seção 4.5)."""
-
-
-def sitios_de_dax_nao_lidos(modelo: ModeloSemantico) -> set[str]:
-    """Os sítios de DAX presentes no arquivo que a varredura não cobre.
-
-    Conjunto vazio significa que a varredura viu todo o DAX deste modelo, e só
-    então uma afirmação por ausência se sustenta.
-    """
-    achados: set[str] = set()
-
-    if modelo.roles:
-        achados.add("role de segurança (pendente de verificação empírica)")
-
-    for t in modelo.tabelas:
-        for chave, nome in SITIOS_NAO_LIDOS.items():
-            if t.bruto.get(chave):
-                achados.add(nome)
-        for m in t.medidas:
-            for chave, nome in SITIOS_NAO_LIDOS.items():
-                if m.bruto.get(chave):
-                    achados.add(nome)
-
-    return achados
-```
-
-E no início da regra `coluna_sem_uso`:
-
-```python
-    # Bloqueio deliberado, não defeito. A regra afirma por ausência, e sob o
-    # terceiro teste do critério isso exige ter varrido todos os sítios. Dois
-    # casos impedem: a role, cuja serialização pelo Desktop ainda não foi
-    # verificada (spec de 08/10/2026, seção 10), e os três sítios de DAX que o
-    # TMSL admite e a varredura não lê. Presente qualquer um, a regra se cala
-    # por completo — e a limitação está na `nota_de_verificacao`.
-    if sitios_de_dax_nao_lidos(modelo):
-        return
-```
-
-Acrescentar `sitios_de_dax_nao_lidos` ao import de `referencias` em `performance.py`, e à `nota_de_verificacao` da regra:
-
-```
-"A regra se cala por completo quando o modelo tem role de segurança — até que "
-"se verifique se o Power BI Desktop grava a expressão de filtro da role no "
-"model.bim (pendência de 08/10/2026) — ou quando tem cadeia de formato "
-"dinâmica, grupo de cálculo ou expressão de linhas de detalhe, três sítios de "
-"DAX que esta versão não lê. Em qualquer um desses casos a varredura seria "
-"incompleta, e afirmação por ausência exige varredura completa."
-```
-
-- [ ] **Step 13: Run tests to verify they pass**
-
-Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_performance.py -v`
-Expected: PASS
-
-- [ ] **Step 14: Lock the P8 count — from the measurement, never from the estimate**
-
-Em `tests/test_pbip_real.py`, acrescentar `"PERF-005"` ao dicionário `CONTAGENS_P8` usando **o número da Tarefa 6 Passo 11**, e não a estimativa de 5 do `backlog.md`.
-
-Antes de travar, verificar à mão cada coluna que a regra aponta **e uma amostra de cinco que ela não aponta** — é a segunda metade que detecta cegueira. Para cada uma, conferir os oito sítios no `model.bim`. Registrar a verificação no `progress-log.md`.
-
-```python
-CONTAGENS_P8 = {
-    "MOD-001": 4,
-    "MOD-002": 3,
-    "MOD-003": 2,
-    "MOD-005": 1,
-    "MOD-006": 2,
-    "MOD-007": 1,
-    "PERF-001": 1,
-    "PERF-003": 1,
-    # O valor abaixo é o número apurado na Tarefa 6 Passo 11 e verificado nos
-    # dois sentidos no Passo 14. Nunca a estimativa de 5 do backlog, que foi
-    # feita antes de sortByColumn e hierarquia entrarem na conta.
-    "PERF-005": <número verificado>,
-}
-```
-
-- [ ] **Step 15: Run the whole suite**
+- Consumes: `usos_de_coluna`, `SITIOS_DE_USO` (Tarefa 6).
+- Produces: nenhum código de produção. Esta tarefa **não** implementa regra.
+
+#### A regra não entra. A medição da Tarefa 6 a rejeitou.
+
+A PERF-005 estava especificada, tinha âncora transcrita no `backlog.md` desde 06/10, e era a regra de maior valor esperado da etapa. A medição da Tarefa 6, feita contra o PBIP real, a derrubou.
+
+**O que foi medido.** `usos_de_coluna` achou **36** colunas sem uso em nenhum dos oito sítios, contra uma estimativa de 5 no backlog — estimativa feita antes de `sortByColumn` e hierarquias entrarem na conta. A regra reportaria **33** (três saem por `coluna_gerada_por_analise`), e elas se repartem assim:
+
+| Quantas | O que são | Veredito |
+|---|---|---|
+| 5 | Chaves substitutas órfãs: `FactOnlineSales[OnlineSalesKey]`, `DimEmployee[EmployeeKey]`, e três `GeographyKey` | Defensáveis — chave substituta não tem propósito de relatório |
+| 3 | Colunas de calendário: `DimCalendar[Mês]`, `[Trimestre]`, `[Semestre]` | **Falso positivo** — a documentação recomenda acrescentá-las, e a PERF-001 já as exclui por isso |
+| 25 | Atributos reportáveis: `StoreName`, `PromotionName`, `ProductCategoryName`, `Education`, `Occupation`… | **Provável falso positivo** — quase certamente em uso em visuais |
+
+**Por que ela não se sustenta.** A âncora (`guidance/import-modeling-data-reduction`, *Remove unnecessary columns*) justifica uma coluna por servir a **um de dois propósitos**: o relatório, ou a estrutura do modelo. A camada de relatório é o **F19**, Trabalhos Futuros — a ferramenta não a lê e não pode observar o primeiro propósito.
+
+Portanto a PERF-005 afirma ausência sobre um domínio que ela não enxerga, e isso viola a **cláusula (c) do terceiro teste** formulado nesta mesma etapa: *todos os sítios onde o sinal pode morar*. Precisão estimada em ~24%, contra o gatilho de 0,7 do R-03.
+
+**O que isso vale para a monografia.** O terceiro teste rejeitou a **primeira** regra que passou nos dois primeiros critérios — e era uma regra que o projeto queria ter. É o critério se provando sobre um caso em que havia incentivo para ignorá-lo. Com a MOD-005, são dois casos em que o terceiro teste mudou o resultado, e o segundo é mais forte que o primeiro: na MOD-005 a regra foi corrigida, aqui ela foi descartada.
+
+- [ ] **Step 1: Travar a medição no PBIP real**
+
+A Tarefa 6 Passo 11 já escreveu o teste que trava as 36 colunas. Confirmar que ele está lá, com a lista e a data, e **acrescentar o comentário que diz por que o número importa agora**: ele não alimenta mais uma contagem de regra, ele é a evidência da rejeição.
+
+Rodar `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k usos_de_coluna` e confirmar que passa.
+
+**Não acrescentar `PERF-005` a `CONTAGENS_P8`.** A regra não existe, e o total do P8 continua em 15.
+
+- [ ] **Step 2: `backlog.md` — a candidata passa a recusada, com o motivo**
+
+Na tabela de candidatas, a linha **"Coluna sem uso"** sai de "candidata registrada" e passa a recusada. Acrescentar ao *Log de alertas de escopo* uma linha datada de 08/10/2026:
+
+> | 08/10/2026 | Implementar a candidata "coluna sem uso" como PERF-005 | **Recusada.** A âncora justifica a coluna por servir ao relatório **ou** à estrutura do modelo, e a camada de relatório é o F19, que a ferramenta não lê — então a regra afirma ausência sobre domínio que não observa, violando a cláusula (c) do terceiro teste. Medido no P8: 33 achados, dos quais 3 são colunas de calendário que a documentação recomenda e ~25 são atributos reportáveis provavelmente em uso em visuais. Precisão estimada ~24%, contra o gatilho de 0,7 do R-03. A resolução de uso (`core/rules/referencias.py`) **fica** como evidência reproduzível da medição e para uso de regra futura |
+
+Acrescentar também, à seção do terceiro teste, a nota de que ele teve seu primeiro caso de rejeição — não apenas de correção.
+
+Registrar como candidata futura a **forma estreita**: regra que aponte apenas chave substituta órfã, cujo propósito é estrutural por natureza e portanto não depende da camada de relatório. Com duas perguntas abertas: existe passagem citável para a forma estreita, e existe predicado **estrutural** que separe chave substituta de atributo, sem convenção de nome — que o projeto recusou em 06/10 (R-10).
+
+- [ ] **Step 3: `riscos.md` — R-03 e R-12**
+
+- **R-03** ganha um caso concreto: o critério rejeitou uma regra por precisão projetada, antes de ela existir em código, e a projeção veio de medição contra arquivo real.
+- **R-12** piora. O prognóstico da seção 6 da spec já era desfavorável, e a PERF-005 era a única regra da etapa com rendimento esperado no P8. Com ela fora, a etapa acrescenta ao P8 **o que a DAX-001 render — medido como zero**. O slot **P9** passa de provável a quase certo, e converter P1–P7 deixa de ser recomendação e passa a bloqueio para decidir a Fase 3.
+
+- [ ] **Step 4: A spec**
+
+A seção 5 da spec descreve a PERF-005 como regra a implementar. Reescrevê-la como **regra rejeitada**, com a medição e o motivo, do mesmo jeito que a seção de rendimento (6) já trata hipótese e verificação. A seção 6 também precisa ser atualizada: a hipótese era "PERF-005 entre 0 e 5", e a medição deu 33 com ~24% de precisão projetada — o que confirma a hipótese do rendimento baixo da etapa por um caminho que ela não previa.
+
+Acrescentar à seção 4.1 da spec a tabela de tokens que falta: `CHAVE_ABRE` e `CHAVE_FECHA`, acrescentados na Tarefa 1 porque o corpus real usa o construtor de tabela do DAX (`x IN {"No Discount"}`).
+
+- [ ] **Step 5: Rodar a suíte e commitar**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
-Expected: tudo passando. As contagens de MOD-\* e PERF-001/003 **não mudaram**; o total de achados do P8 passa de 15 para 15 + PERF-005.
-
-- [ ] **Step 16: Commit**
+Expected: tudo passando, 15 achados no P8.
 
 ```bash
-git add core/rules/performance.py core/rules/referencias.py tests/test_rules_performance.py tests/test_pbip_real.py
-git commit -m "feat(rules): PERF-005, coluna sem uso nos oito sitios"
+git add docs/ tests/test_pbip_real.py
+git commit -m "docs: PERF-005 recusada pelo terceiro teste do criterio"
 ```
-
----
 
 ### Task 8: DAX-001 — Divisão com `/` onde o denominador pode ser zero
 
@@ -2897,9 +2572,13 @@ As duas listas respondem perguntas diferentes, e é por isso que ambas são impr
 - a **primeira** é o rendimento da regra. Vazia, o zero se confirma **medido pelo lexer**, e aí é zero verdadeiro;
 - a **segunda** é o controle. Se ela trouxer barras que a primeira não trouxe, cada uma precisa ser conferida à mão: é denominador constante de fato, que a documentação recomenda, ou é cegueira de `_e_constante`? Esta é a metade que detecta falso negativo, e sem ela o zero da primeira lista não sustenta afirmação de precisão.
 
-- [ ] **Step 2: Verify PERF-005 in both directions**
+- [ ] **Step 2: Conferir a medição que rejeitou a PERF-005**
 
-Para **cada** coluna que a regra aponta, conferir no `model.bim` os oito sítios. Depois, para **cinco colunas que ela não aponta**, conferir que o uso que a regra encontrou existe de fato. A segunda metade é o que detecta cegueira: verificar só os achados mede falso positivo, não falso negativo.
+A regra foi rejeitada na Tarefa 7, então não há achados dela para verificar. O que precisa ser conferido é a **medição que a rejeitou**, porque é ela que vai para a monografia:
+
+Para **cinco** das 36 colunas que `usos_de_coluna` dá como sem uso, conferir à mão no `model.bim` os oito sítios — e escolher as cinco de propósito, não ao acaso: uma chave órfã, uma coluna de calendário, e três atributos reportáveis. Se alguma delas tiver uso que a resolução não viu, a medição está contaminada e a rejeição precisa ser reavaliada.
+
+Conferir também, para **três colunas que a resolução dá como usadas**, que o uso existe mesmo. Essa metade detecta o erro oposto — resolução marcando uso que não há faria colunas genuinamente órfãs parecerem usadas, e teria escondido o problema em vez de revelá-lo.
 
 - [ ] **Step 3: Classify the six `SUMX` occurrences**
 
@@ -2915,7 +2594,7 @@ for e in v.expressoes:
 
 - [ ] **Step 4: Write the findings in `progress-log.md`**
 
-Uma entrada datada que registre, para cada regra: o número medido, a causa do zero quando houver zero, e a verificação da PERF-005 nos dois sentidos. Dizer explicitamente qual afirmação de precisão a medição **autoriza** e qual não autoriza.
+Uma entrada datada que registre: o número medido de cada regra que entrou, a causa do zero quando houver zero, e a conferência da medição que rejeitou a PERF-005. Dizer explicitamente qual afirmação de precisão a medição **autoriza** e qual não autoriza.
 
 - [ ] **Step 5: Commit**
 
@@ -2938,7 +2617,7 @@ git commit -m "docs: rendimento do grupo 2 no P8, verificado e com a causa de ca
 - A passagem citável da DAX-001, transcrita com data de acesso (Tarefa 8).
 - **DAX-003 (`FILTER`)** movida para candidata adiada, com o motivo: zero ocorrência no P8.
 - Em Trabalhos Futuros: **F25**, recusar-se a declarar o grupo de DAX completo enquanto houver lacuna aberta (D-7).
-- A candidata "coluna sem uso" sai da tabela de candidatas e entra como PERF-005 implementada.
+- A candidata "coluna sem uso" passa a **recusada**, com o motivo e a medição (a Tarefa 7 Passo 2 já escreve a linha do log de alertas; conferir que está lá e consistente).
 
 - [ ] **Step 2: `riscos.md`**
 
