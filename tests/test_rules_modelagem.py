@@ -175,11 +175,24 @@ def test_mod003_considera_relacionada_a_tabela_ligada_so_a_uma_automatica(ler):
     assert list(tabela_sem_relacionamento(modelo)) == []
 
 
-def test_mod005_marca_dimensao_de_data_sem_data_category(ler):
+def test_mod005_marca_dimensao_de_data_com_tempo_automatico_pendurado(ler):
+    """A prova de que a tabela não está marcada está no arquivo.
+
+    Marcar uma tabela como tabela de data faz o Power BI **remover** a tabela de
+    data automática que havia criado. Então uma `variations` da coluna de data
+    apontando para uma tabela automática prova que a marcação não aconteceu —
+    sem depender de nenhuma propriedade de marcação, que o Desktop não escreve
+    no `model.bim` (nem `dataCategory`, nem `isDateTable`).
+    """
     modelo = ler(
         tabelas=[
             tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
-            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")]),
+            tabela(
+                "DimCalendar",
+                colunas=[coluna("Data", tipo_dado="dateTime", variacao_para="LocalDateTable_x")],
+            ),
+            tabela("LocalDateTable_x", colunas=[coluna("Date", tipo_dado="dateTime")],
+                   annotations={"__PBI_LocalDateTable": "true"}),
         ],
         relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
     )
@@ -188,14 +201,44 @@ def test_mod005_marca_dimensao_de_data_sem_data_category(ler):
 
     assert [a.evidencia.objeto for a in achados] == ["DimCalendar"]
     assert achados[0].id_regra == "MOD-005"
-    assert achados[0].evidencia.detalhe["dataCategory"] is None
+    assert achados[0].evidencia.detalhe["colunas_com_tempo_automatico"] == ["Data"]
 
 
-def test_mod005_nao_marca_dimensao_de_data_ja_marcada(ler):
+def test_mod005_cala_quando_nao_ha_prova_no_arquivo(ler):
+    """Com o tempo automático desligado não há como saber se está marcada.
+
+    Falso negativo declarado: é melhor calar que afirmar sem evidência. Era
+    exatamente o que a versão anterior desta regra fazia, ao ler uma
+    `dataCategory` que o Power BI Desktop nunca escreve.
+    """
     modelo = ler(
         tabelas=[
             tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
-            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")], data_category="Time"),
+            tabela("DimCalendar", colunas=[coluna("Data", tipo_dado="dateTime")]),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
+    )
+
+    assert list(dimensao_de_data_nao_marcada(modelo)) == []
+
+
+def test_mod005_nao_marca_tabela_com_data_category_time(ler):
+    """O Power BI Desktop não escreve `dataCategory: "Time"`, mas o TOM escreve.
+
+    Modelo editado por Tabular Editor ou pelo endpoint XMLA pode trazer a
+    marcação nessa propriedade. Quando ela está lá, é marcação explícita e a
+    regra se cala — mesmo que haja tempo automático pendurado.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
+            tabela(
+                "DimCalendar",
+                colunas=[coluna("Data", tipo_dado="dateTime", variacao_para="LocalDateTable_x")],
+                data_category="Time",
+            ),
+            tabela("LocalDateTable_x", colunas=[coluna("Date", tipo_dado="dateTime")],
+                   annotations={"__PBI_LocalDateTable": "true"}),
         ],
         relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
     )
@@ -442,9 +485,14 @@ def test_mod005_marca_dimensao_de_data_com_chave_inteira(ler):
             tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="int64")]),
             tabela(
                 "DimCalendar",
-                colunas=[coluna("DateKey", tipo_dado="int64")],
+                colunas=[
+                    coluna("DateKey", tipo_dado="int64"),
+                    coluna("Data", tipo_dado="dateTime", variacao_para="LocalDateTable_y"),
+                ],
                 particoes=[particao(tipo="calculated", expressao="CALENDARAUTO()")],
             ),
+            tabela("LocalDateTable_y", colunas=[coluna("Date", tipo_dado="dateTime")],
+                   annotations={"__PBI_LocalDateTable": "true"}),
         ],
         relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "DateKey")],
     )

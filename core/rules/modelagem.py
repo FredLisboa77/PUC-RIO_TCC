@@ -13,11 +13,13 @@ from core.rules.base import Achado, Evidencia
 from core.rules.escopo import (
     ANOTACOES_DATA_AUTOMATICA,
     anotacoes,
+    colunas_com_data_automatica,
     dimensao_de_data,
     lado_muitos,
     lado_um,
     relacionamentos_em_escopo,
     tabela_automatica_de_data,
+    tabela_de_data_marcada,
     tabela_por_nome,
     tabelas_em_escopo,
     um_para_um,
@@ -216,23 +218,38 @@ def tabela_sem_relacionamento(modelo: ModeloSemantico) -> Iterator[Achado]:
         "calendário, a marcação pode não ser necessária."
     ),
     nota_de_verificacao=(
-        "A detecção assume que a marcação aparece no TMSL como dataCategory=\"Time\" "
-        "na tabela, consistente com Table.DataCategory do TOM e com o P8, onde "
-        "nenhuma tabela está marcada e nenhuma tem dataCategory. Pendente de "
-        "confirmação empírica: marcar a DimCalendar no Desktop, salvar o PBIP e "
-        "comparar o model.bim."
+        "Detectável apenas quando o Tempo automático de data/hora está ligado. A "
+        "marcação de tabela de data NÃO é representada no model.bim salvo pelo "
+        "Power BI Desktop — verificado em 06/10/2026: dataCategory aparece só em "
+        "coluna, e isDateTable não aparece. A prova usada é indireta e vem da "
+        "própria documentação: marcar a tabela faz o Power BI remover a tabela de "
+        "data automática que havia criado, então uma variations da coluna de data "
+        "apontando para uma tabela automática prova que a marcação não aconteceu. "
+        "Com o tempo automático desligado, a regra cala: falso negativo declarado."
     ),
 )
 def dimensao_de_data_nao_marcada(modelo: ModeloSemantico) -> Iterator[Achado]:
-    """Uma ocorrência por dimensão de data em escopo sem `dataCategory: "Time"`.
+    """Uma ocorrência por dimensão de data com tempo automático pendurado nela.
 
     A dimensão é identificada estruturalmente (`escopo.dimensao_de_data`), e não
-    por nome: é o lado "um" de um relacionamento entre duas colunas `dateTime`.
+    por nome. Já a ausência de marcação é provada pela `variations` da coluna de
+    data apontando para uma tabela de data automática: marcar a tabela faria o
+    Power BI remover essa tabela.
+
+    Sem essa prova a regra não afirma nada. A versão anterior lia
+    `dataCategory: "Time"` e tratava a ausência como prova de não-marcação — e o
+    Power BI Desktop nunca escreve essa propriedade, de modo que a regra marcaria
+    também a dimensão corretamente marcada.
     """
     for nome in sorted(dimensao_de_data(modelo)):
         t = tabela_por_nome(modelo, nome)
-        if t is None or t.data_category == "Time":
+        if t is None or tabela_de_data_marcada(t):
             continue
+
+        com_automatica = colunas_com_data_automatica(modelo, t)
+        if not com_automatica:
+            continue
+
         yield Achado(
             id_regra="MOD-005",
             evidencia=Evidencia(
@@ -240,7 +257,7 @@ def dimensao_de_data_nao_marcada(modelo: ModeloSemantico) -> Iterator[Achado]:
                 objeto=t.nome,
                 tabela=t.nome,
                 detalhe={
-                    "dataCategory": t.data_category,
+                    "colunas_com_tempo_automatico": com_automatica,
                     "colunas_de_data": [
                         c.nome for c in t.colunas if c.tipo_dado == "dateTime"
                     ],

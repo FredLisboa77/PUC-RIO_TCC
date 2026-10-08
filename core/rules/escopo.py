@@ -174,8 +174,47 @@ def lado_muitos(r: Relacionamento) -> set[str]:
 
 
 def tabela_de_data_marcada(t: Tabela) -> bool:
-    """A tabela foi marcada como tabela de data (Mark as date table)."""
+    """A tabela traz a marcação de tabela de data na propriedade do TMSL.
+
+    **O Power BI Desktop não escreve esta propriedade.** Verificado em
+    06/10/2026 contra um PBIP salvo pelo Desktop: `dataCategory` aparece só em
+    coluna, nunca em tabela, e `isDateTable` não aparece em lugar nenhum. O TOM,
+    por outro lado, representa a marcação assim — então um modelo editado pelo
+    Tabular Editor ou pelo endpoint XMLA pode trazê-la aqui.
+
+    Serve, portanto, como marcação **explícita** quando existe, e nunca como
+    prova de ausência: para isso usa-se `colunas_com_data_automatica`.
+    """
     return t.data_category == "Time"
+
+
+def tabelas_de_data_automaticas(modelo: ModeloSemantico) -> set[str]:
+    return {t.nome for t in modelo.tabelas if tabela_automatica_de_data(t)}
+
+
+def colunas_com_data_automatica(modelo: ModeloSemantico, t: Tabela) -> list[str]:
+    """Colunas da tabela que têm uma tabela de data automática pendurada.
+
+    O vínculo está em `variations`, na coluna: o Tempo automático de data/hora
+    liga a coluna de data à tabela que ele gerou, pelo `defaultHierarchy.table`.
+
+    É a prova, no arquivo, de que a tabela **não** está marcada como tabela de
+    data — porque marcar faz o Power BI remover a tabela automática que havia
+    criado. Sem ela não há como saber, e a regra que depende disso precisa calar.
+    """
+    automaticas = tabelas_de_data_automaticas(modelo)
+    com_automatica: list[str] = []
+
+    for c in t.colunas:
+        for v in c.bruto.get("variations") or []:
+            if not isinstance(v, dict):
+                continue
+            alvo = (v.get("defaultHierarchy") or {}).get("table")
+            if alvo in automaticas:
+                com_automatica.append(c.nome)
+                break
+
+    return com_automatica
 
 
 def tabela_de_data_em_dax(t: Tabela) -> bool:

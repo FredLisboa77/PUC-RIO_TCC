@@ -78,9 +78,24 @@ def coluna(
     resumir_por: str = "none",
     oculta: bool = False,
     annotations: dict[str, str] | None = None,
+    variacao_para: str | None = None,
 ) -> dict:
-    """Uma coluna TMSL. `tipo` é o `type`: `calculated`, `calculatedTableColumn`."""
+    """Uma coluna TMSL. `tipo` é o `type`: `calculated`, `calculatedTableColumn`.
+
+    `variacao_para` pendura na coluna uma `variations` apontando para a tabela
+    indicada — é assim que o Tempo automático de data/hora liga a coluna de data
+    à tabela de data que ele gerou.
+    """
     bruto: dict = {"name": nome, "dataType": tipo_dado, "summarizeBy": resumir_por}
+    if variacao_para is not None:
+        bruto["variations"] = [
+            {
+                "name": "Variation",
+                "isDefault": True,
+                "relationship": f"rel-{nome}",
+                "defaultHierarchy": {"hierarchy": "Date Hierarchy", "table": variacao_para},
+            }
+        ]
     if tipo is not None:
         bruto["type"] = tipo
     if expressao is not None:
