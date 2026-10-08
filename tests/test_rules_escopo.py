@@ -7,7 +7,9 @@ positivo concreto, observado no P8 — e nenhuma é por nome de objeto.
 from core.rules.escopo import (
     anotacoes,
     coluna_gerada_por_analise,
+    dax_escrito_pela_ferramenta,
     dimensao_de_data,
+    fora_de_escopo,
     lado_muitos,
     lado_um,
     nomes_em_escopo,
@@ -17,6 +19,7 @@ from core.rules.escopo import (
     tabela_de_parametro_hipotetico,
     tabela_gerada_por_analise,
     tabela_por_nome,
+    tabelas_com_dax_do_autor,
     tipo_da_coluna,
     um_para_um,
 )
@@ -335,3 +338,75 @@ def test_dimensao_de_data_nao_confunde_outra_tabela_calculada(ler):
     )
 
     assert dimensao_de_data(modelo) == set()
+
+
+# --- correção de 08/10/2026: DAX da ferramenta vs. DAX do autor ---
+
+
+def test_dax_do_autor_inclui_a_tabela_so_de_medidas(ler):
+    """A tabela de medidas sai das regras de nivel de tabela, nao da auditoria de DAX.
+
+    Ela nao tem relacionamento por natureza, e e por isso que `fora_de_escopo` a
+    exclui — nao porque seu DAX seja de outra pessoa. No PBIP real ela carrega
+    93 das 105 expressoes do modelo.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "_Medidas",
+                colunas=[coluna("Coluna", tipo="calculatedTableColumn")],
+                medidas=[medida("Total", "SUM(Vendas[Valor])")],
+            )
+        ]
+    )
+    t = modelo.tabelas[0]
+
+    assert tabela_apenas_de_medidas(t) is True
+    assert fora_de_escopo(t) is True
+    assert dax_escrito_pela_ferramenta(t) is False
+    assert [x.nome for x in tabelas_com_dax_do_autor(modelo)] == ["_Medidas"]
+
+
+def test_dax_do_autor_exclui_tabela_de_data_automatica(ler):
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "LocalDateTable_x",
+                colunas=[coluna("Trim", tipo="calculated", expressao="INT([Mes]/3)")],
+                annotations={"__PBI_LocalDateTable": "true"},
+            )
+        ]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []
+
+
+def test_dax_do_autor_exclui_tabela_de_cluster(ler):
+    modelo = ler(
+        tabelas=[tabela("ClusterMappingTable", annotations={"ClusterMappingTable": "x"})]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []
+
+
+def test_dax_do_autor_exclui_parametro_hipotetico(ler):
+    """O Desktop escreve a medida do parametro hipotetico, nao o autor.
+
+    No P8: `% Previsao = SELECTEDVALUE('Parametro'[Parametro])`, gerada pelo
+    recurso de parametro hipotetico junto com a tabela.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "Parametro",
+                colunas=[coluna("Parametro", tipo="calculatedTableColumn")],
+                medidas=[medida("Valor", "SELECTEDVALUE(Parametro[Parametro])")],
+                particoes=[particao(tipo="calculated", expressao="GENERATESERIES(0, 1, 0.1)")],
+            )
+        ]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []

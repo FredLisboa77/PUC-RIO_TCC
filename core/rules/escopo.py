@@ -109,6 +109,38 @@ def nomes_em_escopo(modelo: ModeloSemantico) -> set[str]:
     return {t.nome for t in tabelas_em_escopo(modelo)}
 
 
+def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
+    """O DAX desta tabela foi escrito pelo Power BI, nao pelo autor.
+
+    Distincao que `fora_de_escopo` nao faz, porque ate aqui toda regra era de
+    nivel de tabela. Aquele predicado junta duas naturezas de exclusao:
+
+    - **o DAX e da ferramenta** — tabela de data automatica, tabela de cluster, e
+      a tabela de parametro hipotetico, cuja medida o Desktop escreve junto com
+      a tabela (`% Previsao = SELECTEDVALUE(...)`);
+    - **padrao legitimo do autor** — a tabela que so carrega medidas, excluida
+      apenas por nao ter relacionamento por natureza.
+
+    So a primeira natureza vale para uma regra que le texto DAX. No PBIP real a
+    tabela de medidas carrega 93 das 105 expressoes do modelo: trata-la como
+    fora de escopo deixaria a auditoria de DAX cega para quase tudo.
+    """
+    return (
+        tabela_automatica_de_data(t)
+        or tabela_gerada_por_analise(t)
+        or tabela_de_parametro_hipotetico(t)
+    )
+
+
+def tabelas_com_dax_do_autor(modelo: ModeloSemantico) -> list[Tabela]:
+    """Tabelas cujo DAX o autor escreveu. E o escopo das regras de texto.
+
+    Difere de `tabelas_em_escopo` apenas pela tabela que so carrega medidas, que
+    aqui **entra**.
+    """
+    return [t for t in modelo.tabelas if not dax_escrito_pela_ferramenta(t)]
+
+
 def relacionamentos_em_escopo(modelo: ModeloSemantico) -> list[Relacionamento]:
     """Relacionamentos cujas duas pontas estão em escopo.
 
