@@ -238,3 +238,32 @@ def test_chamadas_sem_a_funcao_devolve_vazio():
     from core.dax import chamadas
 
     assert chamadas(tokenizar("SUM([a])"), "FILTER") == []
+
+
+def test_chamadas_sem_argumento_devolve_um_argumento_vazio():
+    """`NOW()` devolve um argumento vazio, não zero argumentos.
+
+    Comportamento deliberado e fixado aqui porque é surpreendente: uma regra
+    que perguntasse `len(args) == 0` para detectar chamada sem argumento
+    receberia 1 e concluiria o contrário.
+    """
+    from core.dax import chamadas
+
+    args = chamadas(tokenizar("NOW()"), "NOW")
+
+    assert len(args) == 1
+    assert args == [[[]]]
+
+
+def test_chamadas_com_parentese_sem_fechar_nao_fabrica_argumento():
+    """Chamada que nunca fecha não é chamada: nada a afirmar sobre ela."""
+    from core.dax import chamadas
+
+    assert chamadas(tokenizar("SUM([a]"), "SUM") == []
+
+
+def test_chamadas_ignora_o_nome_sem_parentese():
+    """O nome existe na expressão, mas não é uma chamada."""
+    from core.dax import chamadas
+
+    assert chamadas(tokenizar("SUM + 1"), "SUM") == []

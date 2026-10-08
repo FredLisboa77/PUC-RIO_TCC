@@ -260,6 +260,11 @@ def chamadas(tokens: list[Token], nome: str) -> list[list[list[Token]]]:
     separa argumentos desta chamada quando a profundidade é 1. É o que uma
     expressão regular não consegue fazer, e o motivo de a DAX-002 depender do
     lexer.
+
+    Uma chamada sem argumento devolve **um argumento vazio**, não zero
+    argumentos: `NOW()` devolve `[[[]]]`. A contagem de argumentos, portanto,
+    nunca é zero numa chamada que existe, e uma regra que precise distinguir
+    "sem argumento" tem de olhar se o único argumento está vazio.
     """
     alvo = nome.upper()
     resultado: list[list[list[Token]]] = []
