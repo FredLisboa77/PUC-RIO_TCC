@@ -136,7 +136,11 @@ def test_a_saida_vem_ordenada_por_severidade(resultado):
 
 
 def test_inventario_dos_sitios_estruturais(modelo):
-    """Os sítios que a PERF-005 precisa varrer, medidos no P8 em 08/10/2026."""
+    """Os oito sítios que sustentariam a PERF-005, recusada em 08/10/2026.
+
+    A regra saiu, mas o inventário fica: é o que `usos_de_coluna` lê, e são os
+    números medidos no P8 que fundamentaram a recusa.
+    """
     niveis = [n for t in modelo.tabelas for h in t.hierarquias for n in h.niveis]
     ordenacoes = [c for t in modelo.tabelas for c in t.colunas if c.ordenar_por]
 
