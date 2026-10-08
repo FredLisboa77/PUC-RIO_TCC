@@ -85,7 +85,7 @@ Texto entra, tokens saem. Não conhece modelo, tabela nem regra.
 | `NUMERO` | Inteiro e decimal |
 | `REFERENCIA` | `Tabela[Coluna]`, `'Tabela com espaço'[Coluna]` (com `''` como apóstrofo literal), e `[Medida]` — este sem tabela, e é assim que medida se distingue de coluna |
 | `IDENTIFICADOR` | Nome de função ou nome de tabela nu |
-| `OPERADOR` | `/ * + - & = <> < > <= >= ^ || &&` e `IN` |
+| `OPERADOR` | Só símbolos: `/ * + - & = <> < > <= >= ^ || &&`. `IN`, sendo alfabético, é consumido pelo ramo de identificador e sai como `IDENTIFICADOR` — nenhuma regra desta fase precisa dele como operador, e uma lista de palavras reservadas seria complexidade sem consumidor |
 | `PARENTESE_ABRE` / `PARENTESE_FECHA` | Para profundidade e fronteira de argumento |
 | `VIRGULA` | Separador de argumento |
 | `DESCONHECIDO` | Caractere que o lexer não reconhece. **Nunca levanta exceção** (D-4) |

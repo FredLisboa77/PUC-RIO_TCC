@@ -1342,6 +1342,8 @@ git commit -m "feat(rules): varredura de DAX com lacuna declarada"
 - Consumes: `varrer_dax`, `LacunaDax` (Tarefa 4).
 - Produces:
   - `ResultadoRegras.lacunas_de_expressao: list[LacunaDax]`
+  - `ResultadoRegras.expressoes_analisadas: int`
+  - `ResultadoRegras.falha_na_varredura: str | None`
   - `ResultadoRegras.cobertura_de_expressoes -> tuple[int, int]` — (analisadas, total)
 
 O contrato das regras **não muda**: elas continuam devolvendo `Iterable[Achado]`. A lacuna é propriedade da varredura, não de cada regra — se uma expressão não tokeniza, nenhuma regra de texto a enxerga, e declarar a mesma cegueira uma vez por regra seria pior.
@@ -2312,11 +2314,12 @@ git commit -m "feat(rules): PERF-005, coluna sem uso nos oito sitios"
 
 ---
 
-### Task 8: DAX-001 — Divisão com `/` em vez de `DIVIDE`
+### Task 8: DAX-001 — Divisão com `/` onde o denominador pode ser zero
 
 **Files:**
 - Create: `core/rules/dax.py`
 - Modify: `core/rules/todas.py`
+- Modify: `tests/test_pbip_real.py` — trava a contagem de DAX-001 no P8 (Passo 8)
 - Test: `tests/test_rules_dax.py`
 
 **Interfaces:**
@@ -2790,9 +2793,11 @@ git commit -m "docs: rendimento do grupo 2 no P8, verificado e com a causa de ca
 
 Contagem de regras, de testes e de achados no P8; a Fase 3 como em andamento.
 
-- [ ] **Step 5: `progress-log.md`**
+- [ ] **Step 5: `progress-log.md` — estender a entrada da Tarefa 9, não abrir outra**
 
-Entrada datada: o que foi entregue, o terceiro teste e de onde veio, o número de cobertura do lexer, e as pendências que seguem abertas — a verificação das roles e a conversão de P1–P7.
+A Tarefa 9 já criou a entrada de 08/10/2026 com a verificação do rendimento. **Estender aquela entrada**, em vez de abrir uma segunda da mesma data: duas entradas com assuntos sobrepostos tornam o log pior de ler, e o log é material da monografia.
+
+Acrescentar: o que foi entregue, o terceiro teste e de onde veio, o número de cobertura do lexer, e as pendências que seguem abertas — a verificação das roles e a conversão de P1–P7.
 
 - [ ] **Step 6: Run the whole suite one last time**
 
