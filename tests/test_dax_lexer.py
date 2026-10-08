@@ -194,3 +194,47 @@ def test_chaves_do_construtor_de_tabela():
         TipoToken.CHAVE_FECHA,
     ]
     assert tem_desconhecido(tokenizar(expressao)) is False
+
+
+def test_referencias_ignora_comentario_e_string():
+    from core.dax import referencias
+
+    tokens = tokenizar('Vendas[Total] // Vendas[Oculto]\n+ "Vendas[Falso]"')
+    assert [(t.tabela, t.coluna) for t in referencias(tokens)] == [("Vendas", "Total")]
+
+
+def test_operadores_conta_so_o_simbolo_pedido():
+    from core.dax import operadores
+
+    tokens = tokenizar("[a] / [b] + [c] / [d]")
+    assert len(operadores(tokens, "/")) == 2
+    assert len(operadores(tokens, "+")) == 1
+
+
+def test_chamadas_separa_os_argumentos():
+    from core.dax import chamadas
+
+    args = chamadas(tokenizar("DIVIDE([a], [b])"), "DIVIDE")
+    assert len(args) == 1
+    assert [len(a) for a in args[0]] == [1, 1]
+
+
+def test_chamadas_respeita_parenteses_aninhados():
+    """A vírgula de dentro pertence ao argumento, não à chamada de fora."""
+    from core.dax import chamadas
+
+    args = chamadas(tokenizar("SUMX(Vendas, DIVIDE([a], [b]))"), "SUMX")
+    assert len(args[0]) == 2
+    assert args[0][0][0].texto == "Vendas"
+
+
+def test_chamadas_e_insensivel_a_caixa():
+    from core.dax import chamadas
+
+    assert len(chamadas(tokenizar("divide([a],[b])"), "DIVIDE")) == 1
+
+
+def test_chamadas_sem_a_funcao_devolve_vazio():
+    from core.dax import chamadas
+
+    assert chamadas(tokenizar("SUM([a])"), "FILTER") == []

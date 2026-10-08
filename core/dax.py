@@ -242,3 +242,58 @@ def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
 def tem_desconhecido(tokens: list[Token]) -> bool:
     """A expressão não foi tokenizada por completo."""
     return any(t.tipo is TipoToken.DESCONHECIDO for t in tokens)
+
+
+def referencias(tokens: list[Token]) -> list[Token]:
+    """Só as referências. Comentário e string já são outros tipos de token."""
+    return [t for t in tokens if t.tipo is TipoToken.REFERENCIA]
+
+
+def operadores(tokens: list[Token], simbolo: str) -> list[Token]:
+    return [t for t in tokens if t.tipo is TipoToken.OPERADOR and t.texto == simbolo]
+
+
+def chamadas(tokens: list[Token], nome: str) -> list[list[list[Token]]]:
+    """Para cada chamada de `nome`, a lista dos seus argumentos.
+
+    A fronteira de argumento sai da profundidade de parêntese: uma vírgula só
+    separa argumentos desta chamada quando a profundidade é 1. É o que uma
+    expressão regular não consegue fazer, e o motivo de a DAX-002 depender do
+    lexer.
+    """
+    alvo = nome.upper()
+    resultado: list[list[list[Token]]] = []
+
+    for i, t in enumerate(tokens):
+        if t.tipo is not TipoToken.IDENTIFICADOR or t.texto.upper() != alvo:
+            continue
+        if i + 1 >= len(tokens) or tokens[i + 1].tipo is not TipoToken.PARENTESE_ABRE:
+            continue
+
+        argumentos: list[list[Token]] = []
+        atual: list[Token] = []
+        profundidade = 0
+
+        for u in tokens[i + 1 :]:
+            if u.tipo is TipoToken.PARENTESE_ABRE:
+                profundidade += 1
+                if profundidade == 1:
+                    continue
+            elif u.tipo is TipoToken.PARENTESE_FECHA:
+                profundidade -= 1
+                if profundidade == 0:
+                    argumentos.append(atual)
+                    break
+            elif u.tipo is TipoToken.VIRGULA and profundidade == 1:
+                argumentos.append(atual)
+                atual = []
+                continue
+            atual.append(u)
+        else:
+            # Parêntese sem fechar. Não inventa argumento: a expressão terá
+            # token DESCONHECIDO ou virará lacuna por outro caminho.
+            continue
+
+        resultado.append(argumentos)
+
+    return resultado
