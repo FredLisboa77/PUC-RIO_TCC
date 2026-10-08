@@ -1022,18 +1022,166 @@ git commit -m "feat(model): hierarquias, sortByColumn e roles de RLS"
 ### Task 4: A varredura e as lacunas
 
 **Files:**
+- Modify: `core/rules/escopo.py` — a distincao que falta (Passos 0a a 0c)
 - Create: `core/rules/expressoes.py`
-- Test: `tests/test_rules_expressoes.py`
+- Test: `tests/test_rules_escopo.py`, `tests/test_rules_expressoes.py`
 
 **Interfaces:**
-- Consumes: `tokenizar`, `tem_desconhecido`, `Token` (Tarefa 1); `tabelas_em_escopo` de `core/rules/escopo.py`; `Role` de `core/model.py` (Tarefa 3).
+- Consumes: `tokenizar`, `tem_desconhecido`, `Token` (Tarefa 1); `Role` de `core/model.py` (Tarefa 3); os predicados de `core/rules/escopo.py`.
 - Produces:
+  - `def dax_escrito_pela_ferramenta(t: Tabela) -> bool` (em `escopo.py`)
+  - `def tabelas_com_dax_do_autor(modelo: ModeloSemantico) -> list[Tabela]` (em `escopo.py`)
   - `class ExpressaoDax(BaseModel)`: `sitio: str`, `objeto: str`, `tabela: str | None`, `texto: str`, `tokens: list[Token]`
   - `class LacunaDax(BaseModel)`: `sitio: str`, `objeto: str`, `tabela: str | None`, `posicao: int`, `trecho: str`, `motivo: str`
   - `class VarreduraDax(BaseModel)`: `expressoes: list[ExpressaoDax]`, `lacunas: list[LacunaDax]`
   - `def varrer_dax(modelo: ModeloSemantico) -> VarreduraDax`
 
 Os valores de `sitio`: `"medida"`, `"coluna calculada"`, `"particao calculada"`, `"role"`.
+
+#### Correcao de 08/10/2026: a varredura nao pode usar `tabelas_em_escopo`
+
+A primeira versao desta tarefa filtrava as expressoes por `tabelas_em_escopo`, e isso estava **errado**. Medido contra o PBIP real: a varredura veria **12** expressoes em vez de **105** — cegueira para 89% do DAX que o autor escreveu.
+
+A causa e que `fora_de_escopo` junta num mesmo `or` quatro predicados de **duas naturezas diferentes**, e ate agora isso nao importava porque toda regra era de nivel de tabela:
+
+| Natureza | Predicado | A varredura de DAX deve excluir? |
+|---|---|---|
+| O **DAX e escrito pela ferramenta** | `tabela_automatica_de_data` | **Sim** |
+| | `tabela_gerada_por_analise` (cluster, agrupamento) | **Sim** |
+| | `tabela_de_parametro_hipotetico` | **Sim** — o Desktop escreve a medida (`% Previsao = SELECTEDVALUE(...)`), nao o autor |
+| **Padrao legitimo do autor**, sem relacionamento por natureza | `tabela_apenas_de_medidas` | **Nao** — o autor escreveu as 92 medidas que estao la |
+
+No P8 a tabela `_Medidas` carrega **93 das 105 expressoes**. Exclui-la da auditoria de DAX seria deixar de ler quase todo o DAX do modelo.
+
+`fora_de_escopo` e `tabelas_em_escopo` **nao mudam**: as 8 regras existentes as usam e as 15 ocorrencias do P8 estao travadas em teste. A distincao entra como funcao nova.
+
+**Isso tambem resolve, sem tocar em predicado nenhum,** o segundo defeito encontrado: `tabela_apenas_de_medidas` devolve `True` para tabela com zero colunas e uma medida (`all()` sobre lista vazia e `True`), o que fazia a fixture `tabela("Vendas", medidas=[...])` sair de escopo. Com `dax_escrito_pela_ferramenta` ela entra, porque nao e nenhuma das tres.
+
+- [ ] **Step 0a: Write the failing test for the scope split**
+
+Em `tests/test_rules_escopo.py`:
+
+```python
+def test_dax_do_autor_inclui_a_tabela_so_de_medidas(ler):
+    """A tabela de medidas sai das regras de nivel de tabela, nao da auditoria de DAX.
+
+    Ela nao tem relacionamento por natureza, e e por isso que `fora_de_escopo` a
+    exclui — nao porque seu DAX seja de outra pessoa. No PBIP real ela carrega
+    93 das 105 expressoes do modelo.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "_Medidas",
+                colunas=[coluna("Coluna", tipo="calculatedTableColumn")],
+                medidas=[medida("Total", "SUM(Vendas[Valor])")],
+            )
+        ]
+    )
+    t = modelo.tabelas[0]
+
+    assert tabela_apenas_de_medidas(t) is True
+    assert fora_de_escopo(t) is True
+    assert dax_escrito_pela_ferramenta(t) is False
+    assert [x.nome for x in tabelas_com_dax_do_autor(modelo)] == ["_Medidas"]
+
+
+def test_dax_do_autor_exclui_tabela_de_data_automatica(ler):
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "LocalDateTable_x",
+                colunas=[coluna("Trim", tipo="calculated", expressao="INT([Mes]/3)")],
+                annotations={"__PBI_LocalDateTable": "true"},
+            )
+        ]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []
+
+
+def test_dax_do_autor_exclui_tabela_de_cluster(ler):
+    modelo = ler(
+        tabelas=[tabela("ClusterMappingTable", annotations={"ClusterMappingTable": "x"})]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []
+
+
+def test_dax_do_autor_exclui_parametro_hipotetico(ler):
+    """O Desktop escreve a medida do parametro hipotetico, nao o autor.
+
+    No P8: `% Previsao = SELECTEDVALUE('Parametro'[Parametro])`, gerada pelo
+    recurso de parametro hipotetico junto com a tabela.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "Parametro",
+                colunas=[coluna("Parametro", tipo="calculatedTableColumn")],
+                medidas=[medida("Valor", "SELECTEDVALUE(Parametro[Parametro])")],
+                particoes=[particao(tipo="calculated", expressao="GENERATESERIES(0, 1, 0.1)")],
+            )
+        ]
+    )
+
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
+    assert tabelas_com_dax_do_autor(modelo) == []
+```
+
+Acrescentar `dax_escrito_pela_ferramenta` e `tabelas_com_dax_do_autor` ao import de `escopo` no topo do arquivo de teste.
+
+Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_escopo.py -v -k dax_do_autor`
+Expected: FAIL com `ImportError: cannot import name 'dax_escrito_pela_ferramenta'`
+
+- [ ] **Step 0b: Implement the scope split in `core/rules/escopo.py`**
+
+Acrescentar depois de `tabelas_em_escopo`, **sem tocar** em `fora_de_escopo` nem em `tabelas_em_escopo`:
+
+```python
+def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
+    """O DAX desta tabela foi escrito pelo Power BI, nao pelo autor.
+
+    Distincao que `fora_de_escopo` nao faz, porque ate aqui toda regra era de
+    nivel de tabela. Aquele predicado junta duas naturezas de exclusao:
+
+    - **o DAX e da ferramenta** — tabela de data automatica, tabela de cluster, e
+      a tabela de parametro hipotetico, cuja medida o Desktop escreve junto com
+      a tabela (`% Previsao = SELECTEDVALUE(...)`);
+    - **padrao legitimo do autor** — a tabela que so carrega medidas, excluida
+      apenas por nao ter relacionamento por natureza.
+
+    So a primeira natureza vale para uma regra que le texto DAX. No PBIP real a
+    tabela de medidas carrega 93 das 105 expressoes do modelo: trata-la como
+    fora de escopo deixaria a auditoria de DAX cega para quase tudo.
+    """
+    return (
+        tabela_automatica_de_data(t)
+        or tabela_gerada_por_analise(t)
+        or tabela_de_parametro_hipotetico(t)
+    )
+
+
+def tabelas_com_dax_do_autor(modelo: ModeloSemantico) -> list[Tabela]:
+    """Tabelas cujo DAX o autor escreveu. E o escopo das regras de texto.
+
+    Difere de `tabelas_em_escopo` apenas pela tabela que so carrega medidas, que
+    aqui **entra**.
+    """
+    return [t for t in modelo.tabelas if not dax_escrito_pela_ferramenta(t)]
+```
+
+Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_escopo.py -v`
+Expected: PASS, e os testes de escopo que ja existiam continuam passando — `fora_de_escopo` nao foi tocado.
+
+- [ ] **Step 0c: Commit the scope split**
+
+```bash
+git add core/rules/escopo.py tests/test_rules_escopo.py
+git commit -m "feat(rules): separa o DAX da ferramenta do DAX do autor"
+```
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1109,7 +1257,10 @@ Expected: FAIL com `NameError: name 'varrer_dax' is not defined`
 
 Modelo entra, varredura sai. **Não conhece sintaxe de DAX** — isso é de
 `core/dax.py` — e não conhece regra. Filtra por linguagem (partição só entra se
-`source.type == "calculated"`) e respeita as exclusões de `escopo.py`.
+`source.type == "calculated"`) e pelo escopo de `tabelas_com_dax_do_autor`, que
+é o de quem escreveu o DAX — **não** `tabelas_em_escopo`, que exclui também a
+tabela de medidas e deixaria a varredura cega para 93 das 105 expressões do
+PBIP real.
 
 As duas listas vêm juntas, de uma função só, e por construção: as regras iteram
 apenas `expressoes`, de modo que uma expressão que não tokenizou por completo
@@ -1123,7 +1274,7 @@ from pydantic import BaseModel, Field
 
 from core.dax import Token, tem_desconhecido, tokenizar
 from core.model import ModeloSemantico
-from core.rules.escopo import tabelas_em_escopo
+from core.rules.escopo import tabelas_com_dax_do_autor
 
 VIZINHANCA = 40
 """Caracteres de contexto em volta da posição da lacuna, para o usuário
@@ -1164,7 +1315,7 @@ class VarreduraDax(BaseModel):
 
 def _sitios(modelo: ModeloSemantico):
     """Todo lugar em escopo onde há DAX, como (sitio, objeto, tabela, texto)."""
-    for t in tabelas_em_escopo(modelo):
+    for t in tabelas_com_dax_do_autor(modelo):
         for m in t.medidas:
             if m.expressao:
                 yield "medida", f"{t.nome}[{m.nome}]", t.nome, m.expressao
@@ -1553,6 +1704,19 @@ git commit -m "feat(rules): o resultado declara cobertura e lacunas de expressao
 
 **Interfaces:**
 - Consumes: `varrer_dax`, `ExpressaoDax` (Tarefa 4); `referencias` de `core/dax.py` (Tarefa 2); `Role`, `Hierarquia` (Tarefa 3); `tabelas_em_escopo` de `escopo.py`.
+
+**Os dois escopos, e por que aqui é `tabelas_em_escopo` e na Tarefa 4 não.** São perguntas diferentes, e confundi-las foi o defeito corrigido na Tarefa 4:
+
+| Pergunta | Escopo certo | Onde |
+|---|---|---|
+| *De que colunas a PERF-005 pode falar?* | `tabelas_em_escopo` | as chaves do dicionário de usos, e o laço de marcação estrutural, nesta tarefa; e o laço da regra, na Tarefa 7 |
+| *Que texto DAX o autor escreveu?* | `tabelas_com_dax_do_autor` | dentro de `varrer_dax`, na Tarefa 4 |
+
+A coluna fictícia `calculatedTableColumn` da tabela de medidas é criada pelo Power BI para a tabela existir. Apontá-la como "sem uso" seria falso positivo, então ela **não** deve estar entre as chaves — e é por isso que `tabelas_em_escopo` está correto aqui. Ao mesmo tempo, as 92 medidas que moram nessa tabela referenciam colunas de outras tabelas, e essas referências **precisam** contar: elas chegam por `varrer_dax`, que já usa o escopo do autor.
+
+O guarda `if chave in usos` dentro de `marcar()` é o que faz os dois escopos conviverem: uma referência a coluna de tabela fora de escopo é simplesmente descartada, porque não há nada a afirmar sobre ela.
+
+**Não troque `tabelas_em_escopo` por `tabelas_com_dax_do_autor` nesta tarefa.** A inconsistência entre as duas tarefas é deliberada e está medida.
 - Produces:
   - `SITIOS_DE_USO: tuple[str, ...]` — os oito nomes, na ordem em que a regra os reporta
   - `def usos_de_coluna(modelo: ModeloSemantico) -> dict[tuple[str, str], set[str]]` — de `(tabela, coluna)` para o conjunto de sítios que a usam
