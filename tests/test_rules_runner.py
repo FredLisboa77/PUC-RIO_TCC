@@ -5,6 +5,8 @@ determinística, porque a Fase 5 compara listas; e uma regra que explode não
 derruba a auditoria, mas também não desaparece em silêncio.
 """
 
+from conftest import medida, tabela
+
 from core.model import ModeloSemantico
 from core.rules.base import Achado, Evidencia
 from core.rules.registry import Registro, regra
@@ -123,3 +125,83 @@ def test_isola_regra_que_rotula_achado_com_id_de_outra_regra():
     assert [a.id_regra for a in resultado.achados] == ["MOD-902"]
     assert [f.id_regra for f in resultado.regras_com_falha] == ["MOD-901"]
     assert "MOD-9O1" in resultado.regras_com_falha[0].erro
+
+
+# --- canal de aviso: lacunas e cobertura de expressões ---
+
+
+def test_o_resultado_carrega_as_lacunas(ler):
+    """A interface precisa poder dizer "135 de 137 expressões analisadas"."""
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("Ruim", "[a] § [b]")])])
+
+    resultado = avaliar(modelo, Registro())
+
+    assert len(resultado.lacunas_de_expressao) == 1
+    assert resultado.lacunas_de_expressao[0].objeto == "Vendas[Ruim]"
+    assert resultado.cobertura_de_expressoes == (0, 1)
+
+
+def test_modelo_sem_lacuna_tem_cobertura_total(ler):
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("Boa", "SUM(Vendas[V])")])])
+
+    resultado = avaliar(modelo, Registro())
+
+    assert resultado.lacunas_de_expressao == []
+    assert resultado.cobertura_de_expressoes == (1, 1)
+
+
+def test_falha_na_varredura_nao_derruba_a_auditoria(ler, monkeypatch):
+    """A varredura roda fora do isolamento por regra. Se ela estourar, a
+    auditoria inteira morre — e o usuário perde também os achados estruturais,
+    que não dependem de DAX nenhum."""
+    import core.rules.runner as runner
+
+    def explode(_modelo):
+        raise RuntimeError("varredura com defeito")
+
+    monkeypatch.setattr(runner, "varrer_dax", explode)
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("A", "1")])])
+
+    resultado = runner.avaliar(modelo, Registro())
+
+    assert resultado.cobertura_de_expressoes == (0, 0)
+    assert resultado.falha_na_varredura is not None
+    assert "RuntimeError" in resultado.falha_na_varredura
+
+
+def test_nulos_do_tmsl_nao_derrubam_a_varredura(tmp_path):
+    """`annotations: null` derrubou as oito regras de uma vez em 06/10. Os
+    campos novos — hierarchies, levels, roles, tablePermissions, variations —
+    podem vir null do mesmo jeito."""
+    import json
+
+    from core.parser_bim import ler_modelo
+
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "relationships": None,
+            "roles": None,
+            "tables": [
+                {
+                    "name": "Vendas",
+                    "columns": [
+                        {"name": "A", "variations": None, "sortByColumn": None}
+                    ],
+                    "measures": None,
+                    "partitions": None,
+                    "hierarchies": None,
+                    "annotations": None,
+                }
+            ],
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    resultado = avaliar(ler_modelo(caminho), Registro())
+
+    assert resultado.falha_na_varredura is None
+    assert resultado.cobertura_de_expressoes == (0, 0)

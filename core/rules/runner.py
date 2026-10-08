@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from core.model import ModeloSemantico
 from core.rules.base import ORDEM_SEVERIDADE, Achado
+from core.rules.expressoes import LacunaDax, VarreduraDax, varrer_dax
 from core.rules.registry import REGISTRO, Registro
 
 logger = logging.getLogger(__name__)
@@ -31,9 +32,28 @@ class ResultadoRegras(BaseModel):
     regras_com_falha: list[FalhaDeRegra] = Field(default_factory=list)
     regras_executadas: int = 0
 
+    lacunas_de_expressao: list[LacunaDax] = Field(default_factory=list)
+    """Expressões que o lexer não leu por completo, e que portanto nenhuma regra
+    de texto examinou. Não são achados nem falhas: são cegueira declarada. O
+    relatório precisa mostrá-las junto da contagem de achados, não num apêndice
+    — "15 achados" e "135 de 137 expressões analisadas" devem ser lidos na mesma
+    olhada."""
+
+    expressoes_analisadas: int = 0
+
+    falha_na_varredura: str | None = None
+    """A varredura de DAX falhou. As regras estruturais seguem valendo; as de
+    texto não rodaram."""
+
     @property
     def total_de_regras(self) -> int:
         return self.regras_executadas + len(self.regras_com_falha)
+
+    @property
+    def cobertura_de_expressoes(self) -> tuple[int, int]:
+        """(analisadas, total) das expressões DAX em escopo."""
+        total = self.expressoes_analisadas + len(self.lacunas_de_expressao)
+        return self.expressoes_analisadas, total
 
 
 def avaliar(
@@ -52,6 +72,15 @@ def avaliar(
     achados: list[Achado] = []
     falhas: list[FalhaDeRegra] = []
     executadas = 0
+
+    try:
+        varredura = varrer_dax(modelo)
+    except Exception as erro:  # noqa: BLE001 — isolar é o objetivo
+        logger.exception("a varredura de DAX falhou")
+        varredura = VarreduraDax()
+        falha_na_varredura = f"{type(erro).__name__}: {erro}"
+    else:
+        falha_na_varredura = None
 
     for id_regra in reg.ids():
         try:
@@ -91,5 +120,10 @@ def avaliar(
         )
     )
     return ResultadoRegras(
-        achados=achados, regras_com_falha=falhas, regras_executadas=executadas
+        achados=achados,
+        regras_com_falha=falhas,
+        regras_executadas=executadas,
+        lacunas_de_expressao=varredura.lacunas,
+        expressoes_analisadas=len(varredura.expressoes),
+        falha_na_varredura=falha_na_varredura,
     )
