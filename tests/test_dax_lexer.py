@@ -133,6 +133,48 @@ def test_colchete_sem_fechar_vira_desconhecido():
     assert tem_desconhecido(tokenizar("Vendas[Total]")) is False
 
 
+def test_delimitador_sem_fechar_consome_o_resto_como_desconhecido():
+    """Nada descartado, nada fabricado.
+
+    O defeito que isto fixa: `'Tabela[Coluna]` produzia uma REFERENCIA a
+    Tabela[Coluna] a partir de um nome citado que nunca fechou, indistinguivel
+    de uma referencia legitima; e `Vendas[Total` descartava "Vendas" sem emitir
+    token nenhum. A regra de coluna sem uso decide ausencia de referencia lendo
+    estes tokens, e referencia fabricada ali vira recomendacao de apagar coluna
+    em uso.
+    """
+    tokens = tokenizar("Vendas[Total")
+    assert [(t.tipo, t.texto, t.posicao) for t in tokens] == [
+        (TipoToken.DESCONHECIDO, "Vendas[Total", 0)
+    ]
+
+    tokens = tokenizar("'Tabela[Coluna]")
+    assert [(t.tipo, t.texto, t.posicao) for t in tokens] == [
+        (TipoToken.DESCONHECIDO, "'Tabela[Coluna]", 0)
+    ]
+    assert all(t.tabela is None and t.coluna is None for t in tokens)
+
+    tokens = tokenizar("[Total")
+    assert [(t.tipo, t.texto, t.posicao) for t in tokens] == [
+        (TipoToken.DESCONHECIDO, "[Total", 0)
+    ]
+
+
+def test_delimitador_sem_fechar_preserva_os_tokens_validos_que_vieram_antes():
+    """O defeito era só no que vem depois do delimitador quebrado."""
+    tokens = tokenizar("SUM([a]) + Vendas[Total")
+    tipos_e_textos = [(t.tipo, t.texto) for t in tokens]
+
+    assert tipos_e_textos == [
+        (TipoToken.IDENTIFICADOR, "SUM"),
+        (TipoToken.PARENTESE_ABRE, "("),
+        (TipoToken.REFERENCIA, "[a]"),
+        (TipoToken.PARENTESE_FECHA, ")"),
+        (TipoToken.OPERADOR, "+"),
+        (TipoToken.DESCONHECIDO, "Vendas[Total"),
+    ]
+
+
 def test_caractere_estranho_vira_desconhecido():
     from core.dax import tem_desconhecido
 

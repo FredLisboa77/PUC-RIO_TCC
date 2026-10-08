@@ -174,6 +174,20 @@ def _nome_entre(texto: str, i: int, abre: str, fecha: str) -> tuple[str | None, 
     return None, i
 
 
+def _resto_desconhecido(texto: str, inicio: int) -> tuple[Token, int]:
+    """Delimitador (`[`, `'`) que nunca fechou: o resto da expressão não é confiável.
+
+    Consome até o fim da expressão, não só o caractere do delimitador. Devolver
+    só ele descartaria em silêncio o nome já lido antes (`"Vendas"` cairia do
+    chão em `Vendas[Total`), e retomar a varredura depois dele poderia
+    fabricar uma `REFERENCIA` de aparência legítima a partir do que sobrou
+    (`Coluna]` de `'Tabela[Coluna]`, indistinguível de uma referência real para
+    quem só olha esse token). Nenhuma das duas opções serve a uma regra que
+    decide ausência de referência lendo estes tokens.
+    """
+    return Token(tipo=TipoToken.DESCONHECIDO, texto=texto[inicio:], posicao=inicio), len(texto)
+
+
 def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
     """`[Medida]`, `Tabela[Coluna]`, `'Com espaço'[Coluna]` ou nome de função."""
     inicio = i
@@ -181,7 +195,7 @@ def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
     if texto[i] == "[":
         coluna, fim = _nome_entre(texto, i, "[", "]")
         if coluna is None:
-            return Token(tipo=TipoToken.DESCONHECIDO, texto=texto[i], posicao=i), i + 1
+            return _resto_desconhecido(texto, inicio)
         return (
             Token(
                 tipo=TipoToken.REFERENCIA,
@@ -196,7 +210,7 @@ def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
     if texto[i] == "'":
         tabela, fim = _nome_entre(texto, i, "'", "'")
         if tabela is None:
-            return Token(tipo=TipoToken.DESCONHECIDO, texto=texto[i], posicao=i), i + 1
+            return _resto_desconhecido(texto, inicio)
     else:
         fim = i
         while fim < len(texto) and (texto[fim].isalnum() or texto[fim] == "_"):
@@ -206,7 +220,7 @@ def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
     if fim < len(texto) and texto[fim] == "[":
         coluna, depois = _nome_entre(texto, fim, "[", "]")
         if coluna is None:
-            return Token(tipo=TipoToken.DESCONHECIDO, texto=texto[fim], posicao=fim), fim + 1
+            return _resto_desconhecido(texto, inicio)
         return (
             Token(
                 tipo=TipoToken.REFERENCIA,
