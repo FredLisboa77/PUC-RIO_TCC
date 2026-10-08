@@ -5,7 +5,7 @@ P8 há 10 `sortByColumn` e 16 níveis de hierarquia esperando por esse erro.
 """
 
 from core.rules.referencias import usos_de_coluna
-from tests.conftest import coluna, hierarquia, medida, nivel, particao, relacionamento, role, tabela
+from conftest import coluna, hierarquia, medida, nivel, particao, relacionamento, role, tabela
 
 
 def test_chave_de_relacionamento_e_uso(ler):
