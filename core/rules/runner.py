@@ -51,7 +51,13 @@ class ResultadoRegras(BaseModel):
 
     @property
     def cobertura_de_expressoes(self) -> tuple[int, int]:
-        """(analisadas, total) das expressões DAX em escopo."""
+        """(analisadas, total) das expressões DAX em escopo.
+
+        `(0, 0)` é ambíguo por si só: tanto um modelo sem DAX nenhum quanto uma
+        varredura que estourou chegam a esse valor. Quem consome esta
+        propriedade e encontra `total == 0` precisa checar `falha_na_varredura`
+        antes de anunciar "nada para analisar" — pode ser "não sei".
+        """
         total = self.expressoes_analisadas + len(self.lacunas_de_expressao)
         return self.expressoes_analisadas, total
 
@@ -67,6 +73,10 @@ def avaliar(
 
     Uma regra que levanta exceção é isolada e registrada. O usuário final não
     perde a auditoria inteira por causa de uma propriedade inesperada do TMSL.
+
+    A varredura de DAX tem seu próprio isolamento, independente do das regras:
+    ela roda uma vez, fora do laço, e se estourar não pode arrastar com ela os
+    achados estruturais — que não leem DAX e continuam valendo.
     """
     reg = REGISTRO if registro is None else registro
     achados: list[Achado] = []

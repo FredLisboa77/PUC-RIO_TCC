@@ -169,6 +169,57 @@ def test_falha_na_varredura_nao_derruba_a_auditoria(ler, monkeypatch):
     assert "RuntimeError" in resultado.falha_na_varredura
 
 
+def test_a_varredura_que_falha_nao_impede_as_regras_de_rodar(ler, monkeypatch):
+    """A isolação da varredura existe para isto, e o teste anterior não provava.
+
+    Com `Registro()` vazio o laço das regras roda zero vezes de todo jeito, e o
+    teste não distingue "não havia regra" de "o laço não rodou". Aqui há uma
+    regra registrada, e o que se afirma é que o achado dela volta mesmo depois
+    de a varredura estourar: as regras estruturais leem propriedades do TMSL e
+    não dependem de DAX nenhum.
+    """
+    import core.rules.runner as runner
+
+    registro = Registro()
+
+    @regra(
+        registro=registro,
+        id="TESTE-001",
+        titulo="Regra de teste que sempre acha",
+        categoria="modelagem",
+        severidade="baixa",
+        url_canonica="https://learn.microsoft.com/en-us/power-bi/guidance/star-schema",
+        termos_consulta=["teste"],
+        recomendacao_padrao=(
+            "Recomendação de teste, longa o suficiente para passar a validação "
+            "de tamanho mínimo do RegraMeta."
+        ),
+    )
+    def sempre_acha(modelo):
+        yield Achado(
+            id_regra="TESTE-001",
+            evidencia=Evidencia(tipo_objeto="modelo", objeto="modelo"),
+            mensagem="Achado de teste.",
+        )
+
+    def explode(_modelo):
+        raise RuntimeError("varredura com defeito")
+
+    monkeypatch.setattr(runner, "varrer_dax", explode)
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("A", "1")])])
+
+    resultado = runner.avaliar(modelo, registro)
+
+    # O que o teste anterior não afirmava: a auditoria entregou achado.
+    assert [a.id_regra for a in resultado.achados] == ["TESTE-001"]
+    assert resultado.regras_executadas == 1
+    assert resultado.regras_com_falha == []
+    # E declarou a cegueira, em vez de esconder.
+    assert resultado.falha_na_varredura is not None
+    assert "RuntimeError" in resultado.falha_na_varredura
+    assert resultado.cobertura_de_expressoes == (0, 0)
+
+
 def test_nulos_do_tmsl_nao_derrubam_a_varredura(tmp_path):
     """`annotations: null` derrubou as oito regras de uma vez em 06/10. Os
     campos novos — hierarchies, levels, roles, tablePermissions, variations —
