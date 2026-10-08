@@ -12,10 +12,16 @@ detectabilidade exige varrer **todos** os lugares onde o sinal poderia estar
 — seu terceiro teste, cláusula (c) —, e a camada de relatório, onde um
 atributo comum justifica sua existência, é F19: fora do que esta auditoria
 lê. Uma regra que afirmasse "sem uso" só a partir deste módulo estaria
-afirmando sobre um domínio que não observa — precisão estimada de ~24% contra
-um limiar de projeto de 0,7. **Nenhuma regra deve tratar um conjunto vazio
-aqui como "coluna sem uso"**; é, no máximo, "sem uso estrutural ou em DAX
-conhecido pela ferramenta".
+afirmando sobre um domínio que não observa — e é exatamente por isso que a
+precisão não pode ser estabelecida: dos 33 que a regra reportaria (36 menos 3
+geradas por agrupamento/análise), 5 são verdadeiro positivo defensável, 3 são
+falso positivo confirmado (documentação recomenda mantê-las), e os outros 25
+dependem da camada de relatório que este módulo não lê. A precisão, portanto,
+varia entre ~15% (5/33, se as 25 estiverem em uso — o cenário provável) e
+~91% (30/33, se nenhuma estiver) contra um limiar de projeto de 0,7: uma
+faixa larga o bastante para não sustentar nenhum número único. **Nenhuma
+regra deve tratar um conjunto vazio aqui como "coluna sem uso"**; é, no
+máximo, "sem uso estrutural ou em DAX conhecido pela ferramenta".
 
 O módulo continua existindo porque é a evidência reprodutível desse
 resultado — apagá-lo reduziria a medição a anedota — e porque serve a uma

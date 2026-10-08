@@ -2110,7 +2110,7 @@ A PERF-005 estava especificada, tinha âncora transcrita no `backlog.md` desde 0
 
 **Por que ela não se sustenta.** A âncora (`guidance/import-modeling-data-reduction`, *Remove unnecessary columns*) justifica uma coluna por servir a **um de dois propósitos**: o relatório, ou a estrutura do modelo. A camada de relatório é o **F19**, Trabalhos Futuros — a ferramenta não a lê e não pode observar o primeiro propósito.
 
-Portanto a PERF-005 afirma ausência sobre um domínio que ela não enxerga, e isso viola a **cláusula (c) do terceiro teste** formulado nesta mesma etapa: *todos os sítios onde o sinal pode morar*. Precisão estimada em ~24%, contra o gatilho de 0,7 do R-03.
+Portanto a PERF-005 afirma ausência sobre um domínio que ela não enxerga, e isso viola a **cláusula (c) do terceiro teste** formulado nesta mesma etapa: *todos os sítios onde o sinal pode morar*. Precisão **indeterminável** dentro do que o MVP lê — entre ~15% e ~91%, dependendo de quantos dos 25 atributos reportáveis estão de fato em uso —, contra o gatilho de 0,7 do R-03.
 
 **O que isso vale para a monografia.** O terceiro teste rejeitou a **primeira** regra que passou nos dois primeiros critérios — e era uma regra que o projeto queria ter. É o critério se provando sobre um caso em que havia incentivo para ignorá-lo. Com a MOD-005, são dois casos em que o terceiro teste mudou o resultado, e o segundo é mais forte que o primeiro: na MOD-005 a regra foi corrigida, aqui ela foi descartada.
 
@@ -2126,7 +2126,7 @@ Rodar `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k usos_d
 
 Na tabela de candidatas, a linha **"Coluna sem uso"** sai de "candidata registrada" e passa a recusada. Acrescentar ao *Log de alertas de escopo* uma linha datada de 08/10/2026:
 
-> | 08/10/2026 | Implementar a candidata "coluna sem uso" como PERF-005 | **Recusada.** A âncora justifica a coluna por servir ao relatório **ou** à estrutura do modelo, e a camada de relatório é o F19, que a ferramenta não lê — então a regra afirma ausência sobre domínio que não observa, violando a cláusula (c) do terceiro teste. Medido no P8: 33 achados, dos quais 3 são colunas de calendário que a documentação recomenda e ~25 são atributos reportáveis provavelmente em uso em visuais. Precisão estimada ~24%, contra o gatilho de 0,7 do R-03. A resolução de uso (`core/rules/referencias.py`) **fica** como evidência reproduzível da medição e para uso de regra futura |
+> | 08/10/2026 | Implementar a candidata "coluna sem uso" como PERF-005 | **Recusada.** A âncora justifica a coluna por servir ao relatório **ou** à estrutura do modelo, e a camada de relatório é o F19, que a ferramenta não lê — então a regra afirma ausência sobre domínio que não observa, violando a cláusula (c) do terceiro teste. Medido no P8: 33 achados, dos quais 5 são defensáveis, 3 são colunas de calendário que a documentação recomenda (falso positivo confirmado) e 25 são atributos reportáveis cujo uso depende da camada de relatório, desconhecida para a ferramenta. **Precisão indeterminável** — entre ~15% e ~91% —, contra o gatilho de 0,7 do R-03. A resolução de uso (`core/rules/referencias.py`) **fica** como evidência reproduzível da medição e para uso de regra futura |
 
 Acrescentar também, à seção do terceiro teste, a nota de que ele teve seu primeiro caso de rejeição — não apenas de correção.
 
@@ -2139,7 +2139,7 @@ Registrar como candidata futura a **forma estreita**: regra que aponte apenas ch
 
 - [ ] **Step 4: A spec**
 
-A seção 5 da spec descreve a PERF-005 como regra a implementar. Reescrevê-la como **regra rejeitada**, com a medição e o motivo, do mesmo jeito que a seção de rendimento (6) já trata hipótese e verificação. A seção 6 também precisa ser atualizada: a hipótese era "PERF-005 entre 0 e 5", e a medição deu 33 com ~24% de precisão projetada — o que confirma a hipótese do rendimento baixo da etapa por um caminho que ela não previa.
+A seção 5 da spec descreve a PERF-005 como regra a implementar. Reescrevê-la como **regra rejeitada**, com a medição e o motivo, do mesmo jeito que a seção de rendimento (6) já trata hipótese e verificação. A seção 6 também precisa ser atualizada: a hipótese era "PERF-005 entre 0 e 5", e a medição deu 33 com precisão indeterminável (entre ~15% e ~91%, dentro do que o MVP lê) — o que confirma a hipótese do rendimento baixo da etapa por um caminho que ela não previa.
 
 Acrescentar à seção 4.1 da spec a tabela de tokens que falta: `CHAVE_ABRE` e `CHAVE_FECHA`, acrescentados na Tarefa 1 porque o corpus real usa o construtor de tabela do DAX (`x IN {"No Discount"}`).
 

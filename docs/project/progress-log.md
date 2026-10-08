@@ -425,6 +425,29 @@ que ela lê; não abriu um único visual, porque não pode. A estimativa de
 reverificada** por esta tarefa, e só uma comparação contra ground truth na
 Fase 5 poderia confirmá-la ou derrubá-la.
 
+**Correção (fix round sobre a Tarefa 10, mesma data):** a frase acima estava
+errada, não apenas não reverificada — a diferença importa, e por isso o
+registro é uma correção, não uma troca silenciosa de número. O ~24% nunca
+teve derivação válida: das 33 colunas que a regra reportaria (36 sem uso
+estrutural, menos 3 geradas por agrupamento/análise), 5 são verdadeiro
+positivo defensável e 3 são falso positivo **confirmado** — a documentação
+recomenda mantê-las —, o que já dá 8/33 ≈ 24%. O erro foi tratar essas 3 como
+acerto da regra quando elas são exatamente o grupo que se sabe estar errado.
+As outras 25 (atributos reportáveis) são **desconhecidas** — dependem da
+camada de relatório, que a ferramenta não lê —, não neutras. A precisão
+correta, portanto, não é um número: é um intervalo, **~15% (5/33, se as 25
+estiverem em uso — o cenário mais provável) a ~91% (30/33, no outro
+extremo)**. Nenhuma comparação contra ground truth na Fase 5 vai estreitar
+esse intervalo pelo lado que importa, porque a largura dele não vem de falta
+de medição — vem da camada de relatório ser inobservável pelo MVP. Isso não
+enfraquece a rejeição da PERF-005; fortalece-a: a regra não foi recusada por
+ter precisão medida baixa, mas por sua precisão ser **indeterminável** dentro
+do que o MVP lê, que é a cláusula (c) do terceiro teste dita de outra forma.
+Esta correção propagou para `status.md`, `riscos.md`, `backlog.md` e o
+docstring de `core/rules/referencias.py` — todos os lugares que citavam
+~24% foram corrigidos juntos, para não deixar a monografia com uma fonte
+dizendo um número e outra dizendo outro.
+
 Achado lateral: dos oito sítios, dois nunca marcam nada neste corpus —
 `hierarquia`, porque as quatro hierarquias do modelo pertencem às tabelas de
 data automáticas, fora de escopo; e `dax de role`, porque o P8 não tem role
@@ -471,9 +494,9 @@ grupo 2, nesta mesma entrada — não numa segunda entrada da mesma data.
   testes, o uso da folga da semana 5, e R-12 como o risco mais urgente do
   projeto — sem nenhuma afirmação de precisão alem das que esta entrada e a
   anterior autorizam (DAX-001: zero confirmado, não "regra precisa"; PERF-005:
-  ~24% é a precisão **projetada** que fundamentou a rejeição, não medida de
-  uma regra que existe). `README.md` ganhou a contagem de regras, de testes
-  e a Fase 3 como em andamento.
+  sua precisão **não pode ser estabelecida** com o que a ferramenta lê — ver a
+  correção abaixo —, não medida de uma regra que existe). `README.md` ganhou a
+  contagem de regras, de testes e a Fase 3 como em andamento.
 
 - **O terceiro teste, e de onde veio:** formulado nesta mesma etapa (seção 3
   da spec de 08/10/2026), a partir da lição da MOD-005 (06/10) — ela passava

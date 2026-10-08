@@ -123,10 +123,18 @@ onde o sinal pode morar. Afirmação por ausência exige as três completas
 esperado da etapa — e ainda assim foi recusada, antes do código, porque a
 documentação que a sustenta justifica uma coluna por servir ao **relatório ou** à
 estrutura do modelo, e a camada de relatório (F19) a ferramenta não lê. Medido no
-P8: de 36 colunas sem uso estrutural, apenas **5** são defensáveis (chaves
-substitutas órfãs); **3** são colunas de calendário que a própria documentação
-recomenda manter; e **~25** são atributos reportáveis quase certamente em uso em
-visuais. Precisão projetada **~24%**, contra o gatilho de 0,7 do R-03.
+P8: `usos_de_coluna` achou 36 colunas sem uso estrutural; a regra reportaria
+**33** (três saem por serem geradas por agrupamento/análise). Dessas 33, apenas
+**5** são defensáveis (chaves substitutas órfãs, verdadeiro positivo); **3** são
+colunas de calendário que a própria documentação recomenda manter (falso
+positivo **confirmado**); e **25** são atributos reportáveis cujo uso a
+ferramenta não pode verificar, porque depende da camada de relatório. **A
+precisão não pode ser estabelecida com o que a ferramenta lê** — varia entre
+~15% (5/33, se as 25 estiverem de fato em uso, o cenário mais provável) e ~91%
+(30/33, no outro extremo) —, contra o gatilho de 0,7 do R-03. Essa indeterminação
+é a mesma violação da cláusula (c) dita de outra forma: a regra não foi recusada
+por ter precisão medida baixa, mas por sua precisão ser impossível de fixar
+dentro do escopo do MVP.
 
 A **DAX-001** (divisão com `/` onde o denominador não é constante) entrou com
 âncora verificada no mesmo dia — e a verificação quase a derrubou pelo mesmo
@@ -145,11 +153,15 @@ nenhuma é iteração desnecessária — o que não decide a regra a favor nem c
 só confirma que o P8 não a exerceria.
 
 **O resultado, para a monografia:** mantendo a exigência de âncora e o terceiro
-teste, o cenário otimista sem o grupo 3 soma por volta de **18 regras**, não
-20–25. A diferença não é um déficit de esforço — é o critério funcionando: a
-monografia defende as **9 regras** entregues e usa as regras recusadas (PERF-005,
-e antes dela três regras estruturais e a convenção de nomenclatura) como evidência
-do próprio método.
+teste, e sem abrir o grupo 3, o que está fechado são **9 regras** (8 do grupo 1,
+1 do grupo 2); o que falta decidir é, no máximo, mais 1 do grupo 2 (DAX-002, se
+a âncora verificar) mais o que o grupo 4 (regras de M) render — e esse grupo
+ainda não foi atacado, então o projeto não tem hoje base para apontar um total
+otimista único, muito menos afirmar que ele chega a 20–25. A diferença não é um
+déficit de esforço — é o critério funcionando: a monografia defende as **9
+regras** entregues e usa as regras recusadas (PERF-005, e antes dela três regras
+estruturais e a convenção de nomenclatura) como evidência do próprio método, não
+uma contagem otimista que ninguém somou com confiança.
 
 ### 4.2 Dataset P1–P7 não convertido — de recomendação a bloqueio (R-12)
 

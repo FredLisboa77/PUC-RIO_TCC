@@ -189,7 +189,14 @@ Lê-los passa a item de Trabalhos Futuros, condicionado a um PBIP que os contenh
 | 3 | Colunas de calendário: `DimCalendar[Mês]`, `[Trimestre]`, `[Semestre]` | **Falso positivo** — a documentação recomenda acrescentá-las, e a PERF-001 já as exclui por isso |
 | 25 | Atributos reportáveis: `StoreName`, `PromotionName`, `ProductCategoryName`, `Education`, `Occupation`… | **Provável falso positivo** — quase certamente em uso em visuais, que a ferramenta não lê |
 
-Precisão projetada ~24%, contra o gatilho de 0,7 do R-03.
+Precisão **indeterminável** dentro do que a ferramenta lê: dos 33 achados (36
+menos 3 geradas por agrupamento/análise), 5 são verdadeiro positivo e 3 são
+falso positivo confirmado, mas os outros 25 dependem da camada de relatório,
+que o MVP não lê — a precisão varia entre ~15% (5/33, se os 25 estiverem em
+uso, o cenário mais provável) e ~91% (30/33, no outro extremo), contra o
+gatilho de 0,7 do R-03. Um único número (a estimativa inicial de ~24%, que
+tratava as 3 colunas de calendário — o único grupo confirmado como erro —
+como acerto) não tem derivação válida e foi corrigida nesta revisão.
 
 **Veredito: recusada, não implementada.** A regra nunca chegou a ser escrita — a medição contra o P8, feita antes do código, já mostrava que ela violaria a cláusula (c). É o primeiro caso em que o terceiro teste rejeita uma regra, não apenas a corrige (`backlog.md`). A resolução de uso (`core/rules/referencias.py`) e seus testes **permanecem**: são a evidência reproduzível da medição, e servem a uma regra futura cuja afirmação não dependa da camada de relatório — candidata registrada no `backlog.md` como "chave substituta órfã sem uso" (forma estreita, com duas perguntas abertas).
 
@@ -231,7 +238,7 @@ Precisão projetada ~24%, contra o gatilho de 0,7 do R-03.
 
 A hipótese tem fundamento: o autor do P8 usa `DIVIDE` 11 vezes, não usa `FILTER` nenhuma, e seus defeitos conhecidos são **estruturais** — tempo automático ligado, bidirecionais, floco de neve. O grupo 1 era onde eles estavam.
 
-**Verificação (08/10/2026) — a hipótese se confirmou por um caminho que ela não previa.** A PERF-005 não achou "entre 0 e 5": a medição deu 33, com precisão projetada ~24% (seção 5). O número não é baixo — é a contagem de uma regra que a cláusula (c) do terceiro teste rejeitou antes de ela chegar a existir em código. O resultado que a hipótese antecipava (o grupo 2 soma pouco ao P8) se confirma, mas a causa não é ausência de defeito nem contagem pequena: é regra descartada por falta de evidência suficiente.
+**Verificação (08/10/2026) — a hipótese se confirmou por um caminho que ela não previa.** A PERF-005 não achou "entre 0 e 5": a medição deu 33, com precisão **indeterminável** dentro do que o MVP lê — entre ~15% e ~91%, dependendo de quanto dos 25 atributos reportáveis está de fato em uso (seção 5). O número não é baixo nem alto — é a contagem de uma regra que a cláusula (c) do terceiro teste rejeitou antes de ela chegar a existir em código, justamente porque a ferramenta não consegue fixar essa precisão. O resultado que a hipótese antecipava (o grupo 2 soma pouco ao P8) se confirma, mas a causa não é ausência de defeito nem contagem pequena: é regra descartada por falta de evidência suficiente.
 
 ### Zero tem duas causas, e elas não se distinguem sem verificação
 
@@ -249,7 +256,7 @@ Executado **depois** de o lexer e as regras existirem, e antes de a seção de r
 | Regra | Como verificar que o zero é verdadeiro |
 |---|---|
 | **DAX-001** | Tokenizar as 137 expressões em escopo com o **lexer**, não com regex, e contar tokens `OPERADOR` de valor `/`. Zero medido pelo lexer é zero verdadeiro. Se houver algum, a sondagem estava errada e o rendimento muda |
-| **PERF-005** | **Executado.** Verificada coluna por coluna, nos oito sítios (`core/rules/referencias.py`, Tarefa 6): 36 sem uso, das quais 33 seriam achado da regra, 5 defensáveis e ~28 falsas positivas (confirmadas ou prováveis). Precisão projetada ~24%, abaixo do gatilho de 0,7 — a regra foi **recusada antes do código** (seção 5) e não chegou a ser travada em teste de contagem, porque não existe |
+| **PERF-005** | **Executado.** Verificada coluna por coluna, nos oito sítios (`core/rules/referencias.py`, Tarefa 6): 36 sem uso, das quais 33 seriam achado da regra, 5 defensáveis e ~28 falsas positivas (3 confirmadas, 25 prováveis — desconhecidas, na verdade, porque dependem da camada de relatório). Precisão **indeterminável** dentro do que o MVP lê (entre ~15% e ~91%), abaixo do gatilho de 0,7 no cenário mais provável — a regra foi **recusada antes do código** (seção 5) e não chegou a ser travada em teste de contagem, porque não existe |
 | **DAX-002** | Inspecionar manualmente as 6 ocorrências de `SUMX` e classificar cada uma: iteração desnecessária, ou iteração legítima sobre expressão de várias colunas. O denominador da precisão é essa classificação, não a contagem de `SUMX` |
 
 Enquanto o procedimento de DAX-002 não rodar, a afirmação de precisão dessa regra **não entra** na monografia nem no `status.md`. Para PERF-005 o procedimento já rodou, e a afirmação de precisão que ele sustenta é precisamente o motivo da rejeição (seção 5) — não a contagem de um achado.
