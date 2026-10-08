@@ -109,9 +109,9 @@ def _tabela(bruto: dict) -> Tabela:
         nome=nome,
         oculta=bool(bruto.get("isHidden", False)),
         data_category=bruto.get("dataCategory"),
-        colunas=[_coluna(c) for c in bruto.get("columns", [])],
-        medidas=[_medida(m, nome) for m in bruto.get("measures", [])],
-        particoes=[_particao(p) for p in bruto.get("partitions", [])],
+        colunas=[_coluna(c) for c in bruto.get("columns") or []],
+        medidas=[_medida(m, nome) for m in bruto.get("measures") or []],
+        particoes=[_particao(p) for p in bruto.get("partitions") or []],
         hierarquias=[_hierarquia(h, nome) for h in bruto.get("hierarchies") or []],
         bruto=bruto,
     )
@@ -162,9 +162,9 @@ def ler_modelo(caminho: str | Path) -> ModeloSemantico:
         nome=dados.get("name", ""),
         compatibility_level=dados.get("compatibilityLevel"),
         cultura=model.get("culture"),
-        tabelas=[_tabela(t) for t in model.get("tables", [])],
+        tabelas=[_tabela(t) for t in model.get("tables") or []],
         relacionamentos=[
-            _relacionamento(r) for r in model.get("relationships", [])
+            _relacionamento(r) for r in model.get("relationships") or []
         ],
         roles=[_role(r) for r in model.get("roles") or []],
     )

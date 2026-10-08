@@ -319,6 +319,7 @@ def test_le_hierarquias_e_seus_niveis(ler):
 
     h = modelo.tabelas[0].hierarquias[0]
     assert h.nome == "Produtos"
+    assert h.tabela == "DimProduct"
     assert [n.coluna for n in h.niveis] == ["Categoria", "Produto"]
     assert h.niveis[0].tabela == "DimProduct"
 
@@ -338,3 +339,82 @@ def test_modelo_sem_roles_tem_lista_vazia(ler):
     """O P8 não tem a chave `roles`. Ausência não pode virar None."""
     modelo = ler(tabelas=[tabela("Vendas")])
     assert modelo.roles == []
+
+
+def test_le_a_ordem_do_nivel_de_hierarquia(ler):
+    """A chave é `ordinal`. Propriedade lida e nunca exercitada é como a
+    MOD-005 errou: ninguém percebe que o nome está errado."""
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimProduct",
+                colunas=[coluna("Categoria"), coluna("Produto")],
+                hierarquias=[
+                    hierarquia(
+                        "Produtos",
+                        niveis=[
+                            nivel("Categoria", "Categoria", ordem=0),
+                            nivel("Produto", "Produto"),
+                        ],
+                    )
+                ],
+            )
+        ]
+    )
+
+    niveis = modelo.tabelas[0].hierarquias[0].niveis
+    assert niveis[0].ordem == 0
+    assert niveis[1].ordem is None
+
+
+def test_nulo_explicito_no_tmsl_nao_derruba_o_parser(tmp_path):
+    """`"annotations": null` derrubou as oito regras de uma vez em 06/10/2026.
+
+    `.get(chave, [])` devolve o padrao so quando a chave esta AUSENTE. Com a
+    chave presente e valor nulo devolve None, e a compreensao de lista estoura.
+    Toda lista lida do TMSL usa `or []` por isso.
+    """
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": None,
+            "relationships": None,
+            "roles": None,
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas == []
+    assert modelo.relacionamentos == []
+    assert modelo.roles == []
+
+
+def test_nulo_explicito_dentro_da_tabela_nao_derruba_o_parser(tmp_path):
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": [
+                {
+                    "name": "Vendas",
+                    "columns": None,
+                    "measures": None,
+                    "partitions": None,
+                    "hierarchies": None,
+                    "annotations": None,
+                }
+            ],
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    t = ler_modelo(caminho).tabelas[0]
+
+    assert (t.colunas, t.medidas, t.particoes, t.hierarquias) == ([], [], [], [])
