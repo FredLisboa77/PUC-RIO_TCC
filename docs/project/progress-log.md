@@ -342,5 +342,20 @@ sentidos" sobre relacionamento inativo, que não filtra nada até
   oito regras, essa foi a única que passou nos dois primeiros e falhou no
   terceiro, e a falha só apareceu por verificação contra um arquivo real.
 
+- **Fechamento da branch:** a Fase 2 soma 20 commits de conteúdo, de `16527cf`
+  (design do motor de regras) a `c09f49d` (a correção de MOD-005), mais este
+  registro de fechamento. Os três primeiros — design,
+  verificação das âncoras e plano — foram feitos na `main`; a branch
+  `fase2-motor-de-regras` nasceu em `96b2ac2` e trouxe os 17 commits de
+  implementação, de `25befe9` a `c09f49d`. Mergeada na `main` em 08/10/2026 por
+  fast-forward, consistente com o histórico linear do projeto, e verificada no
+  resultado do merge: 101 testes passando.
+
+  Porque o merge foi fast-forward, nenhum commit menciona a branch. A referência
+  `origin/fase2-motor-de-regras` foi **deliberadamente preservada** no remoto,
+  apontando para `c09f49d`, como registro do recorte da fase — e este parágrafo
+  é o registro dentro do repositório, que sobrevive a qualquer limpeza futura de
+  branches.
+
 - **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
   detectabilidade), sobre o motor já provado.
