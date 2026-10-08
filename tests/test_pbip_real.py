@@ -167,3 +167,21 @@ def test_o_lexer_tokeniza_todo_o_dax_do_p8(modelo):
     assert len(textos) == 137
     falhas = [x for x in textos if tem_desconhecido(tokenizar(x))]
     assert falhas == []
+
+
+def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
+    """105 expressões: as 137 do lexer, menos 28 das 4 tabelas de data
+    automática, menos 2 das 2 tabelas de cluster, menos 2 da tabela de
+    parâmetro hipotético (medida e partição) — medido em 08/10/2026.
+    """
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+
+    assert v.lacunas == []
+    assert len(v.expressoes) == v.total == 105
+    assert {e.sitio for e in v.expressoes} == {
+        "medida",
+        "coluna calculada",
+        "particao calculada",
+    }
