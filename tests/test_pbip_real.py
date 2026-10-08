@@ -185,3 +185,65 @@ def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
         "coluna calculada",
         "particao calculada",
     }
+
+
+def test_os_usos_de_coluna_no_p8(modelo):
+    """Quantas colunas em escopo não têm nenhum uso.
+
+    Este número é insumo da PERF-005, e precede a contagem da regra: travá-lo
+    aqui, antes de a regra existir, é o que permite verificar depois se a regra
+    reproduz a medição ou divergiu dela.
+
+    Lista medida em 08/10/2026, pelos oito sítios de `usos_de_coluna`. Substitui
+    a estimativa de 5 do backlog.md, feita antes de `sortByColumn` e hierarquia
+    entrarem na conta. As três colunas `GeographyKey` (DimGeography, DimCustomer,
+    DimStore) aparecem sem uso porque o relacionamento DimGeography→DimCustomer
+    usa `CustomerKey`, não `GeographyKey` — o mesmo defeito que MOD-007 já aponta.
+    Se mudar, a causa precisa ser entendida antes de o número ser atualizado.
+    """
+    from core.rules.referencias import usos_de_coluna
+
+    usos = usos_de_coluna(modelo)
+    sem_uso = sorted(chave for chave, sitios in usos.items() if not sitios)
+
+    esperado = [
+        ("DimCalendar", "Data (clusters)"),
+        ("DimCalendar", "Data (clusters) 2"),
+        ("DimCalendar", "Mês"),
+        ("DimCalendar", "Semestre"),
+        ("DimCalendar", "Trimestre"),
+        ("DimCustomer", "Education"),
+        ("DimCustomer", "GeographyKey"),
+        ("DimCustomer", "Nome Completo"),
+        ("DimCustomer", "NumberCarsOwned"),
+        ("DimCustomer", "Occupation"),
+        ("DimCustomer", "TotalChildren"),
+        ("DimEmployee", "DepartmentName"),
+        ("DimEmployee", "EmployeeKey"),
+        ("DimEmployee", "Status"),
+        ("DimGeography", "CityName"),
+        ("DimGeography", "GeographyKey"),
+        ("DimGeography", "RegionCountryName"),
+        ("DimGeography", "StateProvinceName"),
+        ("DimProduct", "ClassName"),
+        ("DimProduct", "ProductDescription"),
+        ("DimProductCategory", "ProductCategoryName"),
+        ("DimProductSubcategory", "ProductSubcategoryName"),
+        ("DimPromotion", "Grupos"),
+        ("DimPromotion", "PromotionCategory"),
+        ("DimPromotion", "PromotionName"),
+        ("DimPromotion", "PromotionType"),
+        ("DimStore", "GeographyKey"),
+        ("DimStore", "StoreDescription"),
+        ("DimStore", "StoreName"),
+        ("DimStore", "StoreType"),
+        ("FactOnlineSales", "Faturamento"),
+        ("FactOnlineSales", "OnlineSalesKey"),
+        ("Tabela de Regressão Linear", "2008"),
+        ("Tabela de Regressão Linear", "2009"),
+        ("Tabela de Regressão Linear", "Cliente"),
+        ("Tabela de Regressão Linear", "Previsao"),
+    ]
+
+    assert len(sem_uso) == 36
+    assert sem_uso == esperado
