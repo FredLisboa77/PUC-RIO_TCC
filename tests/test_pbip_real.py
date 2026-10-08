@@ -135,6 +135,18 @@ def test_a_saida_vem_ordenada_por_severidade(resultado):
     assert severidades == sorted(severidades, key=lambda s: ordem[s])
 
 
+def test_inventario_dos_sitios_estruturais(modelo):
+    """Os sítios que a PERF-005 precisa varrer, medidos no P8 em 08/10/2026."""
+    niveis = [n for t in modelo.tabelas for h in t.hierarquias for n in h.niveis]
+    ordenacoes = [c for t in modelo.tabelas for c in t.colunas if c.ordenar_por]
+
+    assert len(modelo.relacionamentos) == 11
+    assert sum(len(t.hierarquias) for t in modelo.tabelas) == 4
+    assert len(niveis) == 16
+    assert len(ordenacoes) == 10
+    assert modelo.roles == []
+
+
 def test_o_lexer_tokeniza_todo_o_dax_do_p8(modelo):
     """Critério de aceite 1: zero token DESCONHECIDO nas expressões do P8.
 

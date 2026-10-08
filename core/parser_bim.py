@@ -12,10 +12,14 @@ from typing import Any
 
 from core.model import (
     Coluna,
+    Hierarquia,
     Medida,
     ModeloSemantico,
+    Nivel,
     Particao,
+    PermissaoDeTabela,
     Relacionamento,
+    Role,
     Tabela,
 )
 
@@ -41,6 +45,7 @@ def _coluna(bruto: dict) -> Coluna:
         resumir_por=bruto.get("summarizeBy"),
         expressao=_texto(bruto.get("expression")),
         oculta=bool(bruto.get("isHidden", False)),
+        ordenar_por=bruto.get("sortByColumn"),
         bruto=bruto,
     )
 
@@ -68,6 +73,36 @@ def _particao(bruto: dict) -> Particao:
     )
 
 
+def _nivel(bruto: dict, tabela: str) -> Nivel:
+    return Nivel(
+        nome=bruto.get("name", ""),
+        tabela=tabela,
+        coluna=bruto.get("column", ""),
+        ordem=bruto.get("ordinal"),
+    )
+
+
+def _hierarquia(bruto: dict, tabela: str) -> Hierarquia:
+    return Hierarquia(
+        nome=bruto.get("name", ""),
+        tabela=tabela,
+        niveis=[_nivel(n, tabela) for n in bruto.get("levels") or []],
+    )
+
+
+def _role(bruto: dict) -> Role:
+    return Role(
+        nome=bruto.get("name", ""),
+        permissoes=[
+            PermissaoDeTabela(
+                tabela=p.get("name", ""),
+                expressao_filtro=_texto(p.get("filterExpression")),
+            )
+            for p in bruto.get("tablePermissions") or []
+        ],
+    )
+
+
 def _tabela(bruto: dict) -> Tabela:
     nome = bruto.get("name", "")
     return Tabela(
@@ -77,6 +112,7 @@ def _tabela(bruto: dict) -> Tabela:
         colunas=[_coluna(c) for c in bruto.get("columns", [])],
         medidas=[_medida(m, nome) for m in bruto.get("measures", [])],
         particoes=[_particao(p) for p in bruto.get("partitions", [])],
+        hierarquias=[_hierarquia(h, nome) for h in bruto.get("hierarchies") or []],
         bruto=bruto,
     )
 
@@ -130,4 +166,5 @@ def ler_modelo(caminho: str | Path) -> ModeloSemantico:
         relacionamentos=[
             _relacionamento(r) for r in model.get("relationships", [])
         ],
+        roles=[_role(r) for r in model.get("roles") or []],
     )

@@ -1,6 +1,6 @@
 import json
 
-from conftest import escrever_pbip
+from conftest import coluna, escrever_pbip, hierarquia, nivel, role, tabela
 from core.parser_bim import ler_modelo
 
 
@@ -280,3 +280,61 @@ def test_normaliza_a_cardinalidade_do_relacionamento(tmp_path):
     assert (padrao.cardinalidade_origem, padrao.cardinalidade_destino) == ("muitos", "um")
     assert (um_para_um.cardinalidade_origem, um_para_um.cardinalidade_destino) == ("um", "um")
     assert (explicito.cardinalidade_origem, explicito.cardinalidade_destino) == ("muitos", "um")
+
+
+def test_le_sort_by_column(ler):
+    """10 colunas do P8 ordenam por outra coluna. Esquecer isso faria a
+    PERF-005 recomendar apagar a coluna de ordenação."""
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimDate",
+                colunas=[
+                    coluna("MesNome", ordenar_por="MesNumero"),
+                    coluna("MesNumero", tipo_dado="int64"),
+                ],
+            )
+        ]
+    )
+
+    assert modelo.tabelas[0].colunas[0].ordenar_por == "MesNumero"
+    assert modelo.tabelas[0].colunas[1].ordenar_por is None
+
+
+def test_le_hierarquias_e_seus_niveis(ler):
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimProduct",
+                colunas=[coluna("Categoria"), coluna("Produto")],
+                hierarquias=[
+                    hierarquia(
+                        "Produtos",
+                        niveis=[nivel("Categoria", "Categoria"), nivel("Produto", "Produto")],
+                    )
+                ],
+            )
+        ]
+    )
+
+    h = modelo.tabelas[0].hierarquias[0]
+    assert h.nome == "Produtos"
+    assert [n.coluna for n in h.niveis] == ["Categoria", "Produto"]
+    assert h.niveis[0].tabela == "DimProduct"
+
+
+def test_le_roles_com_expressao_de_filtro(ler):
+    modelo = ler(
+        tabelas=[tabela("Vendas", colunas=[coluna("Regiao")])],
+        roles=[role("Vendedor", tabela="Vendas", filtro="[Regiao] = \"Sul\"")],
+    )
+
+    assert modelo.roles[0].nome == "Vendedor"
+    assert modelo.roles[0].permissoes[0].tabela == "Vendas"
+    assert modelo.roles[0].permissoes[0].expressao_filtro == '[Regiao] = "Sul"'
+
+
+def test_modelo_sem_roles_tem_lista_vazia(ler):
+    """O P8 não tem a chave `roles`. Ausência não pode virar None."""
+    modelo = ler(tabelas=[tabela("Vendas")])
+    assert modelo.roles == []
