@@ -261,7 +261,8 @@ inteira.
 - **Pendência:** confirmar empiricamente que a marcação de tabela de data aparece
   como `dataCategory: "Time"` no TMSL — marcar a `DimCalendar` no Desktop, salvar
   o PBIP e comparar o `model.bim`. A regra está no catálogo com nota de
-  verificação até lá.
+  verificação até lá. **Fechada em 08/10/2026 — a suposição estava errada; ver a
+  entrada daquele dia.**
 - **Atenção ao R-12:** o conjunto rende 15 achados no P8, um modelo visivelmente
   problemático. O gatilho da semana 4 é "menos de ~40 achados em P1–P7". Rodar as
   oito regras sobre P1–P7 assim que os PBIP existirem deixou de ser tarefa da
@@ -289,6 +290,57 @@ severidade na ordenação estava fora do isolamento de erro, de modo que um
 derrubava as oito regras de uma vez; e MOD-002 afirmava "filtra nos dois
 sentidos" sobre relacionamento inativo, que não filtra nada até
 `USERELATIONSHIP`. As 15 ocorrências do P8 não mudaram com nenhuma das correções.
+
+- **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
+  detectabilidade), sobre o motor já provado.
+
+## 08/10/2026 — Fase 2, semana 4 — MOD-005 reescrita sobre evidência no arquivo
+
+- **Feito:** a pendência da entrada de 06/10 virou um defeito. A verificação
+  empírica mostrou que a suposição estava errada: **o Power BI Desktop não grava
+  a marcação de tabela de data no `model.bim`.** Num PBIP salvo pelo Desktop,
+  `dataCategory` aparece só em coluna, nunca em tabela, e `isDateTable` não
+  aparece em lugar nenhum. O TOM representa a marcação como
+  `Table.DataCategory`, mas isso só chega ao arquivo por Tabular Editor ou pelo
+  endpoint XMLA.
+
+  A regra lia a ausência de `dataCategory: "Time"` como prova de não-marcação.
+  Como essa propriedade nunca está lá, ela marcaria também a dimensão
+  **corretamente** marcada — um falso positivo garantido em qualquer PBIP vindo
+  do Desktop, que é todo o escopo de entrada do MVP.
+
+- **A prova que substituiu a suposição é indireta e vem da própria
+  documentação:** marcar a tabela faz o Power BI **remover** a tabela de data
+  automática que havia criado para aquela coluna. Então uma `variations` da
+  coluna de data apontando para uma tabela de data automática
+  (`__PBI_LocalDateTable`) prova, no arquivo, que a marcação não aconteceu. O
+  vínculo está em `defaultHierarchy.table`, dentro da `variations` da coluna.
+
+- **Com o Tempo automático de data/hora desligado, a regra cala.** Não há
+  nenhum sinal no arquivo, e afirmar sem evidência era exatamente o defeito
+  anterior. Falso negativo declarado na nota de verificação do catálogo, e
+  travado em teste (`test_mod005_cala_quando_nao_ha_prova_no_arquivo`). Na
+  prática o alcance é pequeno: a condição que esconde MOD-005 é o tempo
+  automático desligado, que é o próprio objeto de MOD-001.
+  `dataCategory: "Time"`, quando presente, continua valendo como marcação
+  explícita — e aí a regra também se cala.
+
+- **O que não mudou:** `dimensao_de_data` segue usando `dataCategory: "Time"`
+  como um dos três sinais de identificação da dimensão. Ali é heurística de
+  reconhecimento, não prova de marcação — a presença informa, a ausência não
+  conclui nada, e os outros dois sinais cobrem o caso do Desktop.
+
+- **Validação:** 101 testes passando, os 9 do PBIP real incluídos. As 15
+  ocorrências do P8 e a contagem de MOD-005 em 1 não mudaram: a `DimCalendar`
+  nunca foi marcada, e é justamente por isso que o Power BI gerou a tabela de
+  data local para a própria `DimCalendar[Data]` — a cadeia causal do estudo de
+  caso agora é lida pela regra na mesma evidência que a sustenta.
+
+- **A lição, para a monografia:** o critério de detectabilidade precisa de um
+  terceiro teste, além de "existe âncora no Learn" e "é decidível no TMSL": **a
+  propriedade que a regra lê é escrita pela ferramenta que gera a entrada.** Das
+  oito regras, essa foi a única que passou nos dois primeiros e falhou no
+  terceiro, e a falha só apareceu por verificação contra um arquivo real.
 
 - **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
   detectabilidade), sobre o motor já provado.
