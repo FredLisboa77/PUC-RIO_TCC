@@ -417,12 +417,26 @@ direções**, e a rejeição da PERF-005 (08/10/2026, pela cláusula (c) do
 terceiro teste do critério de detectabilidade) permanece sustentada pelo que
 ela mede.
 
+**O que esta medição não autoriza:** nada sobre a camada de relatório, que a
+ferramenta não lê — e é exatamente esse domínio inobservável que rejeitou a
+regra. A conferência mostra que a resolução lê corretamente os oito sítios
+que ela lê; não abriu um único visual, porque não pode. A estimativa de
+~24% de precisão registrada em `core/rules/referencias.py` segue **não
+reverificada** por esta tarefa, e só uma comparação contra ground truth na
+Fase 5 poderia confirmá-la ou derrubá-la.
+
 Achado lateral: dos oito sítios, dois nunca marcam nada neste corpus —
 `hierarquia`, porque as quatro hierarquias do modelo pertencem às tabelas de
 data automáticas, fora de escopo; e `dax de role`, porque o P8 não tem role
 nenhuma (`modelo.roles == []`). Não é defeito — é característica deste
 corpus, e fica registrado para que ninguém leia os 36 como se os oito sítios
-tivessem pesado igualmente.
+tivessem pesado igualmente. É o mesmo risco, em classe, que a entrada de
+08/10/2026 sobre a MOD-005 já registrou mais acima neste arquivo: uma
+propriedade especificada contra a documentação do TMSL, e exercida só por
+teste de unidade, pode não corresponder ao que a ferramenta de origem
+realmente escreve ou aciona. Aqui o risco é baixo porque os dois sítios são
+aditivos — um esquecido faria a PERF-005 marcar demais, nunca de menos — e a
+regra que dependeria deles nem existe mais.
 
 **DAX-002 (iteração desnecessária) — a âncora verificada antes de decidir.**
 A sondagem original contou 6 `SUMX`, 4 `RANKX` e 2 `MINX` em escopo; o lexer
