@@ -79,6 +79,7 @@ ESPERADO_P8 = {
     "MOD-007": 1,  # DimGeography → DimCustomer
     "PERF-001": 1,  # DimEmployee[Salário]
     "PERF-003": 1,  # Tabela de Regressão Linear[Previsao]
+    "DAX-001": 0,  # as 4 divisões reais são INT(.../3), denominador constante
 }
 
 
@@ -87,9 +88,9 @@ def resultado(modelo):
     return avaliar(modelo, registro=REGISTRO)
 
 
-def test_as_oito_regras_rodam_sem_falhar_no_pbip_real(resultado):
+def test_as_nove_regras_rodam_sem_falhar_no_pbip_real(resultado):
     assert resultado.regras_com_falha == []
-    assert resultado.regras_executadas == 8
+    assert resultado.regras_executadas == 9
 
 
 def test_as_contagens_por_regra_no_p8(resultado):

@@ -11,6 +11,7 @@ As URLs canónicas daqui são também as páginas que a base RAG precisa conter
 from core.rules.todas import REGISTRO
 
 IDS_ESPERADOS = [
+    "DAX-001",
     "MOD-001",
     "MOD-002",
     "MOD-003",
