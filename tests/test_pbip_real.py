@@ -133,3 +133,25 @@ def test_a_saida_vem_ordenada_por_severidade(resultado):
     ordem = {"alta": 0, "media": 1, "baixa": 2}
 
     assert severidades == sorted(severidades, key=lambda s: ordem[s])
+
+
+def test_o_lexer_tokeniza_todo_o_dax_do_p8(modelo):
+    """Critério de aceite 1: zero token DESCONHECIDO nas expressões do P8.
+
+    Mede a cobertura do lexer contra um corpus real em vez de contra a
+    imaginação de quem o escreveu. É o número que a monografia cita no lugar de
+    "usamos expressões regulares".
+    """
+    from core.dax import tem_desconhecido, tokenizar
+
+    textos = []
+    for t in modelo.tabelas:
+        textos += [m.expressao for m in t.medidas]
+        textos += [c.expressao for c in t.colunas if c.expressao]
+        textos += [
+            p.origem for p in t.particoes if p.tipo_origem == "calculated" and p.origem
+        ]
+
+    assert len(textos) == 137
+    falhas = [x for x in textos if tem_desconhecido(tokenizar(x))]
+    assert falhas == []

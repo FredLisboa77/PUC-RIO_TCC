@@ -115,3 +115,40 @@ def test_string_sem_fechar_nao_estoura_indice():
     tokens = tokenizar('[a] + "sem fechar')
     assert tokens[-1].tipo is TipoToken.STRING
     assert tokens[-1].texto == '"sem fechar'
+
+
+def test_colchete_sem_fechar_vira_desconhecido():
+    """Nome truncado em silêncio seria pior que lacuna declarada.
+
+    A PERF-005 afirma por ausência: se o lexer cortasse `Tabela[Coluna` em
+    `Coluna`, ela concluiria ausência de referência a partir de um nome que ela
+    própria mutilou. `DESCONHECIDO` faz a expressão virar lacuna, e a regra se
+    cala sobre ela.
+    """
+    from core.dax import tem_desconhecido
+
+    assert tem_desconhecido(tokenizar("Vendas[Total")) is True
+    assert tem_desconhecido(tokenizar("[Total")) is True
+    assert tem_desconhecido(tokenizar("'Tabela[Coluna]")) is True
+    assert tem_desconhecido(tokenizar("Vendas[Total]")) is False
+
+
+def test_caractere_estranho_vira_desconhecido():
+    from core.dax import tem_desconhecido
+
+    assert tem_desconhecido(tokenizar("[a] § [b]")) is True
+
+
+def test_chaves_do_construtor_de_tabela():
+    """`IN {"a", "b"}` é sintaxe de conjunto do DAX, não um par desconhecido."""
+    from core.dax import tem_desconhecido
+
+    expressao = '[a] IN {"No Discount", "b"}'
+    assert _tipos(expressao)[-5:] == [
+        TipoToken.CHAVE_ABRE,
+        TipoToken.STRING,
+        TipoToken.VIRGULA,
+        TipoToken.STRING,
+        TipoToken.CHAVE_FECHA,
+    ]
+    assert tem_desconhecido(tokenizar(expressao)) is False

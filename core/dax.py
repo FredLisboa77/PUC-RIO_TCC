@@ -26,6 +26,8 @@ class TipoToken(StrEnum):
     OPERADOR = "operador"
     PARENTESE_ABRE = "parentese_abre"
     PARENTESE_FECHA = "parentese_fecha"
+    CHAVE_ABRE = "chave_abre"
+    CHAVE_FECHA = "chave_fecha"
     VIRGULA = "virgula"
     DESCONHECIDO = "desconhecido"
 
@@ -113,6 +115,18 @@ def tokenizar(expressao: str | None) -> list[Token]:
 
         if c == ")":
             tokens.append(Token(tipo=TipoToken.PARENTESE_FECHA, texto=c, posicao=i))
+            i += 1
+            continue
+
+        if c == "{":
+            # Construtor de tabela do DAX: `x IN {"a", "b"}`. Sem distinguir de
+            # parêntese porque a sintaxe de conjunto não aninha outro par.
+            tokens.append(Token(tipo=TipoToken.CHAVE_ABRE, texto=c, posicao=i))
+            i += 1
+            continue
+
+        if c == "}":
+            tokens.append(Token(tipo=TipoToken.CHAVE_FECHA, texto=c, posicao=i))
             i += 1
             continue
 
