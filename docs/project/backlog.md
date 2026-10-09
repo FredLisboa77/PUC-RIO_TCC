@@ -22,7 +22,7 @@ Consequência prática: se a contagem final ficar perto de 20 em vez de 25, a di
 
 Acrescenta-se ao critério acima uma segunda condição, anterior à detectabilidade: **uma regra só entra se existir passagem citável do Microsoft Learn que a sustente**, lida e transcrita antes de qualquer código. Sem isso a regra não pode cumprir a ADR-003, que obriga o LLM a fundamentar cada achado num trecho recuperado.
 
-A regra nasceu do custo evitado: ao desenhar as sete regras estruturais, conferir as âncoras consumiu a leitura de cinco páginas e **eliminou três das oito regras propostas** — uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito. Verificar depois teria custado o código das três.
+A regra nasceu do custo evitado: ao desenhar as oito regras estruturais, conferir as âncoras consumiu a leitura de cinco páginas e **eliminou três das nove regras propostas** — uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito. Verificar depois teria custado o código das três.
 
 Decorre daí um subproduto: as URLs canónicas das regras são, por construção, as páginas que o `rag/sources.yaml` precisa conter (G-8, semana 5). O catálogo de regras alimenta o catálogo de fontes.
 

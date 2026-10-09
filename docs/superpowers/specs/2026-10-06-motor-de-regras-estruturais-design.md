@@ -23,7 +23,7 @@ O `backlog.md` de 29/09/2026 estabelece o **critério de detectabilidade**: entr
 | D-4 | **Um achado por ocorrência** | Um achado agregado por regra | O ground truth da Fase 5 anota objeto por objeto; agregar faria "3 de 4 tabelas" contar igual a "4 de 4", e esconderia falso positivo dentro do agregado |
 | D-5 | Severidade é **fixa por regra** e mora no catálogo | Severidade calculada por ocorrência | Nenhuma das regras tem informação que justifique variar a severidade entre ocorrências |
 | D-6 | O achado **não** copia os metadados da regra | Achado denormalizado, com título, severidade e URL dentro | Fonte única de verdade: a tabela de regras da monografia sai do catálogo, e nenhum achado pode divergir dele |
-| D-7 | **A âncora é verificada antes do código.** Sem passagem citável na documentação oficial, a regra não entra | Implementar e verificar depois | Verificar primeiro custou duas páginas lidas e **eliminou três das oito regras propostas** (seção 9). Verificar depois teria custado o código delas. Sob a ADR-003, regra sem âncora é regra que o pipeline não consegue sustentar |
+| D-7 | **A âncora é verificada antes do código.** Sem passagem citável na documentação oficial, a regra não entra | Implementar e verificar depois | Verificar primeiro custou duas páginas lidas e **eliminou três das nove regras propostas** (seção 9). Verificar depois teria custado o código delas. Sob a ADR-003, regra sem âncora é regra que o pipeline não consegue sustentar |
 
 ## 3. O contrato — `core/rules/base.py`
 
@@ -215,7 +215,7 @@ As annotations continuam acessíveis por `bruto`, com um único leitor (`escopo.
 
 ### Regras descartadas na verificação de âncoras (D-7)
 
-Três das oito regras propostas no design original caíram ao conferir a documentação. O registro fica aqui porque o motivo de cada uma é resultado do trabalho, não desperdício dele:
+Três das nove regras propostas no design original caíram ao conferir a documentação. O registro fica aqui porque o motivo de cada uma é resultado do trabalho, não desperdício dele:
 
 | Regra | Por que caiu | Destino |
 |---|---|---|

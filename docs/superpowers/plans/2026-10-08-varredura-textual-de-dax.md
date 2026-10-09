@@ -74,7 +74,7 @@ Cinco classes de entrada que a spec implica e que nenhuma tarefa exercitaria sem
 
 O `Token.tabela` e `Token.coluna` só são preenchidos em `REFERENCIA`: `Vendas[Total]` dá `tabela="Vendas"`, `coluna="Total"`; `[Total]` dá `tabela=None`, `coluna="Total"`. É assim que medida se distingue de coluna sem consultar o modelo.
 
-- [ ] **Step 1: Write the failing test — operador de divisão**
+- [x] **Step 1: Write the failing test — operador de divisão**
 
 ```python
 """Testes do lexer de DAX.
@@ -98,12 +98,12 @@ def test_divisao_e_operador():
     assert _de("[a] / [b]", TipoToken.OPERADOR) == ["/"]
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py::test_divisao_e_operador -v`
 Expected: FAIL com `ModuleNotFoundError: No module named 'core.dax'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 """Lexer de DAX.
@@ -185,12 +185,12 @@ def tokenizar(expressao: str | None) -> list[Token]:
     return tokens
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py::test_divisao_e_operador -v`
 Expected: PASS
 
-- [ ] **Step 5: Write the failing test — as três formas de comentário**
+- [x] **Step 5: Write the failing test — as três formas de comentário**
 
 ```python
 def test_comentario_de_duas_barras_nao_e_divisao():
@@ -216,12 +216,12 @@ def test_comentario_de_linha_termina_na_quebra():
     assert _de("// nota\n[a] / [b]", TipoToken.OPERADOR) == ["/"]
 ```
 
-- [ ] **Step 6: Run tests to verify they fail**
+- [x] **Step 6: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v -k comentario`
 Expected: FAIL — `--` vira dois `OPERADOR` e `/*` vira `OPERADOR` de `/`
 
-- [ ] **Step 7: Implement the three comment forms**
+- [x] **Step 7: Implement the three comment forms**
 
 Em `tokenizar`, **antes** do laço de operadores, acrescentar `--` e `/* */`. O trecho de `//` já existe; o de `--` segue a mesma forma:
 
@@ -243,19 +243,19 @@ Em `tokenizar`, **antes** do laço de operadores, acrescentar `--` e `/* */`. O 
             continue
 ```
 
-- [ ] **Step 8: Run tests to verify they pass**
+- [x] **Step 8: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: PASS, 5 testes
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add core/dax.py tests/test_dax_lexer.py
 git commit -m "feat(dax): lexer com operadores e as tres formas de comentario"
 ```
 
-- [ ] **Step 10: Write the failing test — string, número, parêntese, vírgula, identificador**
+- [x] **Step 10: Write the failing test — string, número, parêntese, vírgula, identificador**
 
 ```python
 def test_string_com_aspas_literais():
@@ -285,12 +285,12 @@ def test_virgula_separa_argumentos():
     assert _de("DIVIDE([a], [b])", TipoToken.VIRGULA) == [","]
 ```
 
-- [ ] **Step 11: Run tests to verify they fail**
+- [x] **Step 11: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: FAIL — aspas, dígitos, letras e parênteses viram `DESCONHECIDO`
 
-- [ ] **Step 12: Implement string, number, parenthesis, comma, identifier and reference**
+- [x] **Step 12: Implement string, number, parenthesis, comma, identifier and reference**
 
 Acrescentar antes do laço de operadores, nesta ordem:
 
@@ -425,7 +425,7 @@ def tem_desconhecido(tokens: list[Token]) -> bool:
     return any(t.tipo is TipoToken.DESCONHECIDO for t in tokens)
 ```
 
-- [ ] **Step 13: Run tests, and add the Review Focus test for empty expression**
+- [x] **Step 13: Run tests, and add the Review Focus test for empty expression**
 
 ```python
 def test_expressao_vazia_ou_so_comentario():
@@ -439,7 +439,7 @@ def test_expressao_vazia_ou_so_comentario():
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: PASS
 
-- [ ] **Step 14: Write the failing test — referência**
+- [x] **Step 14: Write the failing test — referência**
 
 ```python
 def test_referencia_de_coluna_qualificada():
@@ -469,7 +469,7 @@ def test_barra_dentro_de_colchete_nao_e_divisao():
     assert tokenizar("[Receita/Custo]")[0].coluna == "Receita/Custo"
 ```
 
-- [ ] **Step 15: Run tests, and add the Review Focus test for unterminated comment and string**
+- [x] **Step 15: Run tests, and add the Review Focus test for unterminated comment and string**
 
 ```python
 def test_comentario_em_bloco_sem_fechar_nao_entra_em_laco():
@@ -488,14 +488,14 @@ def test_string_sem_fechar_nao_estoura_indice():
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: PASS
 
-- [ ] **Step 16: Commit**
+- [x] **Step 16: Commit**
 
 ```bash
 git add core/dax.py tests/test_dax_lexer.py
 git commit -m "feat(dax): string, numero, referencia e identificador"
 ```
 
-- [ ] **Step 17: Write the failing test — Review Focus: colchete não fechado**
+- [x] **Step 17: Write the failing test — Review Focus: colchete não fechado**
 
 ```python
 def test_colchete_sem_fechar_vira_desconhecido():
@@ -520,12 +520,12 @@ def test_caractere_estranho_vira_desconhecido():
     assert tem_desconhecido(tokenizar("[a] § [b]")) is True
 ```
 
-- [ ] **Step 18: Run tests to verify they pass**
+- [x] **Step 18: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: PASS. Se falhar, `_nome_entre` está devolvendo nome truncado em vez de `None`.
 
-- [ ] **Step 19: Write the coverage test against the real corpus**
+- [x] **Step 19: Write the coverage test against the real corpus**
 
 Em `tests/test_pbip_real.py`, junto dos que já existem:
 
@@ -552,12 +552,12 @@ def test_o_lexer_tokeniza_todo_o_dax_do_p8(modelo):
     assert falhas == []
 ```
 
-- [ ] **Step 20: Run the test**
+- [x] **Step 20: Run the test**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k lexer`
 Expected: PASS. **Se falhar**, não corrigir o teste: cada expressão em `falhas` é um caractere de DAX que o lexer não cobre. Acrescentar o tratamento e um teste unitário para ele, e só então rodar de novo. O número 137 e a lista vazia são o critério de aceite 1.
 
-- [ ] **Step 21: Commit**
+- [x] **Step 21: Commit**
 
 ```bash
 git add core/dax.py tests/test_dax_lexer.py tests/test_pbip_real.py
@@ -581,7 +581,7 @@ git commit -m "test(dax): o lexer cobre as 137 expressoes do P8 sem token descon
 
 `chamadas` existe para a DAX-002, que precisa de **fronteira de argumento**: `FILTER(Vendas, …)` só é achado se o primeiro argumento for uma tabela nua, e isso exige saber onde o argumento começa e termina. A profundidade de parêntese é o que o lexer entrega e a regex não entregaria.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_referencias_ignora_comentario_e_string():
@@ -628,12 +628,12 @@ def test_chamadas_sem_a_funcao_devolve_vazio():
     assert chamadas(tokenizar("SUM([a])"), "FILTER") == []
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v -k "referencias or operadores or chamadas"`
 Expected: FAIL com `ImportError: cannot import name 'referencias'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```python
 def referencias(tokens: list[Token]) -> list[Token]:
@@ -691,12 +691,12 @@ def chamadas(tokens: list[Token], nome: str) -> list[list[list[Token]]]:
     return resultado
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_dax_lexer.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add core/dax.py tests/test_dax_lexer.py
@@ -726,7 +726,7 @@ git commit -m "feat(dax): helpers de referencia, operador e fronteira de argumen
 
 Esses são os sítios que o terceiro teste obriga a ler. Sítio não lido é prova de ausência que não existe.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_le_sort_by_column():
@@ -787,12 +787,12 @@ def test_modelo_sem_roles_tem_lista_vazia():
     assert modelo.roles == []
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_parser_bim.py -v -k "sort or hierarqu or role"`
 Expected: FAIL com `TypeError: coluna() got an unexpected keyword argument 'ordenar_por'`
 
-- [ ] **Step 3: Extend the test builders in `tests/conftest.py`**
+- [x] **Step 3: Extend the test builders in `tests/conftest.py`**
 
 Em `coluna(...)`, acrescentar o parâmetro e o campo:
 
@@ -890,7 +890,7 @@ def modelo_tmsl(tabelas=(), relacionamentos=(), roles=()) -> dict:
         return ler_modelo(caminho)
 ```
 
-- [ ] **Step 4: Extend `core/model.py`**
+- [x] **Step 4: Extend `core/model.py`**
 
 ```python
 class Nivel(BaseModel):
@@ -943,7 +943,7 @@ Corrigir também a docstring de `Particao.origem`, hoje enganosa:
     leria as 10 expressões M do P8."""
 ```
 
-- [ ] **Step 5: Extend `core/parser_bim.py`**
+- [x] **Step 5: Extend `core/parser_bim.py`**
 
 ```python
 def _nivel(bruto: dict, tabela: str) -> Nivel:
@@ -982,17 +982,17 @@ Em `ler_modelo`, acrescentar `roles=[_role(r) for r in model.get("roles") or []]
 
 O `or []` em cada um não é adorno: `"annotations": null` derrubou as oito regras de uma vez em 06/10, e `hierarchies`, `levels`, `tablePermissions` e `roles` podem vir `null` do mesmo jeito.
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_parser_bim.py -v`
 Expected: PASS
 
-- [ ] **Step 7: Run the whole suite — nothing may regress**
+- [x] **Step 7: Run the whole suite — nothing may regress**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
 Expected: 101 testes anteriores + os novos, todos passando. Em particular `test_as_contagens_por_regra_no_p8` continua em 15 achados.
 
-- [ ] **Step 8: Add the P8 inventory test for the new sites**
+- [x] **Step 8: Add the P8 inventory test for the new sites**
 
 Em `tests/test_pbip_real.py`:
 
@@ -1009,7 +1009,7 @@ def test_inventario_dos_sitios_estruturais(modelo):
     assert modelo.roles == []
 ```
 
-- [ ] **Step 9: Run it and commit**
+- [x] **Step 9: Run it and commit**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k sitios`
 Expected: PASS
@@ -1059,7 +1059,7 @@ No P8 a tabela `_Medidas` carrega **93 das 105 expressoes**. Exclui-la da audito
 
 **Isso tambem resolve, sem tocar em predicado nenhum,** o segundo defeito encontrado: `tabela_apenas_de_medidas` devolve `True` para tabela com zero colunas e uma medida (`all()` sobre lista vazia e `True`), o que fazia a fixture `tabela("Vendas", medidas=[...])` sair de escopo. Com `dax_escrito_pela_ferramenta` ela entra, porque nao e nenhuma das tres.
 
-- [ ] **Step 0a: Write the failing test for the scope split**
+- [x] **Step 0a: Write the failing test for the scope split**
 
 Em `tests/test_rules_escopo.py`:
 
@@ -1138,7 +1138,7 @@ Acrescentar `dax_escrito_pela_ferramenta` e `tabelas_com_dax_do_autor` ao import
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_escopo.py -v -k dax_do_autor`
 Expected: FAIL com `ImportError: cannot import name 'dax_escrito_pela_ferramenta'`
 
-- [ ] **Step 0b: Implement the scope split in `core/rules/escopo.py`**
+- [x] **Step 0b: Implement the scope split in `core/rules/escopo.py`**
 
 Acrescentar depois de `tabelas_em_escopo`, **sem tocar** em `fora_de_escopo` nem em `tabelas_em_escopo`:
 
@@ -1178,14 +1178,14 @@ def tabelas_com_dax_do_autor(modelo: ModeloSemantico) -> list[Tabela]:
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_escopo.py -v`
 Expected: PASS, e os testes de escopo que ja existiam continuam passando — `fora_de_escopo` nao foi tocado.
 
-- [ ] **Step 0c: Commit the scope split**
+- [x] **Step 0c: Commit the scope split**
 
 ```bash
 git add core/rules/escopo.py tests/test_rules_escopo.py
 git commit -m "feat(rules): separa o DAX da ferramenta do DAX do autor"
 ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 """Testes da varredura de expressões DAX."""
@@ -1247,12 +1247,12 @@ def test_objeto_vem_qualificado(ler):
     assert varrer_dax(modelo).expressoes[0].objeto == "Vendas[Total]"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_expressoes.py -v`
 Expected: FAIL com `NameError: name 'varrer_dax' is not defined`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```python
 """Onde o DAX mora no modelo.
@@ -1377,12 +1377,12 @@ Acrescentar o import no topo do arquivo de teste:
 from core.rules.expressoes import varrer_dax
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_expressoes.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Write the failing test — a lacuna e a conta que fecha**
+- [x] **Step 5: Write the failing test — a lacuna e a conta que fecha**
 
 ```python
 def test_expressao_com_caractere_estranho_vira_lacuna(ler):
@@ -1446,12 +1446,12 @@ def test_varre_a_expressao_de_filtro_da_role(ler):
     assert v.expressoes[0].objeto == "Vendedor:Vendas"
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_expressoes.py -v`
 Expected: PASS
 
-- [ ] **Step 7: Add the P8 test for the scan**
+- [x] **Step 7: Add the P8 test for the scan**
 
 Em `tests/test_pbip_real.py`:
 
@@ -1471,12 +1471,12 @@ def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
     }
 ```
 
-- [ ] **Step 8: Run it**
+- [x] **Step 8: Run it**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k varredura`
 Expected: PASS. O número de `expressoes` será menor que 137, porque as 4 tabelas automáticas saem por escopo — registrar o número medido no próprio teste, com um comentário dizendo de onde ele vem.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add core/rules/expressoes.py tests/test_rules_expressoes.py tests/test_pbip_real.py
@@ -1501,7 +1501,7 @@ git commit -m "feat(rules): varredura de DAX com lacuna declarada"
 
 O contrato das regras **não muda**: elas continuam devolvendo `Iterable[Achado]`. A lacuna é propriedade da varredura, não de cada regra — se uma expressão não tokeniza, nenhuma regra de texto a enxerga, e declarar a mesma cegueira uma vez por regra seria pior.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_o_resultado_carrega_as_lacunas(ler):
@@ -1524,12 +1524,12 @@ def test_modelo_sem_lacuna_tem_cobertura_total(ler):
     assert resultado.cobertura_de_expressoes == (1, 1)
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_runner.py -v -k "lacuna or cobertura"`
 Expected: FAIL com `AttributeError: 'ResultadoRegras' object has no attribute 'lacunas_de_expressao'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Em `core/rules/runner.py`, no import:
 
@@ -1578,12 +1578,12 @@ e no `return`:
     )
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_runner.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Write the failing test — a varredura não pode derrubar a auditoria**
+- [x] **Step 5: Write the failing test — a varredura não pode derrubar a auditoria**
 
 ```python
 def test_falha_na_varredura_nao_derruba_a_auditoria(ler, monkeypatch):
@@ -1605,12 +1605,12 @@ def test_falha_na_varredura_nao_derruba_a_auditoria(ler, monkeypatch):
     assert "RuntimeError" in resultado.falha_na_varredura
 ```
 
-- [ ] **Step 6: Run it to verify it fails**
+- [x] **Step 6: Run it to verify it fails**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_runner.py -v -k varredura`
 Expected: FAIL com `RuntimeError: varredura com defeito` escapando de `avaliar`
 
-- [ ] **Step 7: Isolate the scan**
+- [x] **Step 7: Isolate the scan**
 
 Em `ResultadoRegras`:
 
@@ -1635,12 +1635,12 @@ Em `avaliar`:
 
 Acrescentar `VarreduraDax` ao import, e `falha_na_varredura=falha_na_varredura` no `return`.
 
-- [ ] **Step 8: Run tests to verify they pass**
+- [x] **Step 8: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_runner.py -v`
 Expected: PASS
 
-- [ ] **Step 9: Add the Review Focus test for `null` in the new TMSL fields**
+- [x] **Step 9: Add the Review Focus test for `null` in the new TMSL fields**
 
 ```python
 def test_nulos_do_tmsl_nao_derrubam_a_varredura(tmp_path):
@@ -1681,12 +1681,12 @@ def test_nulos_do_tmsl_nao_derrubam_a_varredura(tmp_path):
     assert resultado.cobertura_de_expressoes == (0, 0)
 ```
 
-- [ ] **Step 10: Run it**
+- [x] **Step 10: Run it**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_runner.py -v -k nulos`
 Expected: PASS. Se falhar, falta um `or []` em `parser_bim.py` — inclusive em `relationships` e `tables`, que hoje usam `model.get("tables", [])` e devolveriam `None` se a chave existisse com valor nulo.
 
-- [ ] **Step 11: Run the whole suite and commit**
+- [x] **Step 11: Run the whole suite and commit**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
 Expected: tudo passando, 15 achados no P8 intactos.
@@ -1725,7 +1725,7 @@ O guarda `if chave in usos` dentro de `marcar()` é o que faz os dois escopos co
 
 Arquivo próprio porque é o pedaço mais delicado da etapa: a PERF-005 afirma por **ausência**, e um sítio esquecido aqui faz a ferramenta recomendar apagar uma coluna em uso.
 
-- [ ] **Step 1: Write the failing test — os sítios estruturais**
+- [x] **Step 1: Write the failing test — os sítios estruturais**
 
 ```python
 """Testes da resolução de uso de coluna.
@@ -1802,12 +1802,12 @@ def test_variations_e_uso(ler):
     assert "variacao" in usos_de_coluna(modelo)[("Vendas", "Data")]
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_referencias.py -v`
 Expected: FAIL com `ModuleNotFoundError: No module named 'core.rules.referencias'`
 
-- [ ] **Step 3: Write the implementation — os quatro sítios estruturais**
+- [x] **Step 3: Write the implementation — os quatro sítios estruturais**
 
 ```python
 """Onde cada coluna do modelo é usada.
@@ -1881,12 +1881,12 @@ def usos_de_coluna(modelo: ModeloSemantico) -> dict[tuple[str, str], set[str]]:
     return usos
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_referencias.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Write the failing test — referência em DAX**
+- [x] **Step 5: Write the failing test — referência em DAX**
 
 ```python
 def test_referencia_qualificada_em_medida_e_uso(ler):
@@ -1956,7 +1956,7 @@ def test_referencia_em_coluna_calculada_e_em_particao(ler):
     assert "dax de particao calculada" in usos[("Vendas", "Semente")]
 ```
 
-- [ ] **Step 6: Implement the DAX sites**
+- [x] **Step 6: Implement the DAX sites**
 
 No fim de `usos_de_coluna`, antes do `return`:
 
@@ -1972,7 +1972,7 @@ No fim de `usos_de_coluna`, antes do `return`:
 
 O `ref.tabela or e.tabela` é a resolução de referência não qualificada: `[Coluna]` dentro de uma expressão da tabela `Vendas` significa `Vendas[Coluna]` — é assim que o DAX resolve, e a `ExpressaoDax` carrega a tabela de origem exatamente para isto.
 
-- [ ] **Step 7: Run tests, and add the Review Focus test for the homonym column**
+- [x] **Step 7: Run tests, and add the Review Focus test for the homonym column**
 
 ```python
 def test_coluna_homonima_em_outra_tabela_nao_e_marcada(ler):
@@ -2020,7 +2020,7 @@ def test_referencia_nao_qualificada_resolve_na_tabela_da_expressao(ler):
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_referencias.py -v`
 Expected: PASS
 
-- [ ] **Step 8: Write the failing test — role**
+- [x] **Step 8: Write the failing test — role**
 
 ```python
 def test_referencia_em_filtro_de_role_e_uso(ler):
@@ -2034,7 +2034,7 @@ def test_referencia_em_filtro_de_role_e_uso(ler):
     assert "dax de role" in usos_de_coluna(modelo)[("Vendas", "Regiao")]
 ```
 
-- [ ] **Step 9: Run it and commit**
+- [x] **Step 9: Run it and commit**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_referencias.py -v`
 Expected: PASS — o sítio `role` já vem da varredura, montada na Tarefa 4.
@@ -2044,7 +2044,7 @@ git add core/rules/referencias.py tests/test_rules_referencias.py
 git commit -m "feat(rules): resolucao de uso de coluna nos oito sitios"
 ```
 
-- [ ] **Step 10: Add the P8 test — the eight sites measured**
+- [x] **Step 10: Add the P8 test — the eight sites measured**
 
 Em `tests/test_pbip_real.py`:
 
@@ -2069,13 +2069,13 @@ def test_os_usos_de_coluna_no_p8(modelo):
         print(f"  {chave[0]}[{chave[1]}]")
 ```
 
-- [ ] **Step 11: Run it with output and record the real list**
+- [x] **Step 11: Run it with output and record the real list**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k usos_de_coluna -s`
 
 Anotar a lista impressa. **Esta é a medição que a Tarefa 7 usa**, e ela substitui a estimativa de 5 do `backlog.md`, feita antes de `sortByColumn` e hierarquia entrarem na conta. Trocar o `assert len(sem_uso) >= 0` pelo número medido e pela lista de nomes, e remover os `print`.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add tests/test_pbip_real.py
@@ -2114,7 +2114,7 @@ Portanto a PERF-005 afirma ausência sobre um domínio que ela não enxerga, e i
 
 **O que isso vale para a monografia.** O terceiro teste rejeitou a **primeira** regra que passou nos dois primeiros critérios — e era uma regra que o projeto queria ter. É o critério se provando sobre um caso em que havia incentivo para ignorá-lo. Com a MOD-005, são dois casos em que o terceiro teste mudou o resultado, e o segundo é mais forte que o primeiro: na MOD-005 a regra foi corrigida, aqui ela foi descartada.
 
-- [ ] **Step 1: Travar a medição no PBIP real**
+- [x] **Step 1: Travar a medição no PBIP real**
 
 A Tarefa 6 Passo 11 já escreveu o teste que trava as 36 colunas. Confirmar que ele está lá, com a lista e a data, e **acrescentar o comentário que diz por que o número importa agora**: ele não alimenta mais uma contagem de regra, ele é a evidência da rejeição.
 
@@ -2122,7 +2122,7 @@ Rodar `./.venv/Scripts/python.exe -m pytest tests/test_pbip_real.py -v -k usos_d
 
 **Não acrescentar `PERF-005` a `CONTAGENS_P8`.** A regra não existe, e o total do P8 continua em 15.
 
-- [ ] **Step 2: `backlog.md` — a candidata passa a recusada, com o motivo**
+- [x] **Step 2: `backlog.md` — a candidata passa a recusada, com o motivo**
 
 Na tabela de candidatas, a linha **"Coluna sem uso"** sai de "candidata registrada" e passa a recusada. Acrescentar ao *Log de alertas de escopo* uma linha datada de 08/10/2026:
 
@@ -2132,18 +2132,18 @@ Acrescentar também, à seção do terceiro teste, a nota de que ele teve seu pr
 
 Registrar como candidata futura a **forma estreita**: regra que aponte apenas chave substituta órfã, cujo propósito é estrutural por natureza e portanto não depende da camada de relatório. Com duas perguntas abertas: existe passagem citável para a forma estreita, e existe predicado **estrutural** que separe chave substituta de atributo, sem convenção de nome — que o projeto recusou em 06/10 (R-10).
 
-- [ ] **Step 3: `riscos.md` — R-03 e R-12**
+- [x] **Step 3: `riscos.md` — R-03 e R-12**
 
 - **R-03** ganha um caso concreto: o critério rejeitou uma regra por precisão projetada, antes de ela existir em código, e a projeção veio de medição contra arquivo real.
 - **R-12** piora. O prognóstico da seção 6 da spec já era desfavorável, e a PERF-005 era a única regra da etapa com rendimento esperado no P8. Com ela fora, a etapa acrescenta ao P8 **o que a DAX-001 render — medido como zero**. O slot **P9** passa de provável a quase certo, e converter P1–P7 deixa de ser recomendação e passa a bloqueio para decidir a Fase 3.
 
-- [ ] **Step 4: A spec**
+- [x] **Step 4: A spec**
 
 A seção 5 da spec descreve a PERF-005 como regra a implementar. Reescrevê-la como **regra rejeitada**, com a medição e o motivo, do mesmo jeito que a seção de rendimento (6) já trata hipótese e verificação. A seção 6 também precisa ser atualizada: a hipótese era "PERF-005 entre 0 e 5", e a medição deu 33 com precisão indeterminável (entre ~15% e ~91%, dentro do que o MVP lê) — o que confirma a hipótese do rendimento baixo da etapa por um caminho que ela não previa.
 
 Acrescentar à seção 4.1 da spec a tabela de tokens que falta: `CHAVE_ABRE` e `CHAVE_FECHA`, acrescentados na Tarefa 1 porque o corpus real usa o construtor de tabela do DAX (`x IN {"No Discount"}`).
 
-- [ ] **Step 5: Rodar a suíte e commitar**
+- [x] **Step 5: Rodar a suíte e commitar**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
 Expected: tudo passando, 15 achados no P8.
@@ -2181,7 +2181,7 @@ Portanto **a regra não marca divisão com denominador constante** — marcar se
 
 Denominador é o **operando mínimo** depois do `/`: um `NUMERO`, ou o grupo entre parênteses que começa ali. É constante quando não contém nenhum token `REFERENCIA` nem `IDENTIFICADOR`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 """Testes das regras de DAX por padrão textual."""
@@ -2234,12 +2234,12 @@ def test_dax001_um_achado_por_expressao_nao_por_barra(ler):
     assert achados[0].evidencia.detalhe["ocorrencias"] == 2
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_dax.py -v`
 Expected: FAIL com `ModuleNotFoundError: No module named 'core.rules.dax'`
 
-- [ ] **Step 3: Write the rule**
+- [x] **Step 3: Write the rule**
 
 ```python
 """Regras de DAX por padrão textual — o grupo 2 do critério de detectabilidade.
@@ -2389,12 +2389,12 @@ Em `core/rules/todas.py`, acrescentar o import:
 from core.rules import dax, modelagem, performance  # noqa: F401 — o import registra
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_dax.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Write the failing test — the three lookalikes**
+- [x] **Step 5: Write the failing test — the three lookalikes**
 
 ```python
 def test_dax001_ignora_barra_em_comentario(ler):
@@ -2501,20 +2501,20 @@ def test_dax001_conta_so_as_barras_que_marca(ler):
     assert achados[0].evidencia.detalhe["ocorrencias"] == 1
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `./.venv/Scripts/python.exe -m pytest tests/test_rules_dax.py -v`
 Expected: PASS — os quatro sósias já são tratados pelo lexer e pela varredura. Se algum falhar, o defeito está na Tarefa 1 ou 4, não aqui.
 
-- [ ] **Step 7: Write the recommendation from the verified passage**
+- [x] **Step 7: Write the recommendation from the verified passage**
 
 Substituir a `recomendacao_padrao` pelo texto escrito a partir da passagem transcrita no `backlog.md`. Precisa de pelo menos 40 caracteres de texto útil — `RegraMeta` valida na importação — e **precisa repetir as exceções que a página declarar**, como fazem PERF-001 e PERF-003.
 
-- [ ] **Step 8: Lock the P8 count**
+- [x] **Step 8: Lock the P8 count**
 
 Acrescentar `"DAX-001"` a `CONTAGENS_P8` em `tests/test_pbip_real.py` com o número medido. A sondagem de 08/10 previu **zero** em escopo; confirmar com a regra implementada e registrar o número real.
 
-- [ ] **Step 9: Run the whole suite and commit**
+- [x] **Step 9: Run the whole suite and commit**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
 Expected: tudo passando, contagens anteriores intactas.
@@ -2524,7 +2524,7 @@ git add core/rules/dax.py core/rules/todas.py tests/test_rules_dax.py tests/test
 git commit -m "feat(rules): DAX-001, divisao com operador em vez de DIVIDE"
 ```
 
-- [ ] **Step 10: Check the catalog**
+- [x] **Step 10: Check the catalog**
 
 Run: `./.venv/Scripts/python.exe -m core.rules.catalogo`
 Expected: 10 regras, com DAX-001 e PERF-005 e suas URLs. Critério de aceite 8.
@@ -2539,7 +2539,7 @@ Expected: 10 regras, com DAX-001 e PERF-005 e suas URLs. Critério de aceite 8.
 
 Esta tarefa não escreve código de produção. Ela executa o procedimento da seção 6 da spec, que o critério de aceite 7 exige: **todo zero no P8 tem a causa identificada** — ausência de defeito, que é precisão, ou cegueira da regra, que é falso negativo. Sem isso, nenhuma afirmação de precisão entra na monografia nem no `status.md`.
 
-- [ ] **Step 1: Recount DAX-001 with the lexer, not with regex**
+- [x] **Step 1: Recount DAX-001 with the lexer, not with regex**
 
 Script descartável, rodado no PBIP real:
 
@@ -2572,7 +2572,7 @@ As duas listas respondem perguntas diferentes, e é por isso que ambas são impr
 - a **primeira** é o rendimento da regra. Vazia, o zero se confirma **medido pelo lexer**, e aí é zero verdadeiro;
 - a **segunda** é o controle. Se ela trouxer barras que a primeira não trouxe, cada uma precisa ser conferida à mão: é denominador constante de fato, que a documentação recomenda, ou é cegueira de `_e_constante`? Esta é a metade que detecta falso negativo, e sem ela o zero da primeira lista não sustenta afirmação de precisão.
 
-- [ ] **Step 2: Conferir a medição que rejeitou a PERF-005**
+- [x] **Step 2: Conferir a medição que rejeitou a PERF-005**
 
 A regra foi rejeitada na Tarefa 7, então não há achados dela para verificar. O que precisa ser conferido é a **medição que a rejeitou**, porque é ela que vai para a monografia:
 
@@ -2580,7 +2580,7 @@ Para **cinco** das 36 colunas que `usos_de_coluna` dá como sem uso, conferir à
 
 Conferir também, para **três colunas que a resolução dá como usadas**, que o uso existe mesmo. Essa metade detecta o erro oposto — resolução marcando uso que não há faria colunas genuinamente órfãs parecerem usadas, e teria escondido o problema em vez de revelá-lo.
 
-- [ ] **Step 3: Classify the six `SUMX` occurrences**
+- [x] **Step 3: Classify the six `SUMX` occurrences**
 
 Listar as 6 ocorrências de `SUMX` em escopo e classificar cada uma: iteração desnecessária (poderia ser `SUM` sobre uma coluna) ou iteração legítima (expressão de várias colunas). O resultado é o que diz se a DAX-002 vale a pena, e é o denominador de qualquer afirmação de precisão sobre ela.
 
@@ -2592,11 +2592,11 @@ for e in v.expressoes:
         print(e.objeto, "| args:", [[t.texto for t in a] for a in args])
 ```
 
-- [ ] **Step 4: Write the findings in `progress-log.md`**
+- [x] **Step 4: Write the findings in `progress-log.md`**
 
 Uma entrada datada que registre: o número medido de cada regra que entrou, a causa do zero quando houver zero, e a conferência da medição que rejeitou a PERF-005. Dizer explicitamente qual afirmação de precisão a medição **autoriza** e qual não autoriza.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/project/progress-log.md tests/test_pbip_real.py
@@ -2610,7 +2610,7 @@ git commit -m "docs: rendimento do grupo 2 no P8, verificado e com a causa de ca
 **Files:**
 - Modify: `docs/project/backlog.md`, `docs/project/riscos.md`, `docs/project/status.md`, `README.md`, `docs/project/progress-log.md`
 
-- [ ] **Step 1: `backlog.md`**
+- [x] **Step 1: `backlog.md`**
 
 - O **terceiro teste** do critério de detectabilidade, com as cláusulas (a), (b) e (c), como seção própria depois da de 06/10.
 - **D-1:** a contagem de 20–25 deixa de ser meta e passa a ser resultado, com a aritmética que levou a isso.
@@ -2619,30 +2619,30 @@ git commit -m "docs: rendimento do grupo 2 no P8, verificado e com a causa de ca
 - Em Trabalhos Futuros: **F25**, recusar-se a declarar o grupo de DAX completo enquanto houver lacuna aberta (D-7).
 - A candidata "coluna sem uso" passa a **recusada**, com o motivo e a medição (a Tarefa 7 Passo 2 já escreve a linha do log de alertas; conferir que está lá e consistente).
 
-- [ ] **Step 2: `riscos.md`**
+- [x] **Step 2: `riscos.md`**
 
 - **R-03** ganha a terceira mitigação: o lexer, com o número de cobertura medido no P8.
 - **R-12** ganha o prognóstico da seção 6 da spec: o grupo 2 rende pouco até num modelo problemático, o que torna o slot P9 mais provável.
 - Data da última atualização.
 
-- [ ] **Step 3: `status.md`**
+- [x] **Step 3: `status.md`**
 
 - A tabela de fases: a semana 5 foi usada para fechar o grupo 2, e a Fase 3 começa na semana 6. A folga de uma semana foi consumida, e isso precisa aparecer porque a versão anterior reportou a folga ao orientador.
 - A seção 4.1 (contagem de regras) atualizada com D-1 e a decisão aprovada.
 - A tabela de regras com as novas e as contagens medidas.
 - A afirmação de precisão **somente** no que a Tarefa 9 autorizar.
 
-- [ ] **Step 4: `README.md`**
+- [x] **Step 4: `README.md`**
 
 Contagem de regras, de testes e de achados no P8; a Fase 3 como em andamento.
 
-- [ ] **Step 5: `progress-log.md` — estender a entrada da Tarefa 9, não abrir outra**
+- [x] **Step 5: `progress-log.md` — estender a entrada da Tarefa 9, não abrir outra**
 
 A Tarefa 9 já criou a entrada de 08/10/2026 com a verificação do rendimento. **Estender aquela entrada**, em vez de abrir uma segunda da mesma data: duas entradas com assuntos sobrepostos tornam o log pior de ler, e o log é material da monografia.
 
 Acrescentar: o que foi entregue, o terceiro teste e de onde veio, o número de cobertura do lexer, e as pendências que seguem abertas — a verificação das roles e a conversão de P1–P7.
 
-- [ ] **Step 6: Run the whole suite one last time**
+- [x] **Step 6: Run the whole suite one last time**
 
 Run: `./.venv/Scripts/python.exe -m pytest -q`
 Expected: tudo passando.
@@ -2650,7 +2650,7 @@ Expected: tudo passando.
 Run: `./.venv/Scripts/python.exe -m core.rules.catalogo`
 Expected: o catálogo completo, com as regras novas.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add docs/ README.md

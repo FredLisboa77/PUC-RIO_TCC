@@ -192,7 +192,7 @@ Ollama 0.34.4 instalado via winget. Os dois candidatos da ADR-002 foram baixados
 Segundo bloco de código de produto, em TDD. **100 testes passando.**
 
 **O trabalho que mais rendeu não foi o código.** Antes de implementar, cada regra
-teve a âncora conferida no Microsoft Learn. Isso eliminou três das oito regras
+teve a âncora conferida no Microsoft Learn. Isso eliminou três das nove regras
 propostas e mudou uma quarta:
 
 - **PERF-004** (tabela calculada em DAX) caiu porque a página que a sustentaria
@@ -523,9 +523,110 @@ grupo 2, nesta mesma entrada — não numa segunda entrada da mesma data.
     `roles[].tablePermissions[].filterExpression` no `model.bim` (D-9).
     Menos urgente do que quando foi registrada, porque a PERF-005 — a regra
     que dependia dela — foi recusada; mas o sítio já é lido por
-    `usos_de_coluna` e pode sustentar regra futura de RLS.
+    `usos_de_coluna` e pode sustentar regra futura de RLS. Também vale para a
+    DAX-001, que já consome o sítio `role` em produção: sem o mesmo risco,
+    porque ela afirma por presença do operador `/`, e uma regra que afirma
+    por presença sobre uma propriedade que o Desktop talvez nunca escreva
+    simplesmente não encontra nada — o falso positivo destrutivo que motiva
+    a pendência é risco de afirmação por ausência, a classe a que a PERF-005
+    pertenceria.
   - A conversão de P1–P7 para PBIP. Deixou de ser recomendação e passou a
     **bloqueio** para a decisão da Fase 3: com a PERF-005 recusada e a
     DAX-001 em zero, o grupo 2 não somou nenhum achado ao P8, e o gatilho de
     ~40 achados em P1–P7 (semana 4) continua sem poder ser medido — ver
     `riscos.md`, R-12.
+
+---
+
+## 09/10/2026 — Fase 2, semana 5 — endurecimento do grupo 2 após revisão de código
+
+Nenhuma regra nova, nenhum achado novo: esta etapa responde a uma revisão do
+código entregue em 08/10 e fecha as frestas que ela apontou. **195 testes
+passando** (os 189 anteriores, mais seis).
+
+**Um defeito real na DAX-001, achado pela revisão.** `_denominador` pulava
+sinal unário depois da barra, mas não pulava comentário. Em DAX formatado em
+várias linhas — `[Total] / // nota\n[Qtd]` — o operando mínimo depois do `/`
+era o próprio token `COMENTARIO`, que `_e_constante` lia como "sem referência
+nem identificador", logo constante, e a regra calava. O caso não é hipotético:
+**92 das 105 expressões de DAX do autor no P8 têm comentário `//`** (91 medidas
+e 1 coluna calculada). Corrigido, com teste. A contagem de achados no P8 não
+muda — DAX-001 segue em zero, agora por ausência de divisão marcável e não por
+um comentário que a cegava.
+
+**Correção de um número que estava errado no comentário do módulo.** O
+docstring de `core/rules/dax.py` afirmava "92 das **128** expressões". O
+denominador 128 não existe neste modelo: os denominadores medidos são **137**
+(todas as expressões do arquivo) e **105** (as em escopo de autor). O 92 está
+certo, o 128 não era nada. Remedido e corrigido para 105 nos dois sítios do
+módulo. Registro aqui porque o log é material da monografia e um número
+inventado num comentário de código é do mesmo tipo do que o projeto já
+rejeitou duas vezes em afirmação de precisão.
+
+**O parser deixa de depender de ausência de chave para sobreviver a nulo.**
+`ler_modelo` prometia nunca falhar por propriedade ausente ou desconhecida, mas
+`.get("name", "")` só cai no padrão com a chave **ausente**: um `model.bim`
+editado à mão ou gerado por outra ferramenta com `"name": null` tem a chave
+presente e valor nulo, e o `None` ia direto para um campo obrigatório do
+Pydantic. Todo escalar obrigatório passa a `or ""`, toda lista a `or []`, e
+`"model": null` deixa de levantar `AttributeError`. Acrescentada também uma
+guarda para JSON cujo nível superior não é objeto: `ValueError` com o caminho e
+o tipo encontrado, em vez de traceback cru numa ferramenta que acabou de dizer
+que conseguia ler o arquivo. Três testes.
+
+**Dois pontos onde o código estava certo e a documentação mentia.**
+
+- `_sitios` dizia "todo lugar **em escopo** onde há DAX". Os três laços de
+  tabela usam `tabelas_com_dax_do_autor`; o laço de role não filtra escopo
+  algum — e está certo assim, porque um autor escreve filtro de RLS sobre
+  qualquer tabela, inclusive uma gerada pela ferramenta, e o filtro continua
+  sendo DAX dele. A palavra descrevia mal o laço; o comportamento ficou.
+- `tabelas_em_escopo` não dizia que não é o escopo das regras que leem DAX. A
+  diferença é uma tabela: a que só carrega medidas fica fora de um e dentro do
+  outro — e no P8 ela carrega 92 das 105 expressões.
+
+**Medida de sítio passa a contar mesmo com expressão vazia.** `_sitios` pulava
+expressão vazia, o que quebrava o critério de aceite 2 (`expressoes + lacunas`
+fechar com o total de sítios). Expressão vazia tokeniza sem erro —
+`tokenizar("")` devolve lista vazia, nunca lacuna — então é sítio. Coluna e
+partição seguem entrando só quando de fato calculadas (`c.e_calculada`,
+`tipo_origem == "calculated"`): contar toda coluna inflaria a conta com
+ausência de DAX. Dois testes.
+
+**Três limites que a revisão expôs e que agora estão escritos onde doem.**
+Nenhum deles muda resultado hoje; todos mudariam o de quem reusar o código
+sem saber:
+
+- `usos_de_coluna` **descarta `varredura.lacunas` em silêncio**. Uma coluna
+  referenciada só dentro de expressão que o lexer não leu por completo entra
+  como sem uso, e quem lê o retorno não tem como saber que houve lacuna. No P8
+  as lacunas são zero, então o 36 não é afetado — mas `lacunas` é justamente o
+  sinal que esta etapa inventou para a ferramenta parar de afirmar ausência
+  sobre texto que não leu, e esta função é onde ele é jogado fora. Documentado
+  no docstring, com a instrução: regra futura que afirme "sem uso" tem de somar
+  `varrer_dax(modelo).lacunas` antes de confiar num conjunto vazio.
+- `chamadas` **descarta em silêncio chamada com parêntese sem fechar**, e isso
+  não vira lacuna: medido, `tokenizar("SUM(1")` não produz `DESCONHECIDO`,
+  porque `(` e `1` são tokens válidos por si só. Sem consumidor hoje; a DAX-002
+  dependeria desta função e precisa saber que "nenhuma chamada de X" não
+  distingue "X não existe" de "X existe, malformado".
+- **Dos oito sítios de uso de coluna, só três sustentam a contagem de 36 no
+  P8.** Medido por sítio — quantas colunas marca e quantas dependem só dele:
+  relacionamento 17/9, dax de medida 19/14, dax de coluna calculada 6/3, e os
+  outros cinco com sinal exclusivo **zero** (ordenação 2/0, variação 3/0,
+  partição calculada 1/0, hierarquia 0/0, role 0/0). Remover os cinco deixa a
+  contagem idêntica em 36. Os números que o docstring antes citava como prova
+  de que valia ler os oito — 10 `sortByColumn` e 16 níveis de hierarquia — são
+  insumo enganoso: só 2 dos 10 caem em tabela em escopo, e nenhum dos 16 níveis
+  caiu. **Não é motivo para reduzir a lista a três:** a enumeração de oito é o
+  inventário completo das formas como o TMSL registra uso, e estreitá-la para
+  "o que o P8 precisa" faria o próximo modelo fechar a conta por acidente. É
+  fato deste corpus, e está registrado como tal.
+
+**Validação:** 195 testes passando; 9 regras executadas sobre o P8 sem falha,
+15 achados, 0 lacunas; catálogo completo com as 9 âncoras.
+
+**Próximo passo:** converter P1–P7 para PBIP e rodar as 9 regras. Continua
+sendo **bloqueio** para a decisão da Fase 3, e não mudou com esta etapa: o
+gatilho de ~40 achados em P1–P7 (semana 4) segue sem poder ser medido, com o
+grupo 2 tendo somado zero achado ao P8 (R-12).
