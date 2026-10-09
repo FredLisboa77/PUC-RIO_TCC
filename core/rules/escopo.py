@@ -102,6 +102,13 @@ def fora_de_escopo(t: Tabela) -> bool:
 
 
 def tabelas_em_escopo(modelo: ModeloSemantico) -> list[Tabela]:
+    """Tabelas que entram nas regras de nível de tabela: exclui o que `fora_de_escopo` marca.
+
+    Não é o escopo das regras que leem texto DAX — essas usam
+    `tabelas_com_dax_do_autor`, que difere desta só pela tabela que só carrega
+    medidas: ela não tem relacionamento por natureza (fica fora daqui), mas o
+    DAX de suas medidas é do autor (fica dentro de lá).
+    """
     return [t for t in modelo.tabelas if not fora_de_escopo(t)]
 
 
@@ -110,19 +117,19 @@ def nomes_em_escopo(modelo: ModeloSemantico) -> set[str]:
 
 
 def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
-    """O DAX desta tabela foi escrito pelo Power BI, nao pelo autor.
+    """O DAX desta tabela foi escrito pelo Power BI, não pelo autor.
 
-    Distincao que `fora_de_escopo` nao faz, porque ate aqui toda regra era de
-    nivel de tabela. Aquele predicado junta duas naturezas de exclusao:
+    Distinção que `fora_de_escopo` não faz, porque até aqui toda regra era de
+    nível de tabela. Aquele predicado junta duas naturezas de exclusão:
 
-    - **o DAX e da ferramenta** — tabela de data automatica, tabela de cluster, e
-      a tabela de parametro hipotetico, cuja medida o Desktop escreve junto com
+    - **o DAX é da ferramenta** — tabela de data automática, tabela de cluster, e
+      a tabela de parâmetro hipotético, cuja medida o Desktop escreve junto com
       a tabela (`% Previsao = SELECTEDVALUE(...)`);
-    - **padrao legitimo do autor** — a tabela que so carrega medidas, excluida
-      apenas por nao ter relacionamento por natureza.
+    - **padrão legítimo do autor** — a tabela que só carrega medidas, excluída
+      apenas por não ter relacionamento por natureza.
 
-    So a primeira natureza vale para uma regra que le texto DAX. No PBIP real a
-    tabela de medidas carrega 93 das 105 expressoes do modelo: trata-la como
+    Só a primeira natureza vale para uma regra que lê texto DAX. No PBIP real a
+    tabela de medidas carrega 93 das 105 expressões do modelo: tratá-la como
     fora de escopo deixaria a auditoria de DAX cega para quase tudo.
     """
     return (
@@ -133,9 +140,9 @@ def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
 
 
 def tabelas_com_dax_do_autor(modelo: ModeloSemantico) -> list[Tabela]:
-    """Tabelas cujo DAX o autor escreveu. E o escopo das regras de texto.
+    """Tabelas cujo DAX o autor escreveu. É o escopo das regras de texto.
 
-    Difere de `tabelas_em_escopo` apenas pela tabela que so carrega medidas, que
+    Difere de `tabelas_em_escopo` apenas pela tabela que só carrega medidas, que
     aqui **entra**.
     """
     return [t for t in modelo.tabelas if not dax_escrito_pela_ferramenta(t)]

@@ -117,3 +117,44 @@ def test_varre_a_expressao_de_filtro_da_role(ler):
 
     assert [e.sitio for e in v.expressoes] == ["role"]
     assert v.expressoes[0].objeto == "Vendedor:Vendas"
+
+
+def test_varre_role_mesmo_em_tabela_excluida_do_escopo_de_dax(ler):
+    """O laço de role não aplica `tabelas_com_dax_do_autor`.
+
+    Um filtro de RLS sobre uma tabela de data automática ainda é DAX escrito
+    pelo autor — a exclusão de `dax_escrito_pela_ferramenta` é sobre quem
+    escreveu o DAX *daquela tabela*, não sobre quem escreveu o filtro da role
+    que a referencia. Sem este teste, um erro que filtrasse o laço de role
+    pelo mesmo escopo das tabelas só apareceria ao auditar um PBIP real com
+    RLS sobre uma tabela de data automática.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "LocalDateTable_x",
+                colunas=[coluna("Date")],
+                annotations={"__PBI_LocalDateTable": "true"},
+            )
+        ],
+        roles=[role("Vendedor", tabela="LocalDateTable_x", filtro="[Date] > 0")],
+    )
+
+    v = varrer_dax(modelo)
+
+    assert [e.sitio for e in v.expressoes] == ["role"]
+    assert v.expressoes[0].tabela == "LocalDateTable_x"
+
+
+def test_medida_com_expressao_vazia_ainda_e_sitio(ler):
+    """`if m.expressao:` era truthiness: uma medida com `expression: ""` saía
+    das duas listas, e a soma deixava de fechar com o total de sítios
+    (critério de aceite 2). Expressão vazia tokeniza para lista vazia, sem
+    lacuna — então ela entra como expressão, não como lacuna."""
+    modelo = ler(tabelas=[tabela("Vendas", medidas=[medida("Vazia", "")])])
+
+    v = varrer_dax(modelo)
+
+    assert [e.objeto for e in v.expressoes] == ["Vendas[Vazia]"]
+    assert v.lacunas == []
+    assert v.total == 1

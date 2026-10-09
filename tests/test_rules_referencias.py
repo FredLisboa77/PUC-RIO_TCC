@@ -1,7 +1,12 @@
 """Testes da resolução de uso de coluna.
 
-Oito sítios. Um esquecido faz a PERF-005 recomendar apagar coluna em uso — e no
-P8 há 10 `sortByColumn` e 16 níveis de hierarquia esperando por esse erro.
+Oito sítios, testados individualmente porque a resolução precisa cobrir cada
+um — mesmo que, medido no P8, só três (relacionamento, DAX de medida e DAX de
+coluna calculada) tenham sinal exclusivo que mudaria a contagem de 36; ver o
+docstring de `core/rules/referencias.py` para a medição completa por sítio.
+Um sítio esquecido faz uma regra futura que leia este resultado recomendar
+apagar coluna em uso — no modelo onde aquele sítio importa, mesmo que não
+importe neste.
 """
 
 from core.rules.referencias import usos_de_coluna

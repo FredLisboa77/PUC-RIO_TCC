@@ -211,6 +211,37 @@ def test_dax001_barra_sem_denominador_e_tratada_como_variavel(ler):
     assert achados[0].evidencia.detalhe["ocorrencias"] == 1
 
 
+def test_dax001_pula_comentario_entre_a_barra_e_o_denominador(ler):
+    """Comentário não é o denominador: pular `//` e `/* */` para achar o real.
+
+    Medido: `[Total] / // o denominador\\n[Qtd]` e `[Total] / /* nota */ [Qtd]`
+    tinham `_denominador` devolvendo o próprio token COMENTARIO, que
+    `_e_constante` lia como "sem referência nem identificador" — logo
+    constante — e a regra se calava. 92 das 128 expressões do P8 têm `//`,
+    então um comentário logo depois da barra, em DAX formatado em várias
+    linhas, é plausível. O erro era silêncio não declarado: a regra marca por
+    presença, e esta é a forma de "/" que ela deixava passar sem dizer.
+    """
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "Vendas",
+                medidas=[
+                    medida("Barra", "[Total] / // o denominador\n[Qtd]"),
+                    medida("Bloco", "[Total] / /* nota */ [Qtd]"),
+                ],
+            )
+        ]
+    )
+
+    achados = list(divisao_sem_divide(modelo))
+
+    assert sorted(a.evidencia.objeto for a in achados) == [
+        "Vendas[Barra]",
+        "Vendas[Bloco]",
+    ]
+
+
 def test_dax001_marca_divisao_em_role(ler):
     """O sítio `role` mapeia para `tipo_objeto='modelo'` — `TipoObjeto` não tem
     um valor dedicado a RLS. Sem este teste, um erro na chave `"role"` de

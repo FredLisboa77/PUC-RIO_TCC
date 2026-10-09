@@ -239,9 +239,14 @@ def _referencia_ou_identificador(texto: str, i: int) -> tuple[Token, int]:
     )
 
 
+def primeiro_desconhecido(tokens: list[Token]) -> Token | None:
+    """O primeiro token `DESCONHECIDO`, ou `None` se a expressão tokenizou por completo."""
+    return next((t for t in tokens if t.tipo is TipoToken.DESCONHECIDO), None)
+
+
 def tem_desconhecido(tokens: list[Token]) -> bool:
     """A expressão não foi tokenizada por completo."""
-    return any(t.tipo is TipoToken.DESCONHECIDO for t in tokens)
+    return primeiro_desconhecido(tokens) is not None
 
 
 def referencias(tokens: list[Token]) -> list[Token]:
@@ -250,6 +255,7 @@ def referencias(tokens: list[Token]) -> list[Token]:
 
 
 def operadores(tokens: list[Token], simbolo: str) -> list[Token]:
+    """Só os tokens `OPERADOR` cujo texto é exatamente `simbolo`."""
     return [t for t in tokens if t.tipo is TipoToken.OPERADOR and t.texto == simbolo]
 
 
@@ -295,8 +301,13 @@ def chamadas(tokens: list[Token], nome: str) -> list[list[list[Token]]]:
                 continue
             atual.append(u)
         else:
-            # Parêntese sem fechar. Não inventa argumento: a expressão terá
-            # token DESCONHECIDO ou virará lacuna por outro caminho.
+            # Parêntese sem fechar: esta chamada é descartada em silêncio, não
+            # vira lacuna. Medido: tokenizar("SUM(1") não produz DESCONHECIDO
+            # — "(" e "1" são tokens válidos e completos por si só — então o
+            # resto da expressão segue chegando inteiro às regras, só sem esta
+            # chamada no resultado. Sem consumidor hoje; a DAX-002, que
+            # depende desta função, precisa saber que "nenhuma chamada de X"
+            # aqui não distingue "X não existe" de "X existe, mas malformado".
             continue
 
         resultado.append(argumentos)

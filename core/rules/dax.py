@@ -1,8 +1,9 @@
 """Regras de DAX por padrão textual — o grupo 2 do critério de detectabilidade.
 
-Toda regra aqui lê tokens, nunca a string crua. O motivo é medido: 92 das 128
-expressões de medida e coluna do P8 têm comentário `//`, e uma expressão regular
-procurando `/` casaria o comentário em todas elas.
+Toda regra aqui lê tokens, nunca a string crua. O motivo é medido: 92 das 105
+expressões de DAX do autor no P8 têm comentário `//` (91 medidas e 1 coluna
+calculada), e uma expressão regular procurando `/` casaria o comentário em
+todas elas.
 
 As expressões vêm de `core.rules.expressoes.varrer_dax`, que entrega apenas o
 que o lexer leu por completo. O que ele não leu é lacuna declarada no resultado
@@ -40,7 +41,20 @@ def _denominador(tokens: list[Token], posicao_da_barra: int) -> list[Token]:
     # ao binário, então sem pular o sinal o operando mínimo seria o próprio
     # sinal — e uma divisão por `-[b]` passaria por constante, calando a regra
     # justamente no caso que a documentação manda trocar por DIVIDE.
-    while resto and resto[0].tipo is TipoToken.OPERADOR and resto[0].texto in ("-", "+"):
+    #
+    # Comentário entre a barra e o denominador pula pelo mesmo motivo, mas por
+    # uma razão diferente: ele não é sinal, é ausência de valor. `[Total] /
+    # // nota\n[Qtd]` e `[Total] / /* nota */ [Qtd]` são DAX formatado em
+    # várias linhas — medido: 92 das 105 expressões do P8 têm `//` — e sem
+    # pular o comentário `_denominador` devolveria o próprio token COMENTARIO,
+    # que `_e_constante` trataria como "sem referência nem identificador",
+    # logo constante, calando a regra no mesmo caso que o sinal unário acima.
+    # Pular o comentário é leitura correta da expressão, não um contorno: ele
+    # não é o denominador, é texto que o autor escreveu ao lado dele.
+    while resto and (
+        (resto[0].tipo is TipoToken.OPERADOR and resto[0].texto in ("-", "+"))
+        or resto[0].tipo is TipoToken.COMENTARIO
+    ):
         resto = resto[1:]
 
     if not resto:

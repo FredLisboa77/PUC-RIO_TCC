@@ -17,7 +17,7 @@ O grupo 4 — regras de Power Query M — reusa este módulo trocando o filtro.
 
 from pydantic import BaseModel, Field
 
-from core.dax import TipoToken, Token, tem_desconhecido, tokenizar
+from core.dax import Token, primeiro_desconhecido, tokenizar
 from core.model import ModeloSemantico
 from core.rules.escopo import tabelas_com_dax_do_autor
 
@@ -59,17 +59,35 @@ class VarreduraDax(BaseModel):
 
 
 def _sitios(modelo: ModeloSemantico):
-    """Todo lugar em escopo onde há DAX, como (sitio, objeto, tabela, texto)."""
+    """Todo lugar onde há DAX escrito pelo autor, como (sitio, objeto, tabela, texto).
+
+    "Em escopo" descreve certo os três laços de tabela: eles usam
+    `tabelas_com_dax_do_autor`. O laço de role, não — toda role do modelo
+    entra, sem filtro de escopo de tabela algum: um autor escreve filtro de
+    RLS sobre qualquer tabela, inclusive uma gerada pela ferramenta, e o
+    filtro continua sendo DAX dele. Restringir a role por escopo de tabela
+    excluiria um filtro genuíno sem motivo — o comportamento está certo, só a
+    palavra "todo lugar em escopo" descrevia mal o laço de role.
+
+    Toda medida conta como sítio, mesmo com expressão vazia: expressão vazia
+    ainda é texto que a varredura tokeniza sem erro (`tokenizar("")` devolve
+    lista vazia, nunca lacuna), e pular o sítio quebraria o critério de
+    aceite 2 (`expressoes + lacunas` fecha com o total de sítios em escopo).
+    Coluna e partição, ao contrário, só entram quando são de fato calculadas
+    (`c.e_calculada`, `p.tipo_origem == "calculated"`) — a maioria das
+    colunas de uma tabela não tem DAX nenhum, e contá-las todas inflaria a
+    contagem com "expressões" que não são DAX, só ausência de coluna
+    calculada.
+    """
     for t in tabelas_com_dax_do_autor(modelo):
         for m in t.medidas:
-            if m.expressao:
-                yield "medida", f"{t.nome}[{m.nome}]", t.nome, m.expressao
+            yield "medida", f"{t.nome}[{m.nome}]", t.nome, m.expressao
         for c in t.colunas:
-            if c.expressao:
-                yield "coluna calculada", f"{t.nome}[{c.nome}]", t.nome, c.expressao
+            if c.e_calculada:
+                yield "coluna calculada", f"{t.nome}[{c.nome}]", t.nome, c.expressao or ""
         for p in t.particoes:
-            if p.tipo_origem == "calculated" and p.origem:
-                yield "particao calculada", f"{t.nome}:{p.nome}", t.nome, p.origem
+            if p.tipo_origem == "calculated":
+                yield "particao calculada", f"{t.nome}:{p.nome}", t.nome, p.origem or ""
 
     for r in modelo.roles:
         for perm in r.permissoes:
@@ -90,8 +108,8 @@ def varrer_dax(modelo: ModeloSemantico) -> VarreduraDax:
     for sitio, objeto, tabela, texto in _sitios(modelo):
         tokens = tokenizar(texto)
 
-        if tem_desconhecido(tokens):
-            primeiro = next(t for t in tokens if t.tipo is TipoToken.DESCONHECIDO)
+        primeiro = primeiro_desconhecido(tokens)
+        if primeiro is not None:
             inicio = max(0, primeiro.posicao - VIZINHANCA)
             lacunas.append(
                 LacunaDax(

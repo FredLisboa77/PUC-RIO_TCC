@@ -372,8 +372,29 @@ def test_nulo_explicito_no_tmsl_nao_derruba_o_parser(tmp_path):
 
     `.get(chave, [])` devolve o padrao so quando a chave esta AUSENTE. Com a
     chave presente e valor nulo devolve None, e a compreensao de lista estoura.
-    Toda lista lida do TMSL usa `or []` por isso.
+    Toda lista lida do TMSL usa `or []` por isso — e todo escalar que alimenta
+    um campo obrigatorio do Pydantic usa `or ""`, pelo mesmo motivo: `"model":
+    null` e `"name": null` numa tabela sao a mesma classe de defeito, só que
+    um derruba com `AttributeError` antes de chegar ao Pydantic, e o outro com
+    `ValidationError` dentro dele.
     """
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": None,
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas == []
+    assert modelo.relacionamentos == []
+    assert modelo.roles == []
+
+
+def test_nulo_explicito_dentro_do_model_nao_derruba_o_parser(tmp_path):
+    """As listas de dentro de `model` continuam tolerando `null`, isoladas do teste acima."""
     bruto = {
         "name": "SemanticModel",
         "compatibilityLevel": 1600,
@@ -392,6 +413,57 @@ def test_nulo_explicito_no_tmsl_nao_derruba_o_parser(tmp_path):
     assert modelo.tabelas == []
     assert modelo.relacionamentos == []
     assert modelo.roles == []
+
+
+def test_json_de_topo_nao_objeto_nao_derruba_o_parser_com_traceback_cru(tmp_path):
+    """Uma lista ou string no nível superior do JSON levanta erro claro, não
+    `AttributeError: 'list' object has no attribute 'get'`."""
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+
+    try:
+        ler_modelo(caminho)
+        assert False, "deveria ter levantado ValueError"
+    except ValueError as erro:
+        assert "não é um objeto" in str(erro)
+
+
+def test_nulo_explicito_em_escalar_obrigatorio_nao_derruba_o_parser(tmp_path):
+    """`"name": null` numa tabela, numa coluna e num nível de hierarquia: o
+    mesmo defeito do teste acima, agora num escalar que alimenta um campo
+    Pydantic não opcional em vez de uma lista.
+    """
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": [
+                {
+                    "name": None,
+                    "columns": [{"name": None, "dataType": "string"}],
+                    "hierarchies": [
+                        {"name": "H", "levels": [{"name": "N", "column": None}]}
+                    ],
+                }
+            ],
+            "roles": [
+                {
+                    "name": "Vendedor",
+                    "tablePermissions": [{"name": None, "filterExpression": "TRUE()"}],
+                }
+            ],
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas[0].nome == ""
+    assert modelo.tabelas[0].colunas[0].nome == ""
+    assert modelo.tabelas[0].hierarquias[0].niveis[0].coluna == ""
+    assert modelo.roles[0].permissoes[0].tabela == ""
 
 
 def test_nulo_explicito_dentro_da_tabela_nao_derruba_o_parser(tmp_path):

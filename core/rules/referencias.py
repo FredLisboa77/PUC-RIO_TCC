@@ -27,9 +27,36 @@ O módulo continua existindo porque é a evidência reprodutível desse
 resultado — apagá-lo reduziria a medição a anedota — e porque serve a uma
 regra futura cuja afirmação não dependa da camada de relatório.
 
-São oito sítios, e no P8 existem 10 `sortByColumn` e 16 níveis de
-hierarquia — esquecer um deles distorceria a contagem na mesma direção do
-erro que já rejeitou a PERF-005: colunas que parecem sem uso sem sê-lo.
+São oito sítios, e a resolução lê todos eles — mas, medido no P8, só três
+carregam sinal que a contagem de 36 depende de fato. Por sítio, quantas
+colunas (tabela, coluna) ele marca ("marca") e quantas dependem **só** dele
+— removê-lo mudaria o resultado dessas colunas ("sinal exclusivo"):
+
+| sítio                        | marca | sinal exclusivo |
+|-------------------------------|------:|-----------------:|
+| relacionamento                 | 17    | 9                |
+| dax de medida                  | 19    | 14               |
+| dax de coluna calculada        | 6     | 3                |
+| ordenacao                      | 2     | 0                |
+| variacao                       | 3     | 0                |
+| dax de particao calculada      | 1     | 0                |
+| hierarquia                     | 0     | 0                |
+| dax de role                    | 0     | 0                |
+
+Remover os cinco sítios de sinal exclusivo zero deixa a contagem em 36,
+idêntica. E dos 10 `sortByColumn` do arquivo, só 2 caem em tabela em escopo;
+dos 16 níveis de hierarquia, nenhum caiu. Os dois números por si só, portanto,
+são insumo enganoso para "quanto isto importa": a resolução lê oito sítios,
+mas neste corpus a conta inteira é sustentada por três.
+
+Isto não é motivo para reduzir a lista a três. A enumeração de oito é o
+inventário completo das formas como o TMSL registra uso de coluna — ordenação,
+hierarquia e role de RLS continuam sendo sinal legítimo, só não aparecem neste
+arquivo com peso que mude o resultado. Omiti-los estreitaria a resolução para
+"o que o P8 precisa", e o próximo modelo medido fecharia a conta por acidente,
+não por desenho. É um fato **deste corpus**, não uma garantia do método —
+registro que se aplica igualmente ao limite sobre `SUMX`/`RANKX`/`MINX`
+descrito mais abaixo.
 
 Dois riscos de sósia, resolvidos por construção:
 
@@ -92,6 +119,18 @@ def usos_de_coluna(modelo: ModeloSemantico) -> dict[tuple[str, str], set[str]]:
     conjunto vazio é o sinal medido — ver o docstring do módulo sobre por que
     ele não basta para afirmar "sem uso" — e uma chave ausente seria
     indistinguível de uma coluna que não existe.
+
+    **Descarta `varredura.lacunas` em silêncio.** Uma coluna referenciada só
+    dentro de uma expressão que o lexer não leu por completo entra aqui como
+    sem uso — esta função chama `varrer_dax` e olha só `expressoes`, nunca
+    `lacunas` — e quem lê o retorno não tem como saber que a varredura teve
+    lacuna, porque o número de lacunas não está nele. No P8 as lacunas são
+    zero, então o 36 não é afetado por isso hoje; mas `lacunas` é exatamente o
+    sinal que esta etapa inventou para a ferramenta parar de afirmar ausência
+    sobre texto que não leu, e esta função é o lugar onde, por construção, ele
+    é jogado fora antes de chegar a quem chama. Uma regra futura que use este
+    resultado para afirmar "sem uso" precisa somar `varrer_dax(modelo).lacunas`
+    por conta própria antes de confiar num conjunto vazio aqui.
     """
     usos: dict[tuple[str, str], set[str]] = {
         (t.nome, c.nome): set() for t in tabelas_em_escopo(modelo) for c in t.colunas
