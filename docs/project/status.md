@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** fim da semana 5 de 13 — Fase 2 encerrada, incluindo o grupo 2 de DAX · **Atualizado em:** 09/10/2026
+**Posição:** semana 6 de 13 — Fase 2 encerrada; P1–P7 convertidos e medidos · **Atualizado em:** 09/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -17,15 +17,16 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **195 testes** automatizados passando. O maior risco técnico do
+Learn. São **196 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
 rejeitou uma regra de alto valor esperado (PERF-005) por falta de evidência
 suficiente — e **essa rejeição, não a contagem, é o resultado que a monografia
-defende**. O item que mais precisa de decisão agora é outro: os sete projetos
-públicos do dataset ainda não foram convertidos, e isso deixou de ser recomendação
-e passou a **bloqueio** para decidir a Fase 3 (R-12, seção 4.2).
+defende**. Os sete projetos públicos do dataset foram convertidos em 09/10/2026 e
+renderam **53 achados**, acima do gatilho de ~40 do R-12 — mas 16 deles vêm da
+regra de precisão mais dependente de dado, e sem ela seriam 37. A decisão sobre o
+projeto de contingência P9 precisa considerar as duas contas (seção 4.2).
 
 ---
 
@@ -65,7 +66,7 @@ regras de M, depois abrir mão do PDF (R-07).
 | Lexer de DAX (`core/dax.py`) — leitura de texto livre, não mais hipótese | **137 de 137** expressões DAX do P8 tokenizadas, **zero** token `DESCONHECIDO` — o número que substitui "usamos expressões regulares" |
 | Varredura de DAX com lacuna declarada (`core/rules/expressoes.py`) | **105 de 105** expressões em escopo de autor cobertas, **0 lacunas** no P8; o runner agora declara essa cobertura junto dos achados |
 | 9 regras, cada uma com âncora no Microsoft Learn (8 estruturais + DAX-001) | `python -m core.rules.catalogo` imprime o catálogo com as URLs |
-| Suíte de testes | **195 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Suíte de testes | **196 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -163,29 +164,33 @@ regras** entregues e usa as regras recusadas (PERF-005, e antes dela três regra
 estruturais e a convenção de nomenclatura) como evidência do próprio método, não
 uma contagem otimista que ninguém somou com confiança.
 
-### 4.2 Dataset P1–P7 não convertido — de recomendação a bloqueio (R-12)
+### 4.2 Dataset P1–P7 convertido e medido — o gatilho do R-12 não disparou
 
-O entregável da semana 4 incluía "relatório de achados em JSON para todos os PBIP".
-**Só o P8 foi analisado.** Os sete projetos públicos da Microsoft (P1–P7, licença
-MIT) ainda não foram convertidos para PBIP. Isso mantém em aberto o **R-12** — e
-esta etapa o agravou, ao invés de dar mais tempo para resolvê-lo:
+Os sete projetos públicos (P1–P7, licença MIT) foram convertidos para PBIP em
+09/10/2026 e auditados pelas 9 regras, sem falha de regra em nenhum. O gatilho do
+**R-12** — *menos de ~40 achados em P1–P7* — **não disparou**:
 
-> *As amostras públicas da Microsoft têm poucos problemas, reduzindo a
-> significância da avaliação.*
+| | P1 | P2 | P3 | P4 | P5 | P6 | P7 | **Total** |
+|---|---|---|---|---|---|---|---|---|
+| Achados | 10 | 4 | 8 | 6 | 18 | 7 | 0 | **53** |
 
-A PERF-005 era a única regra desta etapa com rendimento esperado no P8. Com ela
-recusada, o grupo 2 inteiro soma ao P8 apenas o que a DAX-001 rendeu — **zero**.
-Isso confirma, por um caminho que a hipótese inicial não previa, que o grupo 2
-quase não move a contagem do P8 mesmo este sendo um modelo reconhecidamente
-problemático. O gatilho definido para a semana 4 (**menos de ~40 achados em
-P1–P7**) continua sem poder ser medido, e a referência concreta piorou: 9 regras
-produzem os mesmos 15 achados que as 8 estruturais produziam.
+Por regra: PERF-001 19, PERF-003 16, MOD-003 7, DAX-001 6, MOD-006 3, MOD-001 1,
+MOD-007 1. A DAX-001, que deu zero no P8, achou 6 no P5.
 
-**Consequência: R-12 é hoje o risco mais urgente do projeto.** O slot de
-contingência **P9** passou de provável a **quase certo**, e converter P1–P7
-**deixou de ser recomendação e passou a bloqueio** para decidir o que entra na
-Fase 3 — não é mais uma medição que pode esperar; é a medição que a decisão da
-Fase 3 depende de ter.
+**A margem é fina, e depende de uma regra.** As 19 ocorrências da PERF-001 foram
+revistas uma a uma e resistem à âncora: nenhuma coluna avalia medida ou usa
+funcionalidade exclusiva de DAX, que é a exceção que a própria documentação
+declara. A PERF-003 é diferente: a âncora diz que a soma imprecisa em ponto
+flutuante é **rara** e depende da distribuição dos valores, que a ferramenta não
+lê. **Sem a PERF-003, P1–P7 somam 37 — abaixo do gatilho.** O ground truth da
+semana 8 dirá se a precisão dela sustenta a margem.
+
+**Consequência:** o R-12 cai de probabilidade Alta para Média e segue aberto. O
+P9 deixa de ser "quase certo"; a recomendação é não acioná-lo agora, mas decidir
+com o orientador olhando as duas contas, não só o 53.
+
+A medição revelou também o primeiro defeito do lexer que o P8 não mostrava —
+decimal sem zero à esquerda (`*.3`, no P2) —, já corrigido com teste.
 
 ---
 
@@ -208,7 +213,7 @@ pendência 4.2 urgente.
 
 ## 6. Riscos
 
-**14 riscos registrados.** Situação em 08/10/2026:
+**14 riscos registrados.** Situação em 09/10/2026:
 
 | Status | Riscos |
 |---|---|
@@ -218,13 +223,10 @@ pendência 4.2 urgente.
 
 ### O que merece atenção agora
 
-**R-12 — significância da avaliação** · P=**A**, I=**A** · ver seção 4.2.
-**É hoje o risco mais urgente do projeto.** Era o de maior impacto em aberto;
-nesta etapa a probabilidade também subiu para Alta, porque o grupo 2 de DAX —
-a última frente que poderia ter adicionado achados ao P8 antes de P1–P7
-existirem — rendeu zero (PERF-005 recusada antes do código, DAX-001 medida em
-zero). O gatilho da semana 4 (~40 achados em P1–P7) já venceu sem poder ser
-medido, e converter P1–P7 passou de recomendação a bloqueio.
+**R-12 — significância da avaliação** · P=**M**, I=**A** · ver seção 4.2.
+Medido em 09/10/2026: 53 achados em P1–P7, acima do gatilho de ~40, e a
+probabilidade caiu de Alta para Média. Segue aberto porque a margem depende da
+PERF-003 — sem ela, 37.
 
 **R-03 — falsos positivos em heurísticas de DAX** · P=Alta, I=M.
 O risco se materializou no **grupo 2**, fechado nesta etapa, e ganhou uma
@@ -261,7 +263,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Converter P1–P7 no Power BI Desktop e rodar as 9 regras** | Não é mais recomendação — é **bloqueio** para decidir a Fase 3 (R-12, seção 4.2). Gatilho da semana 4 já vencido há duas etapas. **Os sete `.pbix` foram baixados em 09/10/2026** e conferidos; o que resta é manual, e só na GUI: o modelo semântico de um `.pbix` vive numa entrada `DataModel` comprimida, não num `model.bim`, então nenhum software do projeto produz o PBIP. Checklist em `eval/dataset.md` — e o preview de TMDL **tem** de ser conferido a olho, porque não é verificável por fora e a conversão é irreversível |
+| 1 | **Decidir o P9 com o orientador** | O gatilho do R-12 não disparou (53 achados em P1–P7), mas sem a PERF-003 seriam 37. A decisão precisa das duas contas (seção 4.2) |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 | 3 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 6, que agora começa um roadmap-week depois do planejado (seção 2). As URLs canónicas das 9 regras já são, por construção, parte do catálogo que a RAG precisa conter |
 
@@ -275,7 +277,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 195 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 196 testes (os que leem o PBIP real são pulados sem data/)
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 ```
 

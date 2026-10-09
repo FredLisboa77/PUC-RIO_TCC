@@ -94,6 +94,22 @@ do passo 3 (preview de TMDL desligado) **não é verificável por fora** — nã
 registro virtualizado do app da Store —, então a conferência visual do passo 3 é obrigatória, e
 não uma formalidade: a conversão para TMDL é irreversível (ADR-001).
 
+### Conversão de P1–P7 — feita em 09/10/2026
+
+Convertidos pelo autor no Desktop 2.158 e guardados em `data/pbip/P<n>_<nome>/`. Conferido nos
+sete: `model.bim` presente, pasta `definition/` ausente. Ao salvar, o Desktop gravou os sete
+relatórios em PBIR — inclusive P6–P7, que no `.pbix` estavam no `Report/Layout` antigo.
+
+| PBIP_ID | `version` | `compatibilityLevel` | Tabelas | Medidas |
+|---|---|---|---|---|
+| P1 | 4.2 | 1606 | 10 | 20 |
+| P2 | 4.2 | 1606 | 10 | 19 |
+| P3 | 4.2 | 1606 | 9 | 25 |
+| P4 | 4.2 | 1606 | 9 | 22 |
+| P5 | 4.2 | 1606 | 7 | 32 |
+| P6 | 4.2 | 1606 | 7 | 4 |
+| P7 | 4.2 | 1606 | 7 | 4 |
+
 `data/` está no `.gitignore`. Os arquivos não são versionados — este documento é o que torna o dataset reprodutível.
 
 ## Ground truth

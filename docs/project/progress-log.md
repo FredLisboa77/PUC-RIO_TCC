@@ -694,3 +694,88 @@ automatizável; o que resta é manual.
 
 Feito isso, rodar as 9 regras sobre os sete e medir o gatilho do R-12 é
 automático e imediato.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — P1–P7 convertidos e medidos; o gatilho do R-12 não disparou
+
+O Fred converteu os sete `.pbix` no Desktop. As 9 regras rodaram sobre P1–P7:
+**53 achados**, contra o gatilho de **menos de ~40** do R-12. O gatilho não
+disparou — mas a margem depende de uma regra, e isso vai registrado junto.
+
+**Conversão conferida, não suposta.** Os sete têm `model.bim`
+(`compatibilityLevel` **1606**) e **nenhum** tem a pasta `definition/`: o
+preview de TMDL estava mesmo desligado. As pastas extras que o Desktop escreveu
+(`TMDLScripts/`, `DAXQueries/`, `VerifiedAnswers/`) não tocam o modelo. Os PBIP
+foram salvos dentro de `data/pbix/`; movi cada um — `.pbip`, `.Report` e
+`.SemanticModel` juntos, o que preserva o caminho relativo do `.pbip` — para
+`data/pbip/P<n>_<nome>/`, como pede o procedimento.
+
+**Inventário (passo 6 do procedimento):**
+
+| PBIP | `version` | compat. | Tabelas | Medidas | Expressões DAX | Achados |
+|---|---|---|---|---|---|---|
+| P1 AdventureWorks Sales | 4.2 | 1606 | 10 | 20 | 24/24 | 10 |
+| P2 Corporate Spend | 4.2 | 1606 | 10 | 19 | 23/23 | 4 |
+| P3 Employee Hiring and History | 4.2 | 1606 | 9 | 25 | 32/32 | 8 |
+| P4 Competitive Marketing Analysis | 4.2 | 1606 | 9 | 22 | 33/33 | 6 |
+| P5 Store Sales | 4.2 | 1606 | 7 | 32 | 40/40 | 18 |
+| P6 Supply Chain Sample | 4.2 | 1606 | 7 | 4 | 6/6 | 7 |
+| P7 Revenue Opportunities | 4.2 | 1606 | 7 | 4 | 4/4 | **0** |
+| **P1–P7** | | | | | | **53** |
+
+9 de 9 regras executadas em todos, sem falha. O P8 continua em 15 — a
+referência não se moveu. Por regra, em P1–P7: PERF-001 **19**, PERF-003 **16**,
+MOD-003 7, DAX-001 6, MOD-006 3, MOD-001 1, MOD-007 1; MOD-002, MOD-005 e
+PERF-002 deram zero. A DAX-001, zero no P8, achou 6 no P5 — o grupo 2 rende
+fora do P8.
+
+**Primeiro defeito que o P8 não revelou.** O P2 deu uma lacuna de varredura:
+`Calculations[Amount]` = `TOTALYTD(SUM([Value]), 'Date'[Date])*.3`. O lexer não
+lia decimal sem zero à esquerda (`.3`), que é DAX válido, e a expressão ficou
+fora de toda regra de texto. Corrigido com teste primeiro
+(`test_decimal_sem_zero_a_esquerda`, visto falhar com `'3' != '.3'`): ponto
+seguido de dígito abre número — fora de número o ponto não tem papel na
+sintaxe. P2 passa a 23/23, a contagem de achados não muda (não há `/` na
+expressão). É exatamente o tipo de cegueira que a lacuna declarada existe para
+expor: apareceu na contagem, não em silêncio.
+
+**Os 53 se sustentam? Revisão das duas regras que somam 35.**
+
+- **PERF-001 (19): os 19 resistem à âncora.** A própria recomendação declara a
+  exceção — coluna que avalia medida ou usa funcionalidade só de DAX, como
+  pai-filho. Resolvendo as referências de cada expressão: **nenhuma** cita
+  medida; todas são `IF`, `YEAR`, `MONTH`, `FORMAT`, `MID`, concatenação e um
+  `RELATED`, tudo reproduzível no Power Query (o `RELATED`, por mesclagem).
+- **PERF-003 (16): é onde a margem mora.** A âncora diz que o resultado
+  inesperado é **raro** e depende da distribuição dos valores — que a
+  ferramenta não lê. Há casos visivelmente inofensivos: `Employee[BadHires]`
+  (P3) só devolve 0 ou 1, e soma de inteiros em `double` é exata. E há o caso
+  que a âncora descreve como o mais provável: `Sentiment[Score]` (P4), escore
+  de sentimento, com sinal. A regra afirma por presença (`double` + `sum`), sem
+  violar o terceiro teste, mas sua precisão é a mais dependente de dado do
+  conjunto.
+
+**A conta que importa:** sem a PERF-003, P1–P7 somam **37** — abaixo do
+gatilho. O R-12 passa, mas por uma margem que a avaliação da semana 8 (ground
+truth, R-03) pode desfazer se a PERF-003 tiver precisão baixa. Não é motivo
+para acionar o P9 agora — o gatilho foi definido sobre contagem, e a contagem
+o supera —, mas é motivo para o ground truth julgar a PERF-003 com atenção
+especial, e para a decisão sobre o P9 ser levada ao orientador com esta conta
+na mão, e não só com o 53.
+
+**O P7 com zero é plausível:** 4 medidas, 4 expressões, nenhuma coluna
+calculada. Fica como dado, não como suspeita — mas é o primeiro
+projeto do dataset onde a ferramenta não tem nada a dizer, e a monografia deve
+mostrá-lo assim.
+
+**Mudança na camada de relatório:** a entrada anterior registrava P6–P7 com o
+`Report/Layout` antigo. Salvos pelo Desktop 2.158, os sete saíram em **PBIR**
+(`Report/definition/`). Insumo para o F19, sem efeito no MVP.
+
+**Validação:** 196 testes passando (195 + o do lexer); 9 regras sobre os 8 PBIP
+sem falha; 267 de 267 expressões DAX de P1–P8 em escopo lidas sem lacuna.
+
+**Próximo passo:** levar a decisão do P9 ao orientador com as duas contas (53
+com a PERF-003, 37 sem ela) e, sem depender dela, iniciar a Fase 3 — G-8,
+`rag/sources.yaml` a partir dos `toc.json`.
