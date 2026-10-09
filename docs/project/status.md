@@ -261,7 +261,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Converter P1–P7 e rodar as 9 regras** | Não é mais recomendação — é **bloqueio** para decidir a Fase 3 (R-12, seção 4.2). Gatilho da semana 4 já vencido há duas etapas |
+| 1 | **Converter P1–P7 no Power BI Desktop e rodar as 9 regras** | Não é mais recomendação — é **bloqueio** para decidir a Fase 3 (R-12, seção 4.2). Gatilho da semana 4 já vencido há duas etapas. **Os sete `.pbix` foram baixados em 09/10/2026** e conferidos; o que resta é manual, e só na GUI: o modelo semântico de um `.pbix` vive numa entrada `DataModel` comprimida, não num `model.bim`, então nenhum software do projeto produz o PBIP. Checklist em `eval/dataset.md` — e o preview de TMDL **tem** de ser conferido a olho, porque não é verificável por fora e a conversão é irreversível |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 | 3 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 6, que agora começa um roadmap-week depois do planejado (seção 2). As URLs canónicas das 9 regras já são, por construção, parte do catálogo que a RAG precisa conter |
 

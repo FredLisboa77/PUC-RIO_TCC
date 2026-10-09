@@ -1,6 +1,6 @@
 # Dataset de avaliação
 
-**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. P1–P7 ainda não baixados nem convertidos.
+**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. **P1–P7 baixados em 09/10/2026** (passo 1 do procedimento abaixo) e **ainda não convertidos** — os passos 2–5 exigem a GUI do Power BI Desktop.
 **Decisão de origem:** [ADR-005](../docs/adr/ADR-005-dataset-de-avaliacao.md).
 
 ## Origem
@@ -58,6 +58,41 @@ Para cada PBIX, na semana 4:
 4. *Arquivo > Salvar como > Projeto do Power BI (.pbip)*, salvando em `data/pbip/P<n>_<nome>/`.
 5. Conferir que a pasta `<nome>.SemanticModel/` contém **`model.bim`** e **não** contém a pasta `definition/`.
 6. Registrar no `progress-log.md`: PBIP_ID, nome do arquivo, `version` lida no `definition.pbism`, e o número de tabelas e medidas.
+
+### Download de P1–P7 — feito em 09/10/2026
+
+Os sete `.pbix` foram baixados de `raw.githubusercontent.com/microsoft/powerbi-desktop-samples/main`
+para `data/pbix/`, nomeados `P<n>_<arquivo original>.pbix`. Todos conferidos: assinatura ZIP
+(`50 4b 03 04`) e tamanho idêntico ao que a API do GitHub informa para o commit de `main`.
+
+| PBIP_ID | Caminho no repositório | Tamanho |
+|---|---|---|
+| P1 | `2026 Power BI Samples Revamp/AdventureWorks Sales.pbix` | 8,4 MB |
+| P2 | `2026 Power BI Samples Revamp/Corporate Spend.pbix` | 0,7 MB |
+| P3 | `2026 Power BI Samples Revamp/Employee Hiring and History.pbix` | 8,5 MB |
+| P4 | `2026 Power BI Samples Revamp/Competitive Marketing Analysis.pbix` | 6,6 MB |
+| P5 | `2026 Power BI Samples Revamp/Store Sales.pbix` | 9,7 MB |
+| P6 | `Sample Reports/Supply Chain Sample.pbix` | 1,2 MB |
+| P7 | `Sample Reports/Revenue Opportunities.pbix` | 7,5 MB |
+
+**Armadilha de nome, registrada para reprodutibilidade:** **seis dos sete** nomes aparecem
+em mais de uma pasta do repositório, com conteúdos diferentes — só `Supply Chain Sample.pbix`
+é único. `Revenue Opportunities.pbix` é o caso extremo, em quatro pastas: 7.465.671 bytes em
+`Sample Reports` contra 245.930 em `2026 Power BI Samples Revamp` e 247.054 em
+`new-power-bi-service-samples` e `powerbi-service-samples` — 30 vezes menor. A coluna "Caminho no repositório" acima, não o nome do
+arquivo, é o que identifica cada projeto. A tabela dos 7 projetos já fixava a pasta de cada
+um, e foi ela que decidiu qual baixar.
+
+**Por que os passos 2–5 não podem ser automatizados.** Verificado nos arquivos baixados: o
+modelo semântico de um `.pbix` vive numa única entrada `DataModel` do ZIP — um ABF comprimido,
+não um `model.bim`. Nenhuma leitura do `.pbix` produz o PBIP; só o Desktop o escreve. (A camada
+de relatório, ao contrário, está em claro: P1–P5 já trazem `Report/definition/pages/`, o
+formato PBIR novo, e P6–P7 o `Report/Layout` antigo.)
+
+Power BI Desktop confirmado instalado nesta máquina: versão da Store **2.158.1304.0**. O ajuste
+do passo 3 (preview de TMDL desligado) **não é verificável por fora** — não aparece no hive de
+registro virtualizado do app da Store —, então a conferência visual do passo 3 é obrigatória, e
+não uma formalidade: a conversão para TMDL é irreversível (ADR-001).
 
 `data/` está no `.gitignore`. Os arquivos não são versionados — este documento é o que torna o dataset reprodutível.
 

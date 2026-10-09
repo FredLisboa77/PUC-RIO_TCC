@@ -630,3 +630,67 @@ sem saber:
 sendo **bloqueio** para a decisão da Fase 3, e não mudou com esta etapa: o
 gatilho de ~40 achados em P1–P7 (semana 4) segue sem poder ser medido, com o
 grupo 2 tendo somado zero achado ao P8 (R-12).
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — P1–P7 baixados; a conversão fica com o Fred
+
+Passo 1 do procedimento de conversão (`eval/dataset.md`) executado: os sete
+`.pbix` de P1–P7 estão em `data/pbix/`. Os passos 2–5 exigem a GUI do Power BI
+Desktop e não são automatizáveis — ver abaixo.
+
+**O que foi baixado, e conferido.** Os sete arquivos vieram de
+`raw.githubusercontent.com/microsoft/powerbi-desktop-samples/main`, nomeados
+`P<n>_<arquivo original>.pbix`, somando ~42,6 MB. Cada um conferido em duas
+coisas: assinatura ZIP (`50 4b 03 04`) e tamanho idêntico ao que a API do
+GitHub informa para o commit de `main`. A tabela completa, com o caminho de
+origem de cada um, está em `eval/dataset.md`.
+
+**R-14 (disco) não é mais restrição.** Foi o que bloqueou a semana 2 e custou o
+`.pbix` do P8. Hoje: D: com 1499 GB livres, C: com 103 GB. Os 42,6 MB de P1–P7
+são irrelevantes diante disso, e o projeto está em D:.
+
+**Uma armadilha de nome que quase trocaria os arquivos.** **Seis dos sete**
+nomes aparecem em mais de uma pasta do repositório, com conteúdos diferentes —
+só `Supply Chain Sample.pbix` é único. `Revenue Opportunities.pbix` é o caso
+extremo, em quatro pastas: **7.465.671 bytes** em `Sample Reports` contra
+**245.930** em `2026 Power BI Samples Revamp` (e ~247 KB em outras duas) —
+baixar pelo nome, e não pelo caminho, daria um projeto **30 vezes menor** com o
+mesmo `PBIP_ID`. A tabela dos 7 projetos em `eval/dataset.md` já fixava a pasta
+de cada um desde 22/09, e foi ela que decidiu; o registro fica porque a
+reprodutibilidade por terceiros é a razão de o dataset ser público (ADR-005).
+
+**Por que os passos 2–5 não podem ser automatizados — verificado, não suposto.**
+O modelo semântico de um `.pbix` vive numa única entrada `DataModel` do ZIP: um
+ABF comprimido, não um `model.bim`. Nenhuma leitura do `.pbix` produz o PBIP; só
+o Desktop o escreve. A camada de relatório, ao contrário, está em claro — P1–P5
+já trazem `Report/definition/pages/` (o formato PBIR novo) e P6–P7 o
+`Report/Layout` antigo —, o que é insumo para o F19 mas não para esta etapa.
+
+**O ajuste do passo 3 não é verificável por fora.** Power BI Desktop está
+instalado (Store, **2.158.1304.0**), mas o estado do preview "Store semantic
+model using TMDL format" não aparece no hive de registro virtualizado do app da
+Store. Então a conferência visual do passo 3 é obrigatória, não formalidade: a
+conversão para TMDL é irreversível (ADR-001), e o MVP lê `model.bim`, não TMDL.
+Um PBIP salvo com o preview ligado não é recuperável por software — só
+reabrindo o `.pbix` e salvando de novo.
+
+**Nada medido sobre P1–P7 nesta entrada.** O gatilho do R-12 (menos de ~40
+achados em P1–P7) continua sem poder ser medido, e o R-12 segue sendo o risco
+mais urgente do projeto. Esta entrada removeu o único obstáculo que era
+automatizável; o que resta é manual.
+
+**Próximo passo — para o Fred, na GUI.** Para cada um dos sete `.pbix` em
+`data/pbix/`:
+
+1. Conferir que **"Store semantic model using TMDL format" está DESLIGADO** em
+   *Arquivo > Opções e configurações > Opções > Recursos de visualização*. Uma
+   vez só, antes do primeiro; é ajuste global.
+2. Abrir o `.pbix` no Desktop.
+3. *Arquivo > Salvar como > Projeto do Power BI (.pbip)*, em
+   `data/pbip/P<n>_<nome>/`.
+4. Conferir que `<nome>.SemanticModel/` tem **`model.bim`** e **não** tem a
+   pasta `definition/`.
+
+Feito isso, rodar as 9 regras sobre os sete e medir o gatilho do R-12 é
+automático e imediato.
