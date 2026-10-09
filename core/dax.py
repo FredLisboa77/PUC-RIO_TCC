@@ -100,7 +100,9 @@ def tokenizar(expressao: str | None) -> list[Token]:
             i = j
             continue
 
-        if c.isdigit():
+        # `.3` é decimal válido em DAX (medido no P2). Fora de número, o ponto
+        # não tem papel na sintaxe, então exigir dígito depois basta.
+        if c.isdigit() or (c == "." and texto[i + 1 : i + 2].isdigit()):
             j = i
             while j < len(texto) and (texto[j].isdigit() or texto[j] == "."):
                 j += 1

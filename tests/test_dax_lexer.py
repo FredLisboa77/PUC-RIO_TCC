@@ -56,6 +56,14 @@ def test_numero_inteiro_e_decimal():
     assert _de("1 + 2.5", TipoToken.NUMERO) == ["1", "2.5"]
 
 
+def test_decimal_sem_zero_a_esquerda():
+    """Medido no P2 (`Calculations[Amount]`): `...*.3` ficava como lacuna."""
+    expressao = "SUM([Value])*.3"
+    assert _de(expressao, TipoToken.NUMERO) == [".3"]
+    assert _de(expressao, TipoToken.OPERADOR) == ["*"]
+    assert TipoToken.DESCONHECIDO not in _tipos(expressao)
+
+
 def test_chamada_de_funcao():
     assert _tipos("SUM([a])") == [
         TipoToken.IDENTIFICADOR,
