@@ -116,6 +116,31 @@ relatórios em PBIR — inclusive P6–P7, que no `.pbix` estavam no `Report/Lay
 
 Construído manualmente na **semana 8**, antes de ver os resultados finais da ferramenta (risco R-04).
 
+### Contaminação já ocorrida e como o protocolo responde (registrado em 09/10/2026)
+
+A promessa acima já não vale por inteiro: em 09/10/2026 os 53 achados de P1–P7 foram
+vistos, e os da PERF-001 e da PERF-003 revistos um a um (`progress-log.md`). Anotar
+depois de ver a saída da ferramenta enviesa a anotação a favor dela, e o anotador é um
+só, sem medida de concordância (Fase 1, limitações declaradas). O protocolo passa a ser:
+
+1. **Congelar as regras antes do ground truth.** No dia em que a anotação começar,
+   criar a tag `regras-gt` no commit vigente. A avaliação da Fase 5 roda **só** sobre
+   essa tag; regra mudada depois dela é trabalho futuro, não resultado. (A tag não é
+   criada agora porque o grupo 4, regras de M, ainda está no MVP.)
+2. **Segundo anotador às cegas numa amostra.** Uma segunda pessoa — o orientador ou um
+   colega com domínio de Power BI — anota **2 dos 7 projetos** sem ver os achados da
+   ferramenta, com as mesmas regras de construção abaixo. A concordância entre os dois
+   anotadores é medida pelo **kappa de Cohen** (Cohen, 1960) e reportada na monografia.
+   Os 2 projetos são sorteados com semente registrada aqui, no dia do sorteio.
+3. **Anotar a partir do modelo, não da lista de achados.** O primeiro anotador percorre
+   cada modelo com um roteiro fixo (tabelas, relacionamentos, colunas, medidas,
+   partições), e só depois compara com a saída da ferramenta.
+4. **Ameaças à validade declaradas.** Ajustes feitos depois de ver P1–P7 entram na
+   monografia como tal: a correção do lexer para decimal sem zero à esquerda (achado no
+   P2) e a troca do endereço da âncora da PERF-003 (redirecionamento detectado pelo
+   catálogo). Nenhum dos dois mudou a contagem de achados, mas ambos foram motivados
+   pelo conjunto de teste.
+
 Formato de `eval/ground_truth.csv`:
 
 ```
