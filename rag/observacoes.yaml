@@ -1,0 +1,4 @@
+# Notas humanas por id do catálogo, incorporadas por `python -m rag.catalogo gerar`.
+# Formato: <id>: <texto>. Nota para id que saiu do catálogo faz a geração falhar,
+# para que a nota não se perca em silêncio quando a Microsoft remove uma página.
+{}

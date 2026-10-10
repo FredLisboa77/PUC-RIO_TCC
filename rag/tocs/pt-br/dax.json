@@ -1,0 +1,2048 @@
+{
+  "secao": "dax",
+  "idioma": "pt-br",
+  "url": "https://learn.microsoft.com/pt-br/dax/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "Referência de Expressões de Análise de Dados (DAX)"
+    },
+    {
+      "href": "dax-overview",
+      "titulo": "visão geral do DAX"
+    },
+    {
+      "href": "dax-learn-videos",
+      "titulo": "Videos"
+    },
+    {
+      "href": "https://aka.ms/learndax",
+      "titulo": "Usar DAX no caminho do Power BI Desktop Learn"
+    },
+    {
+      "href": "dax-copilot",
+      "titulo": "Escrever consultas DAX com Copilot"
+    },
+    {
+      "href": "dax-sample-model",
+      "titulo": "Modelo de exemplo"
+    },
+    {
+      "href": "best-practices/dax-understand-orderby",
+      "titulo": "Noções básicas sobre funções ORDERBY, PARTITIONBYe MATCHBY"
+    },
+    {
+      "href": "best-practices/dax-error-functions",
+      "titulo": "Uso apropriado de funções de erro"
+    },
+    {
+      "href": "best-practices/dax-avoid-converting-blank",
+      "titulo": "Evite converter BLANKs em valores"
+    },
+    {
+      "href": "best-practices/dax-avoid-avoid-filter-as-filter-argument",
+      "titulo": "Evite usar FILTER como um argumento de filtro"
+    },
+    {
+      "href": "best-practices/dax-column-measure-references",
+      "titulo": "Referências de coluna e medida"
+    },
+    {
+      "href": "best-practices/dax-unicode-character-behavior",
+      "titulo": "Configurar o suporte ao conjunto de caracteres codificado chinês (GB18030-2022)"
+    },
+    {
+      "href": "best-practices/dax-divide-function-operator",
+      "titulo": "Função DIVIDE versus operador de divisão (/)"
+    },
+    {
+      "href": "best-practices/dax-selectedvalue",
+      "titulo": "Use SELECTEDVALUE em vez de VALUES"
+    },
+    {
+      "href": "best-practices/dax-countrows",
+      "titulo": "Use COUNTROWS em vez de COUNT"
+    },
+    {
+      "href": "best-practices/dax-variables",
+      "titulo": "Usar variáveis para melhorar fórmulas"
+    },
+    {
+      "href": "best-practices/dax-user-defined-functions",
+      "titulo": "Usar DAX funções definidas pelo usuário"
+    },
+    {
+      "href": "dax-function-reference",
+      "titulo": "Referência da função DAX"
+    },
+    {
+      "href": "new-dax-functions",
+      "titulo": "Novas funções DAX"
+    },
+    {
+      "href": "aggregation-functions-dax",
+      "titulo": "Visão geral das funções de agregação"
+    },
+    {
+      "href": "approximate-distinctcount-function-dax",
+      "titulo": "APPROXIMATEDISTINCTCOUNT"
+    },
+    {
+      "href": "average-function-dax",
+      "titulo": "AVERAGE"
+    },
+    {
+      "href": "averagea-function-dax",
+      "titulo": "AVERAGEA"
+    },
+    {
+      "href": "averagex-function-dax",
+      "titulo": "AVERAGEX"
+    },
+    {
+      "href": "count-function-dax",
+      "titulo": "COUNT"
+    },
+    {
+      "href": "counta-function-dax",
+      "titulo": "COUNTA"
+    },
+    {
+      "href": "countax-function-dax",
+      "titulo": "COUNTAX"
+    },
+    {
+      "href": "countblank-function-dax",
+      "titulo": "COUNTBLANK"
+    },
+    {
+      "href": "countrows-function-dax",
+      "titulo": "COUNTROWS"
+    },
+    {
+      "href": "countx-function-dax",
+      "titulo": "COUNTX"
+    },
+    {
+      "href": "distinctcount-function-dax",
+      "titulo": "DISTINCTCOUNT"
+    },
+    {
+      "href": "distinctcountnoblank-function-dax",
+      "titulo": "DISTINCTCOUNTNOBLANK"
+    },
+    {
+      "href": "max-function-dax",
+      "titulo": "MAX"
+    },
+    {
+      "href": "maxa-function-dax",
+      "titulo": "MAXA"
+    },
+    {
+      "href": "maxx-function-dax",
+      "titulo": "MAXX"
+    },
+    {
+      "href": "min-function-dax",
+      "titulo": "MIN"
+    },
+    {
+      "href": "mina-function-dax",
+      "titulo": "MINA"
+    },
+    {
+      "href": "minx-function-dax",
+      "titulo": "MINX"
+    },
+    {
+      "href": "product-function-dax",
+      "titulo": "PRODUCT"
+    },
+    {
+      "href": "productx-function-dax",
+      "titulo": "PRODUCTX"
+    },
+    {
+      "href": "sum-function-dax",
+      "titulo": "SUM"
+    },
+    {
+      "href": "sumx-function-dax",
+      "titulo": "SUMX"
+    },
+    {
+      "href": "date-and-time-functions-dax",
+      "titulo": "Visão Geral das funções de data e hora"
+    },
+    {
+      "href": "calendar-function-dax",
+      "titulo": "CALENDAR"
+    },
+    {
+      "href": "calendarauto-function-dax",
+      "titulo": "CALENDARAUTO"
+    },
+    {
+      "href": "date-function-dax",
+      "titulo": "DATE"
+    },
+    {
+      "href": "datediff-function-dax",
+      "titulo": "DATEDIFF"
+    },
+    {
+      "href": "datevalue-function-dax",
+      "titulo": "DATEVALUE"
+    },
+    {
+      "href": "day-function-dax",
+      "titulo": "DAY"
+    },
+    {
+      "href": "edate-function-dax",
+      "titulo": "EDATE"
+    },
+    {
+      "href": "eomonth-function-dax",
+      "titulo": "EOMONTH"
+    },
+    {
+      "href": "hour-function-dax",
+      "titulo": "HOUR"
+    },
+    {
+      "href": "minute-function-dax",
+      "titulo": "MINUTE"
+    },
+    {
+      "href": "month-function-dax",
+      "titulo": "MONTH"
+    },
+    {
+      "href": "networkdays-function-dax",
+      "titulo": "NETWORKDAYS"
+    },
+    {
+      "href": "now-function-dax",
+      "titulo": "NOW"
+    },
+    {
+      "href": "quarter-function-dax",
+      "titulo": "QUARTER"
+    },
+    {
+      "href": "second-function-dax",
+      "titulo": "SECOND"
+    },
+    {
+      "href": "time-function-dax",
+      "titulo": "TIME"
+    },
+    {
+      "href": "timevalue-function-dax",
+      "titulo": "TIMEVALUE"
+    },
+    {
+      "href": "today-function-dax",
+      "titulo": "TODAY"
+    },
+    {
+      "href": "utcnow-function-dax",
+      "titulo": "UTCNOW"
+    },
+    {
+      "href": "utctoday-function-dax",
+      "titulo": "UTCTODAY"
+    },
+    {
+      "href": "weekday-function-dax",
+      "titulo": "WEEKDAY"
+    },
+    {
+      "href": "weeknum-function-dax",
+      "titulo": "WEEKNUM"
+    },
+    {
+      "href": "year-function-dax",
+      "titulo": "YEAR"
+    },
+    {
+      "href": "yearfrac-function-dax",
+      "titulo": "YEARFRAC"
+    },
+    {
+      "href": "filter-functions-dax",
+      "titulo": "Visão Geral das funções de filtro"
+    },
+    {
+      "href": "all-function-dax",
+      "titulo": "ALL"
+    },
+    {
+      "href": "allcrossfiltered-function-dax",
+      "titulo": "ALLCROSSFILTERED"
+    },
+    {
+      "href": "allexcept-function-dax",
+      "titulo": "ALLEXCEPT"
+    },
+    {
+      "href": "allnoblankrow-function-dax",
+      "titulo": "ALLNOBLANKROW"
+    },
+    {
+      "href": "allselected-function-dax",
+      "titulo": "ALLSELECTED"
+    },
+    {
+      "href": "calculate-function-dax",
+      "titulo": "CALCULATE"
+    },
+    {
+      "href": "calculatetable-function-dax",
+      "titulo": "CALCULATETABLE"
+    },
+    {
+      "href": "earlier-function-dax",
+      "titulo": "EARLIER"
+    },
+    {
+      "href": "earliest-function-dax",
+      "titulo": "EARLIEST"
+    },
+    {
+      "href": "filter-function-dax",
+      "titulo": "FILTER"
+    },
+    {
+      "href": "firstnonblank-function-dax",
+      "titulo": "FIRSTNONBLANK"
+    },
+    {
+      "href": "firstnonblankvalue-function-dax",
+      "titulo": "FIRSTNONBLANKVALUE"
+    },
+    {
+      "href": "index-function-dax",
+      "titulo": "INDEX"
+    },
+    {
+      "href": "keepfilters-function-dax",
+      "titulo": "KEEPFILTERS"
+    },
+    {
+      "href": "lastnonblank-function-dax",
+      "titulo": "LASTNONBLANK"
+    },
+    {
+      "href": "lastnonblankvalue-function-dax",
+      "titulo": "LASTNONBLANKVALUE"
+    },
+    {
+      "href": "lookup-function-dax",
+      "titulo": "PESQUISA"
+    },
+    {
+      "href": "lookupvalue-function-dax",
+      "titulo": "LOOKUPVALUE"
+    },
+    {
+      "href": "lookupwithtotals-function-dax",
+      "titulo": "LOOKUPWITHTOTALS (Procura com Totais)"
+    },
+    {
+      "href": "matchby-function-dax",
+      "titulo": "MATCHBY"
+    },
+    {
+      "href": "movingaverage-function-dax",
+      "titulo": "MOVINGAVERAGE"
+    },
+    {
+      "href": "offset-function-dax",
+      "titulo": "OFFSET"
+    },
+    {
+      "href": "orderby-function-dax",
+      "titulo": "ORDERBY"
+    },
+    {
+      "href": "partitionby-function-dax",
+      "titulo": "PARTITIONBY"
+    },
+    {
+      "href": "range-function-dax",
+      "titulo": "RANGE"
+    },
+    {
+      "href": "rank-function-dax",
+      "titulo": "RANK"
+    },
+    {
+      "href": "removefilters-function-dax",
+      "titulo": "REMOVEFILTERS"
+    },
+    {
+      "href": "rownumber-function-dax",
+      "titulo": "ROWNUMBER"
+    },
+    {
+      "href": "runningsum-function-dax",
+      "titulo": "RUNNINGSUM"
+    },
+    {
+      "href": "selectedvalue-function-dax",
+      "titulo": "SELECTEDVALUE"
+    },
+    {
+      "href": "window-function-dax",
+      "titulo": "WINDOW"
+    },
+    {
+      "href": "financial-functions-dax",
+      "titulo": "Visão geral de funções financeiras"
+    },
+    {
+      "href": "accrint-function-dax",
+      "titulo": "ACCRINT"
+    },
+    {
+      "href": "accrintm-function-dax",
+      "titulo": "ACCRINTM"
+    },
+    {
+      "href": "amordegrc-function-dax",
+      "titulo": "AMORDEGRC"
+    },
+    {
+      "href": "amorlinc-function-dax",
+      "titulo": "AMORLINC"
+    },
+    {
+      "href": "coupdaybs-function-dax",
+      "titulo": "COUPDAYBS"
+    },
+    {
+      "href": "coupdays-function-dax",
+      "titulo": "COUPDAYS"
+    },
+    {
+      "href": "coupdaysnc-function-dax",
+      "titulo": "COUPDAYSNC"
+    },
+    {
+      "href": "coupncd-function-dax",
+      "titulo": "COUPNCD"
+    },
+    {
+      "href": "coupnum-function-dax",
+      "titulo": "COUPNUM"
+    },
+    {
+      "href": "couppcd-function-dax",
+      "titulo": "COUPPCD"
+    },
+    {
+      "href": "cumipmt-function-dax",
+      "titulo": "CUMIPMT"
+    },
+    {
+      "href": "cumprinc-function-dax",
+      "titulo": "CUMPRINC"
+    },
+    {
+      "href": "db-function-dax",
+      "titulo": "DB"
+    },
+    {
+      "href": "ddb-function-dax",
+      "titulo": "DDB"
+    },
+    {
+      "href": "disc-function-dax",
+      "titulo": "DISC"
+    },
+    {
+      "href": "dollarde-function-dax",
+      "titulo": "DOLLARDE"
+    },
+    {
+      "href": "dollarfr-function-dax",
+      "titulo": "DOLLARFR"
+    },
+    {
+      "href": "duration-function-dax",
+      "titulo": "DURATION"
+    },
+    {
+      "href": "effect-function-dax",
+      "titulo": "EFFECT"
+    },
+    {
+      "href": "fv-function-dax",
+      "titulo": "FV"
+    },
+    {
+      "href": "intrate-function-dax",
+      "titulo": "INTRATE"
+    },
+    {
+      "href": "ipmt-function-dax",
+      "titulo": "IPMT"
+    },
+    {
+      "href": "ispmt-function-dax",
+      "titulo": "ISPMT"
+    },
+    {
+      "href": "mduration-function-dax",
+      "titulo": "MDURATION"
+    },
+    {
+      "href": "nominal-function-dax",
+      "titulo": "NOMINAL"
+    },
+    {
+      "href": "nper-function-dax",
+      "titulo": "NPER"
+    },
+    {
+      "href": "oddfprice-function-dax",
+      "titulo": "ODDFPRICE"
+    },
+    {
+      "href": "oddfyield-function-dax",
+      "titulo": "ODDFYIELD"
+    },
+    {
+      "href": "oddlprice-function-dax",
+      "titulo": "ODDLPRICE"
+    },
+    {
+      "href": "oddlyield-function-dax",
+      "titulo": "ODDLYIELD"
+    },
+    {
+      "href": "pduration-function-dax",
+      "titulo": "PDURATION"
+    },
+    {
+      "href": "pmt-function-dax",
+      "titulo": "PMT"
+    },
+    {
+      "href": "ppmt-function-dax",
+      "titulo": "PPMT"
+    },
+    {
+      "href": "price-function-dax",
+      "titulo": "PRICE"
+    },
+    {
+      "href": "pricedisc-function-dax",
+      "titulo": "PRICEDISC"
+    },
+    {
+      "href": "pricemat-function-dax",
+      "titulo": "PRICEMAT"
+    },
+    {
+      "href": "pv-function-dax",
+      "titulo": "PV"
+    },
+    {
+      "href": "rate-function-dax",
+      "titulo": "RATE"
+    },
+    {
+      "href": "received-function-dax",
+      "titulo": "RECEIVED"
+    },
+    {
+      "href": "rri-function-dax",
+      "titulo": "RRI"
+    },
+    {
+      "href": "sln-function-dax",
+      "titulo": "SLN"
+    },
+    {
+      "href": "syd-function-dax",
+      "titulo": "SYD"
+    },
+    {
+      "href": "tbilleq-function-dax",
+      "titulo": "TBILLEQ"
+    },
+    {
+      "href": "tbillprice-function-dax",
+      "titulo": "TBILLPRICE"
+    },
+    {
+      "href": "tbillyield-function-dax",
+      "titulo": "TBILLYIELD"
+    },
+    {
+      "href": "vdb-function-dax",
+      "titulo": "VDB"
+    },
+    {
+      "href": "xirr-function-dax",
+      "titulo": "XIRR"
+    },
+    {
+      "href": "xnpv-function-dax",
+      "titulo": "XNPV"
+    },
+    {
+      "href": "yield-function-dax",
+      "titulo": "YIELD"
+    },
+    {
+      "href": "yielddisc-function-dax",
+      "titulo": "YIELDDISC"
+    },
+    {
+      "href": "yieldmat-function-dax",
+      "titulo": "YIELDMAT"
+    },
+    {
+      "href": "info-functions-dax",
+      "titulo": "Visão geral das funções INFO"
+    },
+    {
+      "href": "info-view-columns-function-dax",
+      "titulo": "INFORMAÇÃO. VISTA. COLUNAS"
+    },
+    {
+      "href": "info-view-measures-function-dax",
+      "titulo": "INFORMAÇÃO. VISTA. MEDIDAS"
+    },
+    {
+      "href": "info-view-relationships-function-dax",
+      "titulo": "INFORMAÇÃO. VISTA. RELAÇÕES"
+    },
+    {
+      "href": "info-view-tables-function-dax",
+      "titulo": "INFO.VISUALIZAR.TABELAS"
+    },
+    {
+      "href": "info-alternateofdefinitions-function-dax",
+      "titulo": "INFORMAÇÃO. ALTERNATIVA DE DEFINIÇÕES"
+    },
+    {
+      "href": "info-annotations-function-dax",
+      "titulo": "INFORMAÇÃO. ANOTAÇÕES"
+    },
+    {
+      "href": "info-attributehierarchies-function-dax",
+      "titulo": "INFORMAÇÃO.HIERARQUIAS_DE_ATRIBUTO"
+    },
+    {
+      "href": "info-attributehierarchystorages-function-dax",
+      "titulo": "INFORMAÇÃO. ATTRIBUTEHIERARCHYSTORAGES"
+    },
+    {
+      "href": "info-calcdependency-function-dax",
+      "titulo": "INFORMAÇÃO. DEPENDÊNCIA DE CÁLCULO"
+    },
+    {
+      "href": "info-calculationgroups-function-dax",
+      "titulo": "INFO.GRUPOS DE CÁLCULO"
+    },
+    {
+      "href": "info-calculationitems-function-dax",
+      "titulo": "INFORMAÇÃO.ITENSDECÁLCULO"
+    },
+    {
+      "href": "info-calendarcolumngroups-function-dax",
+      "titulo": "INFORMAÇÃO. CALENDARCOLUMNGROUPS"
+    },
+    {
+      "href": "info-calendarcolumnreferences-function-dax",
+      "titulo": "INFORMAÇÃO.CALENDARCOLUMNREFERENCES"
+    },
+    {
+      "href": "info-calendars-function-dax",
+      "titulo": "INFO. CALENDÁRIOS"
+    },
+    {
+      "href": "info-catalogs-function-dax",
+      "titulo": "INFORMAÇÃO. CATÁLOGOS"
+    },
+    {
+      "href": "info-changedproperties-function-dax",
+      "titulo": "INFO.PROPRIEDADESALTERADAS"
+    },
+    {
+      "href": "info-columnpartitionstorages-function-dax",
+      "titulo": "INFORMAÇÃO. ARMAZENAMENTODASPARTIÇÕESDACOLUNA"
+    },
+    {
+      "href": "info-columnpermissions-function-dax",
+      "titulo": "INFORMAÇÃO. COLUMNPERMISSIONS"
+    },
+    {
+      "href": "info-columns-function-dax",
+      "titulo": "INFORMAÇÃO. COLUNAS"
+    },
+    {
+      "href": "info-columnstorages-function-dax",
+      "titulo": "INFO.COLUMNSTORAGES"
+    },
+    {
+      "href": "info-csdlmetadata-function-dax",
+      "titulo": "INFORMAÇÃO. CSDLMETADATA"
+    },
+    {
+      "href": "info-cultures-function-dax",
+      "titulo": "INFOCULTURAS"
+    },
+    {
+      "href": "info-datacoveragedefinitions-function-dax",
+      "titulo": "INFORMAÇÃO. DEFINIÇÕESDECUBERTURADADADOS"
+    },
+    {
+      "href": "info-datasources-function-dax",
+      "titulo": "INFORMAÇÕES. FONTES DE DADOS"
+    },
+    {
+      "href": "info-deltatablemetadatastorages-function-dax",
+      "titulo": "INFORMAÇÃO. DELTATABLEMETADATASTORAGES"
+    },
+    {
+      "href": "info-dependencies-function-dax",
+      "titulo": "INFORMAÇÃO. DEPENDÊNCIAS"
+    },
+    {
+      "href": "info-detailrowsdefinitions-function-dax",
+      "titulo": "INFORMAÇÃO. DEFINIÇÕES DE LINHAS DETALHADAS"
+    },
+    {
+      "href": "info-dictionarystorages-function-dax",
+      "titulo": "INFORMAÇÃO. DICTIONARYSTORAGES"
+    },
+    {
+      "href": "info-excludedartifacts-function-dax",
+      "titulo": "INFORMAÇÃO.ARTEFATOS_EXCLUIDOS"
+    },
+    {
+      "href": "info-expressions-function-dax",
+      "titulo": "INFO.EXPRESSIONS"
+    },
+    {
+      "href": "info-extendedproperties-function-dax",
+      "titulo": "INFORMAÇÃO. EXTENDEDPROPERTIES"
+    },
+    {
+      "href": "info-formatstringdefinitions-function-dax",
+      "titulo": "INFO.FORMATSTRINGDEFINITIONS"
+    },
+    {
+      "href": "info-functions-function-dax",
+      "titulo": "INFORMAÇÃO. FUNÇÕES"
+    },
+    {
+      "href": "info-generalsegmentmapsegmentmetadatastorages-function-dax",
+      "titulo": "Informação. GeneralSegmentMapSegmentMetadataStorages"
+    },
+    {
+      "href": "info-groupbycolumns-function-dax",
+      "titulo": "INFORMAÇÃO. GROUPBYCOLUMNS"
+    },
+    {
+      "href": "info-hierarchies-function-dax",
+      "titulo": "INFO.HIERARQUIAS"
+    },
+    {
+      "href": "info-hierarchystorages-function-dax",
+      "titulo": "INFO.HIERARQUIA DE ARMAZENAMENTOS"
+    },
+    {
+      "href": "info-kpis-function-dax",
+      "titulo": "INFORMAÇÕES SOBRE KPIs"
+    },
+    {
+      "href": "info-levels-function-dax",
+      "titulo": "INFORMAÇÃO. NÍVEIS"
+    },
+    {
+      "href": "info-linguisticmetadata-function-dax",
+      "titulo": "INFORMAÇÃO: METADADOS LINGUÍSTICOS"
+    },
+    {
+      "href": "info-measures-function-dax",
+      "titulo": "INFORMAÇÃO. MEDIDAS"
+    },
+    {
+      "href": "info-model-function-dax",
+      "titulo": "INFO.MODELO"
+    },
+    {
+      "href": "info-objecttranslations-function-dax",
+      "titulo": "INFORMAÇÕES. OBJECTTRANSLATIONS"
+    },
+    {
+      "href": "info-parquetfilestorages-function-dax",
+      "titulo": "INFORMAÇÃO. PARQUETFILESTORAGES"
+    },
+    {
+      "href": "info-partitions-function-dax",
+      "titulo": "INFORMAÇÃO. PARTIÇÕES"
+    },
+    {
+      "href": "info-partitionstorages-function-dax",
+      "titulo": "INFORMAÇÃO. PARTITIONSTORAGES"
+    },
+    {
+      "href": "info-perspectivecolumns-function-dax",
+      "titulo": "INFO.PERSPECTIVECOLUMNS"
+    },
+    {
+      "href": "info-perspectivehierarchies-function-dax",
+      "titulo": "INFORMAÇÃO. HIERARQUIAS DE PERSPECTIVA"
+    },
+    {
+      "href": "info-perspectivemeasures-function-dax",
+      "titulo": "INFO.PERSPECTIVEMEASURES"
+    },
+    {
+      "href": "info-perspectives-function-dax",
+      "titulo": "INFO.PERSPECTIVAS"
+    },
+    {
+      "href": "info-perspectivetables-function-dax",
+      "titulo": "INFORMAÇÃO. PERSPECTIVETABLES"
+    },
+    {
+      "href": "info-properties-function-dax",
+      "titulo": "INFORMAÇÃO. PROPRIEDADES"
+    },
+    {
+      "href": "info-querygroups-function-dax",
+      "titulo": "INFO.QUERYGROUPS"
+    },
+    {
+      "href": "info-refreshpolicies-function-dax",
+      "titulo": "INFORMAÇÕES.REFRESHPOLICIES"
+    },
+    {
+      "href": "info-relatedcolumndetails-function-dax",
+      "titulo": "INFORMAÇÃO.DETALHESDACOLUNARELACIONADA"
+    },
+    {
+      "href": "info-relationshipindexstorages-function-dax",
+      "titulo": "INFORMAÇÃO.RELATÓRIODEÍNDICEDEARMAZENAMENTO"
+    },
+    {
+      "href": "info-relationships-function-dax",
+      "titulo": "INFORMAÇÃO. RELAÇÕES"
+    },
+    {
+      "href": "info-relationshipstorages-function-dax",
+      "titulo": "INFORMAÇÃO.RELAÇÕESARMAZENAMENTOS"
+    },
+    {
+      "href": "info-rolememberships-function-dax",
+      "titulo": "INFORMAÇÃO. ROLEMEMBERSHIPS"
+    },
+    {
+      "href": "info-roles-function-dax",
+      "titulo": "INFO.FUNÇÕES"
+    },
+    {
+      "href": "info-segmentmapstorages-function-dax",
+      "titulo": "INFORMAÇÃO. SEGMENTMAPSTORAGES"
+    },
+    {
+      "href": "info-segmentstorages-function-dax",
+      "titulo": "INFO.SEGMENTSTORAGES"
+    },
+    {
+      "href": "info-storagefiles-function-dax",
+      "titulo": "INFORMAÇÕES DE ARQUIVOS DE ARMAZENAMENTO"
+    },
+    {
+      "href": "info-storagefolders-function-dax",
+      "titulo": "INFORMAÇÕES. PASTAS DE ARMAZENAMENTO"
+    },
+    {
+      "href": "info-storagetablecolumns-function-dax",
+      "titulo": "INFORMAÇÃO. STORAGETABLECOLUMNS"
+    },
+    {
+      "href": "info-storagetablecolumnsegments-function-dax",
+      "titulo": "INFORMAÇÃO. STORAGETABLECOLUMNSEGMENTS"
+    },
+    {
+      "href": "info-storagetables-function-dax",
+      "titulo": "INFORMAÇÃO. STORAGETABLES"
+    },
+    {
+      "href": "info-tablepermissions-function-dax",
+      "titulo": "INFO.TABLEPERMISSIONS"
+    },
+    {
+      "href": "info-tables-function-dax",
+      "titulo": "INFOTABELAS"
+    },
+    {
+      "href": "info-tablestorages-function-dax",
+      "titulo": "INFO.ARMAZENAMENTODETABELAS"
+    },
+    {
+      "href": "info-userdefinedfunctions-function-dax",
+      "titulo": "INFORMAÇÃO. USERDEFINEDFUNCTIONS"
+    },
+    {
+      "href": "info-variations-function-dax",
+      "titulo": "INFO. VARIAÇÕES"
+    },
+    {
+      "href": "information-functions-dax",
+      "titulo": "Visão Geral das funções de informações"
+    },
+    {
+      "href": "columnstatistics-function-dax",
+      "titulo": "COLUMNSTATISTICS"
+    },
+    {
+      "href": "contains-function-dax",
+      "titulo": "CONTAINS"
+    },
+    {
+      "href": "containsrow-function-dax",
+      "titulo": "CONTAINSROW"
+    },
+    {
+      "href": "containsstring-function-dax",
+      "titulo": "CONTAINSSTRING"
+    },
+    {
+      "href": "containsstringexact-function-dax",
+      "titulo": "CONTAINSSTRINGEXACT"
+    },
+    {
+      "href": "customdata-function-dax",
+      "titulo": "CUSTOMDATA"
+    },
+    {
+      "href": "hasonefilter-function-dax",
+      "titulo": "HASONEFILTER"
+    },
+    {
+      "href": "hasonevalue-function-dax",
+      "titulo": "HASONEVALUE"
+    },
+    {
+      "href": "isafter-function-dax",
+      "titulo": "ISAFTER"
+    },
+    {
+      "href": "isblank-function-dax",
+      "titulo": "ISBLANK"
+    },
+    {
+      "href": "isboolean-function-dax",
+      "titulo": "ISBOOLEAN"
+    },
+    {
+      "href": "iscrossfiltered-function-dax",
+      "titulo": "ISCROSSFILTERED"
+    },
+    {
+      "href": "iscurrency-function-dax",
+      "titulo": "ISCURRENCY"
+    },
+    {
+      "href": "isdatetime-function-dax",
+      "titulo": "ISDATETIME"
+    },
+    {
+      "href": "isdecimal-function-dax",
+      "titulo": "ISDECIMAL"
+    },
+    {
+      "href": "isdouble-function-dax",
+      "titulo": "ISDOUBLE"
+    },
+    {
+      "href": "isempty-function-dax",
+      "titulo": "ISEMPTY"
+    },
+    {
+      "href": "iserror-function-dax",
+      "titulo": "ISERROR"
+    },
+    {
+      "href": "iseven-function-dax",
+      "titulo": "ISEVEN"
+    },
+    {
+      "href": "isfiltered-function-dax",
+      "titulo": "ISFILTERED"
+    },
+    {
+      "href": "isinscope-function-dax",
+      "titulo": "ISINSCOPE"
+    },
+    {
+      "href": "isint64-function-dax",
+      "titulo": "ISINT64"
+    },
+    {
+      "href": "isinteger-function-dax",
+      "titulo": "ISINTEGER"
+    },
+    {
+      "href": "islogical-function-dax",
+      "titulo": "ISLOGICAL"
+    },
+    {
+      "href": "isnontext-function-dax",
+      "titulo": "ISNONTEXT"
+    },
+    {
+      "href": "isnumber-function-dax",
+      "titulo": "ISNUMBER"
+    },
+    {
+      "href": "isnumeric-function-dax",
+      "titulo": "ISNUMERIC"
+    },
+    {
+      "href": "isodd-function-dax",
+      "titulo": "ISODD"
+    },
+    {
+      "href": "isonorafter-function-dax",
+      "titulo": "ISONORAFTER"
+    },
+    {
+      "href": "isselectedmeasure-function-dax",
+      "titulo": "ISSELECTEDMEASURE"
+    },
+    {
+      "href": "isstring-function-dax",
+      "titulo": "ISSTRING"
+    },
+    {
+      "href": "issubtotal-function-dax",
+      "titulo": "ISSUBTOTAL"
+    },
+    {
+      "href": "istext-function-dax",
+      "titulo": "ISTEXT"
+    },
+    {
+      "href": "nameof-function-dax",
+      "titulo": "NAMEOF"
+    },
+    {
+      "href": "nonvisual-function-dax",
+      "titulo": "NONVISUAL"
+    },
+    {
+      "href": "selectedmeasure-function-dax",
+      "titulo": "SELECTEDMEASURE"
+    },
+    {
+      "href": "selectedmeasureformatstring-function-dax",
+      "titulo": "SELECTEDMEASUREFORMATSTRING"
+    },
+    {
+      "href": "selectedmeasurename-function-dax",
+      "titulo": "SELECTEDMEASURENAME"
+    },
+    {
+      "href": "tableof-function-dax",
+      "titulo": "TABELA DE"
+    },
+    {
+      "href": "textcontains-function-dax",
+      "titulo": "TEXTCONTAINS"
+    },
+    {
+      "href": "textsimilarity-function-dax",
+      "titulo": "TEXTSIMILARITY"
+    },
+    {
+      "href": "userculture-function-dax",
+      "titulo": "USERCULTURE"
+    },
+    {
+      "href": "username-function-dax",
+      "titulo": "USERNAME"
+    },
+    {
+      "href": "userobjectid-function-dax",
+      "titulo": "USEROBJECTID"
+    },
+    {
+      "href": "userprincipalname-function-dax",
+      "titulo": "USERPRINCIPALNAME"
+    },
+    {
+      "href": "logical-functions-dax",
+      "titulo": "Visão Geral das funções lógicas"
+    },
+    {
+      "href": "and-function-dax",
+      "titulo": "AND"
+    },
+    {
+      "href": "bitand-function-dax",
+      "titulo": "BITAND"
+    },
+    {
+      "href": "bitlshift-function-dax",
+      "titulo": "BITLSHIFT"
+    },
+    {
+      "href": "bitor-function-dax",
+      "titulo": "BITOR"
+    },
+    {
+      "href": "bitrshift-function-dax",
+      "titulo": "BITRSHIFT"
+    },
+    {
+      "href": "bitxor-function-dax",
+      "titulo": "BITXOR"
+    },
+    {
+      "href": "coalesce-function-dax",
+      "titulo": "COALESCE"
+    },
+    {
+      "href": "false-function-dax",
+      "titulo": "FALSE"
+    },
+    {
+      "href": "if-function-dax",
+      "titulo": "IF"
+    },
+    {
+      "href": "if-eager-function-dax",
+      "titulo": "IF.EAGER"
+    },
+    {
+      "href": "iferror-function-dax",
+      "titulo": "IFERROR"
+    },
+    {
+      "href": "not-function-dax",
+      "titulo": "NOT"
+    },
+    {
+      "href": "or-function-dax",
+      "titulo": "OR"
+    },
+    {
+      "href": "switch-function-dax",
+      "titulo": "SWITCH"
+    },
+    {
+      "href": "true-function-dax",
+      "titulo": "TRUE"
+    },
+    {
+      "href": "math-and-trig-functions-dax",
+      "titulo": "Visão Geral das funções matemáticas e trigonométricas"
+    },
+    {
+      "href": "abs-function-dax",
+      "titulo": "ABS"
+    },
+    {
+      "href": "acos-function-dax",
+      "titulo": "ACOS"
+    },
+    {
+      "href": "acosh-function-dax",
+      "titulo": "ACOSH"
+    },
+    {
+      "href": "acot-function-dax",
+      "titulo": "ACOT"
+    },
+    {
+      "href": "acoth-function-dax",
+      "titulo": "ACOTH"
+    },
+    {
+      "href": "asin-function-dax",
+      "titulo": "ASIN"
+    },
+    {
+      "href": "asinh-function-dax",
+      "titulo": "ASINH"
+    },
+    {
+      "href": "atan-function-dax",
+      "titulo": "ATAN"
+    },
+    {
+      "href": "atanh-function-dax",
+      "titulo": "ATANH"
+    },
+    {
+      "href": "ceiling-function-dax",
+      "titulo": "CEILING"
+    },
+    {
+      "href": "convert-function-dax",
+      "titulo": "CONVERT"
+    },
+    {
+      "href": "cos-function-dax",
+      "titulo": "COS"
+    },
+    {
+      "href": "cosh-function-dax",
+      "titulo": "COSH"
+    },
+    {
+      "href": "cot-function-dax",
+      "titulo": "COT"
+    },
+    {
+      "href": "coth-function-dax",
+      "titulo": "COTH"
+    },
+    {
+      "href": "currency-function-dax",
+      "titulo": "CURRENCY"
+    },
+    {
+      "href": "degrees-function-dax",
+      "titulo": "DEGREES"
+    },
+    {
+      "href": "divide-function-dax",
+      "titulo": "DIVIDE"
+    },
+    {
+      "href": "even-function-dax",
+      "titulo": "EVEN"
+    },
+    {
+      "href": "exp-function-dax",
+      "titulo": "EXP"
+    },
+    {
+      "href": "fact-function-dax",
+      "titulo": "FACT"
+    },
+    {
+      "href": "floor-function-dax",
+      "titulo": "FLOOR"
+    },
+    {
+      "href": "gcd-function-dax",
+      "titulo": "GCD"
+    },
+    {
+      "href": "int-function-dax",
+      "titulo": "INT"
+    },
+    {
+      "href": "iso-ceiling-function-dax",
+      "titulo": "ISO.CEILING"
+    },
+    {
+      "href": "lcm-function-dax",
+      "titulo": "LCM"
+    },
+    {
+      "href": "ln-function-dax",
+      "titulo": "LN"
+    },
+    {
+      "href": "log-function-dax",
+      "titulo": "LOG"
+    },
+    {
+      "href": "log10-function-dax",
+      "titulo": "LOG10"
+    },
+    {
+      "href": "mod-function-dax",
+      "titulo": "MOD"
+    },
+    {
+      "href": "mround-function-dax",
+      "titulo": "MROUND"
+    },
+    {
+      "href": "odd-function-dax",
+      "titulo": "ODD"
+    },
+    {
+      "href": "pi-function-dax",
+      "titulo": "PI"
+    },
+    {
+      "href": "power-function-dax",
+      "titulo": "POWER"
+    },
+    {
+      "href": "quotient-function-dax",
+      "titulo": "QUOTIENT"
+    },
+    {
+      "href": "radians-function-dax",
+      "titulo": "RADIANS"
+    },
+    {
+      "href": "rand-function-dax",
+      "titulo": "RAND"
+    },
+    {
+      "href": "randbetween-function-dax",
+      "titulo": "RANDBETWEEN"
+    },
+    {
+      "href": "round-function-dax",
+      "titulo": "ROUND"
+    },
+    {
+      "href": "rounddown-function-dax",
+      "titulo": "ROUNDDOWN"
+    },
+    {
+      "href": "roundup-function-dax",
+      "titulo": "ROUNDUP"
+    },
+    {
+      "href": "sign-function-dax",
+      "titulo": "SIGN"
+    },
+    {
+      "href": "sin-function-dax",
+      "titulo": "SIN"
+    },
+    {
+      "href": "sinh-function-dax",
+      "titulo": "SINH"
+    },
+    {
+      "href": "sqrt-function-dax",
+      "titulo": "SQRT"
+    },
+    {
+      "href": "sqrtpi-function-dax",
+      "titulo": "SQRTPI"
+    },
+    {
+      "href": "tan-function-dax",
+      "titulo": "TAN"
+    },
+    {
+      "href": "tanh-function-dax",
+      "titulo": "TANH"
+    },
+    {
+      "href": "trunc-function-dax",
+      "titulo": "TRUNC"
+    },
+    {
+      "href": "other-functions-dax",
+      "titulo": "Visão Geral das outras funções"
+    },
+    {
+      "href": "blank-function-dax",
+      "titulo": "BLANK"
+    },
+    {
+      "href": "error-function-dax",
+      "titulo": "ERROR"
+    },
+    {
+      "href": "evaluateandlog-function-dax",
+      "titulo": "EVALUATEANDLOG"
+    },
+    {
+      "href": "externalmeasure-function-dax",
+      "titulo": "MEDIDAEXTERNA"
+    },
+    {
+      "href": "tocsv-function-dax",
+      "titulo": "TOCSV"
+    },
+    {
+      "href": "tojson-function-dax",
+      "titulo": "TOJSON"
+    },
+    {
+      "href": "parent-and-child-functions-dax",
+      "titulo": "Visão Geral das funções pai e filho"
+    },
+    {
+      "href": "understanding-functions-for-parent-child-hierarchies-in-dax",
+      "titulo": "Entender as funções das hierarquias pai-filho"
+    },
+    {
+      "href": "path-function-dax",
+      "titulo": "PATH"
+    },
+    {
+      "href": "pathcontains-function-dax",
+      "titulo": "PATHCONTAINS"
+    },
+    {
+      "href": "pathitem-function-dax",
+      "titulo": "PATHITEM"
+    },
+    {
+      "href": "pathitemreverse-function-dax",
+      "titulo": "PATHITEMREVERSE"
+    },
+    {
+      "href": "pathlength-function-dax",
+      "titulo": "PATHLENGTH"
+    },
+    {
+      "href": "relationship-functions-dax",
+      "titulo": "Funções de relação"
+    },
+    {
+      "href": "crossfilter-function-dax",
+      "titulo": "CROSSFILTER"
+    },
+    {
+      "href": "related-function-dax",
+      "titulo": "RELATED"
+    },
+    {
+      "href": "relatedtable-function-dax",
+      "titulo": "RELATEDTABLE"
+    },
+    {
+      "href": "userelationship-function-dax",
+      "titulo": "USERELATIONSHIP"
+    },
+    {
+      "href": "statistical-functions-dax",
+      "titulo": "Visão Geral das funções estatísticas"
+    },
+    {
+      "href": "beta-dist-function-dax",
+      "titulo": "BETA.DIST"
+    },
+    {
+      "href": "beta-inv-function-dax",
+      "titulo": "BETA.INV"
+    },
+    {
+      "href": "chisq-dist-function-dax",
+      "titulo": "CHISQ.DIST"
+    },
+    {
+      "href": "chisq-dist-rt-function-dax",
+      "titulo": "CHISQ.DIST.RT"
+    },
+    {
+      "href": "chisq-inv-function-dax",
+      "titulo": "CHISQ.INV"
+    },
+    {
+      "href": "chisq-inv-rt-function-dax",
+      "titulo": "CHISQ.INV.RT"
+    },
+    {
+      "href": "combin-function-dax",
+      "titulo": "COMBIN"
+    },
+    {
+      "href": "combina-function-dax",
+      "titulo": "COMBINA"
+    },
+    {
+      "href": "confidence-norm-function-dax",
+      "titulo": "CONFIDENCE.NORM"
+    },
+    {
+      "href": "confidence-t-function-dax",
+      "titulo": "CONFIDENCE.T"
+    },
+    {
+      "href": "expon-dist-function-dax",
+      "titulo": "EXPON.DIST"
+    },
+    {
+      "href": "geomean-function-dax",
+      "titulo": "GEOMEAN"
+    },
+    {
+      "href": "geomeanx-function-dax",
+      "titulo": "GEOMEANX"
+    },
+    {
+      "href": "linest-function-dax",
+      "titulo": "LINEST"
+    },
+    {
+      "href": "linestx-function-dax",
+      "titulo": "LINESTX"
+    },
+    {
+      "href": "median-function-dax",
+      "titulo": "MEDIAN"
+    },
+    {
+      "href": "medianx-function-dax",
+      "titulo": "MEDIANX"
+    },
+    {
+      "href": "norm-dist-function-dax",
+      "titulo": "NORM.DIST"
+    },
+    {
+      "href": "norm-inv-function-dax",
+      "titulo": "NORM.INV"
+    },
+    {
+      "href": "norm-s-dist-function-dax",
+      "titulo": "NORM.S.DIST"
+    },
+    {
+      "href": "norm-s-inv-function-dax",
+      "titulo": "NORM.S.INV"
+    },
+    {
+      "href": "percentile-exc-function-dax",
+      "titulo": "PERCENTILE.EXC"
+    },
+    {
+      "href": "percentile-inc-function-dax",
+      "titulo": "PERCENTILE.INC"
+    },
+    {
+      "href": "percentilex-exc-function-dax",
+      "titulo": "PERCENTILEX.EXC"
+    },
+    {
+      "href": "percentilex-inc-function-dax",
+      "titulo": "PERCENTILEX.INC"
+    },
+    {
+      "href": "permut-function-dax",
+      "titulo": "PERMUT"
+    },
+    {
+      "href": "poisson-dist-function-dax",
+      "titulo": "POISSON.DIST"
+    },
+    {
+      "href": "rank-eq-function-dax",
+      "titulo": "RANK.EQ"
+    },
+    {
+      "href": "rankx-function-dax",
+      "titulo": "RANKX"
+    },
+    {
+      "href": "sample-function-dax",
+      "titulo": "SAMPLE"
+    },
+    {
+      "href": "samplecartesianpointsbycover-function-dax",
+      "titulo": "AMOSTRADEPONTOSCARTESIANOSPORCOBERTURA"
+    },
+    {
+      "href": "stdev-s-function-dax",
+      "titulo": "STDEV.S"
+    },
+    {
+      "href": "stdev-p-function-dax",
+      "titulo": "STDEV.P"
+    },
+    {
+      "href": "stdevx-s-function-dax",
+      "titulo": "STDEVX.S"
+    },
+    {
+      "href": "stdevx-p-function-dax",
+      "titulo": "STDEVX.P"
+    },
+    {
+      "href": "t-dist-function-dax",
+      "titulo": "T.DIST"
+    },
+    {
+      "href": "t-dist-2t-function-dax",
+      "titulo": "T.DIST.2T"
+    },
+    {
+      "href": "t-dist-rt-function-dax",
+      "titulo": "T.DIST.RT"
+    },
+    {
+      "href": "t-inv-function-dax",
+      "titulo": "T.INV"
+    },
+    {
+      "href": "t-inv-2t-function-dax",
+      "titulo": "T.INV.2T"
+    },
+    {
+      "href": "var-s-function-dax",
+      "titulo": "VAR.S"
+    },
+    {
+      "href": "var-p-function-dax",
+      "titulo": "VAR.P"
+    },
+    {
+      "href": "varx-s-function-dax",
+      "titulo": "VARX.S"
+    },
+    {
+      "href": "varx-p-function-dax",
+      "titulo": "VARX.P"
+    },
+    {
+      "href": "table-manipulation-functions-dax",
+      "titulo": "Visão geral das funções de manipulação de tabelas"
+    },
+    {
+      "href": "addcolumns-function-dax",
+      "titulo": "ADDCOLUMNS"
+    },
+    {
+      "href": "addmissingitems-function-dax",
+      "titulo": "ADDMISSINGITEMS"
+    },
+    {
+      "href": "crossjoin-function-dax",
+      "titulo": "CROSSJOIN"
+    },
+    {
+      "href": "currentgroup-function-dax",
+      "titulo": "CURRENTGROUP"
+    },
+    {
+      "href": "datatable-function-dax",
+      "titulo": "DATATABLE"
+    },
+    {
+      "href": "detailrows-function-dax",
+      "titulo": "DETAILROWS"
+    },
+    {
+      "href": "distinct-function-dax",
+      "titulo": "DISTINCT (column)"
+    },
+    {
+      "href": "distinct-table-function-dax",
+      "titulo": "DISTINCT (table)"
+    },
+    {
+      "href": "except-function-dax",
+      "titulo": "EXCEPT"
+    },
+    {
+      "href": "filters-function-dax",
+      "titulo": "FILTERS"
+    },
+    {
+      "href": "generate-function-dax",
+      "titulo": "GENERATE"
+    },
+    {
+      "href": "generateall-function-dax",
+      "titulo": "GENERATEALL"
+    },
+    {
+      "href": "generateseries-function-dax",
+      "titulo": "GENERATESERIES"
+    },
+    {
+      "href": "groupby-function-dax",
+      "titulo": "GROUPBY"
+    },
+    {
+      "href": "ignore-function-dax",
+      "titulo": "IGNORE"
+    },
+    {
+      "href": "intersect-function-dax",
+      "titulo": "INTERSECT"
+    },
+    {
+      "href": "naturalinnerjoin-function-dax",
+      "titulo": "NATURALINNERJOIN"
+    },
+    {
+      "href": "naturalleftouterjoin-function-dax",
+      "titulo": "NATURALLEFTOUTERJOIN"
+    },
+    {
+      "href": "rollup-function-dax",
+      "titulo": "ROLLUP"
+    },
+    {
+      "href": "rollupaddissubtotal-function-dax",
+      "titulo": "ROLLUPADDISSUBTOTAL"
+    },
+    {
+      "href": "rollupgroup-function-dax",
+      "titulo": "ROLLUPGROUP"
+    },
+    {
+      "href": "rollupissubtotal-function-dax",
+      "titulo": "ROLLUPISSUBTOTAL"
+    },
+    {
+      "href": "row-function-dax",
+      "titulo": "LINHA"
+    },
+    {
+      "href": "selectcolumns-function-dax",
+      "titulo": "SELECTCOLUMNS"
+    },
+    {
+      "href": "substitutewithindex-function-dax",
+      "titulo": "SUBSTITUTEWITHINDEX"
+    },
+    {
+      "href": "summarize-function-dax",
+      "titulo": "SUMMARIZE"
+    },
+    {
+      "href": "summarizecolumns-function-dax",
+      "titulo": "SUMMARIZECOLUMNS"
+    },
+    {
+      "href": "table-constructor",
+      "titulo": "Construtor de tabela"
+    },
+    {
+      "href": "topn-function-dax",
+      "titulo": "TOPN"
+    },
+    {
+      "href": "treatas-function-dax",
+      "titulo": "TREATAS"
+    },
+    {
+      "href": "union-function-dax",
+      "titulo": "UNION"
+    },
+    {
+      "href": "values-function-dax",
+      "titulo": "VALUES"
+    },
+    {
+      "href": "text-functions-dax",
+      "titulo": "Visão Geral das funções de texto"
+    },
+    {
+      "href": "combinevalues-function-dax",
+      "titulo": "COMBINEVALUES"
+    },
+    {
+      "href": "concatenate-function-dax",
+      "titulo": "CONCATENATE"
+    },
+    {
+      "href": "concatenatex-function-dax",
+      "titulo": "CONCATENATEX"
+    },
+    {
+      "href": "exact-function-dax",
+      "titulo": "EXACT"
+    },
+    {
+      "href": "find-function-dax",
+      "titulo": "FIND"
+    },
+    {
+      "href": "fixed-function-dax",
+      "titulo": "FIXED"
+    },
+    {
+      "href": "format-function-dax",
+      "titulo": "FORMAT"
+    },
+    {
+      "href": "left-function-dax",
+      "titulo": "LEFT"
+    },
+    {
+      "href": "len-function-dax",
+      "titulo": "LEN"
+    },
+    {
+      "href": "lower-function-dax",
+      "titulo": "LOWER"
+    },
+    {
+      "href": "mid-function-dax",
+      "titulo": "MID"
+    },
+    {
+      "href": "replace-function-dax",
+      "titulo": "REPLACE"
+    },
+    {
+      "href": "rept-function-dax",
+      "titulo": "REPT"
+    },
+    {
+      "href": "right-function-dax",
+      "titulo": "RIGHT"
+    },
+    {
+      "href": "search-function-dax",
+      "titulo": "SEARCH"
+    },
+    {
+      "href": "substitute-function-dax",
+      "titulo": "SUBSTITUTE"
+    },
+    {
+      "href": "trim-function-dax",
+      "titulo": "TRIM"
+    },
+    {
+      "href": "unichar-function-dax",
+      "titulo": "UNICHAR"
+    },
+    {
+      "href": "unicode-function-dax",
+      "titulo": "UNICODE"
+    },
+    {
+      "href": "upper-function-dax",
+      "titulo": "UPPER"
+    },
+    {
+      "href": "value-function-dax",
+      "titulo": "VALUE"
+    },
+    {
+      "href": "time-intelligence-functions-dax",
+      "titulo": "Visão geral das funções de inteligência de dados temporais"
+    },
+    {
+      "href": "closingbalanceweek-function-dax",
+      "titulo": "CLOSINGBALANCEWEEK"
+    },
+    {
+      "href": "closingbalancemonth-function-dax",
+      "titulo": "CLOSINGBALANCEMONTH"
+    },
+    {
+      "href": "closingbalancequarter-function-dax",
+      "titulo": "CLOSINGBALANCEQUARTER"
+    },
+    {
+      "href": "closingbalanceyear-function-dax",
+      "titulo": "CLOSINGBALANCEYEAR"
+    },
+    {
+      "href": "dateadd-function-dax",
+      "titulo": "DATEADD"
+    },
+    {
+      "href": "datesbetween-function-dax",
+      "titulo": "DATESBETWEEN"
+    },
+    {
+      "href": "datesinperiod-function-dax",
+      "titulo": "DATESINPERIOD"
+    },
+    {
+      "href": "dateswtd-function-dax",
+      "titulo": "DATESWTD"
+    },
+    {
+      "href": "datesmtd-function-dax",
+      "titulo": "DATESMTD"
+    },
+    {
+      "href": "datesqtd-function-dax",
+      "titulo": "DATESQTD"
+    },
+    {
+      "href": "datesytd-function-dax",
+      "titulo": "DATESYTD"
+    },
+    {
+      "href": "endofweek-function-dax",
+      "titulo": "ENDOFWEEK"
+    },
+    {
+      "href": "endofmonth-function-dax",
+      "titulo": "ENDOFMONTH"
+    },
+    {
+      "href": "endofquarter-function-dax",
+      "titulo": "ENDOFQUARTER"
+    },
+    {
+      "href": "endofyear-function-dax",
+      "titulo": "ENDOFYEAR"
+    },
+    {
+      "href": "firstdate-function-dax",
+      "titulo": "FIRSTDATE"
+    },
+    {
+      "href": "lastdate-function-dax",
+      "titulo": "LASTDATE"
+    },
+    {
+      "href": "nextday-function-dax",
+      "titulo": "NEXTDAY"
+    },
+    {
+      "href": "nextweek-function-dax",
+      "titulo": "NEXTWEEK"
+    },
+    {
+      "href": "nextmonth-function-dax",
+      "titulo": "NEXTMONTH"
+    },
+    {
+      "href": "nextquarter-function-dax",
+      "titulo": "NEXTQUARTER"
+    },
+    {
+      "href": "nextyear-function-dax",
+      "titulo": "NEXTYEAR"
+    },
+    {
+      "href": "openingbalanceweek-function-dax",
+      "titulo": "OPENINGBALANCEWEEK"
+    },
+    {
+      "href": "openingbalancemonth-function-dax",
+      "titulo": "OPENINGBALANCEMONTH"
+    },
+    {
+      "href": "openingbalancequarter-function-dax",
+      "titulo": "OPENINGBALANCEQUARTER"
+    },
+    {
+      "href": "openingbalanceyear-function-dax",
+      "titulo": "OPENINGBALANCEYEAR"
+    },
+    {
+      "href": "parallelperiod-function-dax",
+      "titulo": "PARALLELPERIOD"
+    },
+    {
+      "href": "previousday-function-dax",
+      "titulo": "PREVIOUSDAY"
+    },
+    {
+      "href": "previousweek-function-dax",
+      "titulo": "PREVIOUSWEEK"
+    },
+    {
+      "href": "previousmonth-function-dax",
+      "titulo": "PREVIOUSMONTH"
+    },
+    {
+      "href": "previousquarter-function-dax",
+      "titulo": "PREVIOUSQUARTER"
+    },
+    {
+      "href": "previousyear-function-dax",
+      "titulo": "PREVIOUSYEAR"
+    },
+    {
+      "href": "sameperiodlastyear-function-dax",
+      "titulo": "SAMEPERIODLASTYEAR"
+    },
+    {
+      "href": "startofweek-function-dax",
+      "titulo": "STARTOFWEEK"
+    },
+    {
+      "href": "startofmonth-function-dax",
+      "titulo": "STARTOFMONTH"
+    },
+    {
+      "href": "startofquarter-function-dax",
+      "titulo": "STARTOFQUARTER"
+    },
+    {
+      "href": "startofyear-function-dax",
+      "titulo": "STARTOFYEAR"
+    },
+    {
+      "href": "totalwtd-function-dax",
+      "titulo": "TOTALWTD"
+    },
+    {
+      "href": "totalmtd-function-dax",
+      "titulo": "TOTALMTD"
+    },
+    {
+      "href": "totalqtd-function-dax",
+      "titulo": "TOTALQTD"
+    },
+    {
+      "href": "totalytd-function-dax",
+      "titulo": "TOTALYTD"
+    },
+    {
+      "href": "statements-dax",
+      "titulo": "visão geral do Statements"
+    },
+    {
+      "href": "define-statement-dax",
+      "titulo": "DEFINE"
+    },
+    {
+      "href": "evaluate-statement-dax",
+      "titulo": "EVALUATE"
+    },
+    {
+      "href": "function-statement-dax",
+      "titulo": "FUNCTION"
+    },
+    {
+      "href": "measure-statement-dax",
+      "titulo": "MEASURE"
+    },
+    {
+      "href": "orderby-statement-dax",
+      "titulo": "ORDER BY"
+    },
+    {
+      "href": "startat-statement-dax",
+      "titulo": "START AT"
+    },
+    {
+      "href": "var-dax",
+      "titulo": "VAR"
+    },
+    {
+      "href": "dax-glossary",
+      "titulo": "glossário DAX"
+    },
+    {
+      "href": "dax-operator-reference",
+      "titulo": "Operadores DAX"
+    },
+    {
+      "href": "dax-queries",
+      "titulo": "Consultas DAX"
+    },
+    {
+      "href": "dax-parameter-naming-conventions",
+      "titulo": "\n              DAX nomenclatura de parâmetros"
+    },
+    {
+      "href": "dax-syntax-reference",
+      "titulo": "Sintaxe de DAX"
+    }
+  ]
+}
