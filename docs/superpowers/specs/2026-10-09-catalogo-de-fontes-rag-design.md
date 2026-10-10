@@ -2,7 +2,7 @@
 
 - **Data:** 09/10/2026
 - **Fase:** 3 — semana 6 do roadmap
-- **Status:** Em revisão
+- **Status:** Aprovado para implementação
 - **Pendência:** G-8 (`backlog.md`)
 - **Decisões que este desenho executa:** ADR-004 (coleta pelas páginas públicas do Learn, catálogo gerado a partir do `toc.json`), ADR-002 (corpus e embeddings em inglês)
 
@@ -43,7 +43,7 @@ Há uma quinta origem, de natureza diferente — **referência, não conteúdo**
 |---|---|---|
 | `curadoria:sqlbi` | Artigos de `www.sqlbi.com/articles/` escolhidos à mão, cada um ligado às regras que aprofunda, listados em `rag/leituras_sqlbi.yaml` | **Não.** Só URL e título entram no catálogo; nada é baixado nem indexado. O relatório os mostra como "para se aprofundar" |
 
-Por que só referência: seção 5.2. Decisão do Fred em 09/10/2026, entre quatro opções (só link; link mais pedido de autorização; coleta integral; adiar).
+Por que só referência: seção 5.3. Decisão do Fred em 09/10/2026, entre quatro opções (só link; link mais pedido de autorização; coleta integral; adiar).
 
 Uma âncora fora das três seções tem o título resolvido pelo retrato do `toc.json` da **sua** seção. Hoje são duas seções nessa condição: `power-bi/connect-data` e `power-bi/transform-model`. Elas são retratadas, mas **não são origem**: só a página da âncora entra, não a seção inteira.
 
