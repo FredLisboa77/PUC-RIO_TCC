@@ -247,3 +247,12 @@ def test_buscar_padrao_aceita_a_mesma_url_com_diferenca_so_de_barra(monkeypatch)
         lambda pedido, timeout: _RespostaFalsa("https://www.sqlbi.com/articles/x/", b"ok"),
     )
     assert buscar_padrao("https://www.sqlbi.com/articles/x") == b"ok"
+
+
+@pytest.mark.parametrize(
+    "item",
+    [{"href": 123, "toc_title": "Número"}, {"href": "a", "toc_title": ["lista"]}],
+)
+def test_item_com_tipo_errado_vira_erro_que_nomeia_a_origem(item):
+    with pytest.raises(ErroDeRetrato, match="origem.json"):
+        achatar_toc({"items": [item]}, "origem.json")

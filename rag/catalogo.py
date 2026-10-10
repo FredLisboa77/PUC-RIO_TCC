@@ -282,7 +282,11 @@ def ler_retratos(pasta: Path) -> Retratos:
 def _ler_yaml(caminho: Path) -> object:
     if not caminho.is_file():
         return None
-    return yaml.safe_load(caminho.read_text(encoding="utf-8"))
+    try:
+        return yaml.safe_load(caminho.read_text(encoding="utf-8"))
+    except (yaml.YAMLError, UnicodeDecodeError) as erro:
+        # O erro do YAML diz linha e coluna, mas não o arquivo; há dois mantidos à mão.
+        raise ErroDeCatalogo(f"{caminho}: não consegui ler o arquivo — {erro}") from erro
 
 
 def ler_observacoes(caminho: Path) -> dict[str, str]:

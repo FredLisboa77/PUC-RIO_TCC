@@ -159,14 +159,14 @@ def test_ancora_dentro_de_origem_acrescenta_origem_e_regra():
 
 def test_ancora_em_secao_que_nao_e_origem_entra_sozinha():
     resultado = montar(
-        en={"power-bi/connect-data": [("desktop-data-types", "Data types"), ("outra", "Outra")]},
-        ancoras={"PERF-003": L + "power-bi/connect-data/desktop-data-types"},
+        en={"power-bi/transform-model": [("desktop-data-types", "Data types"), ("outra", "Outra")]},
+        ancoras={"PERF-003": L + "power-bi/transform-model/desktop-data-types"},
     )
     (fonte,) = resultado.fontes
-    assert fonte.id == "learn:power-bi/connect-data/desktop-data-types"
+    assert fonte.id == "learn:power-bi/transform-model/desktop-data-types"
     assert fonte.origem == ["regra:PERF-003"]
     assert fonte.titulo == "Data types"
-    assert fonte.url_pt_br == P + "power-bi/connect-data/desktop-data-types"
+    assert fonte.url_pt_br == P + "power-bi/transform-model/desktop-data-types"
 
 
 def test_ancora_escrita_com_outra_caixa_ou_barra_final_ainda_casa():
@@ -476,3 +476,23 @@ def test_atualizar_valida_o_sqlbi_antes_de_qualquer_rede_ou_gravacao(tmp_path):
         )
     assert chamadas == []
     assert not (tmp_path / "tocs").exists()
+
+
+@pytest.mark.parametrize(
+    "leitor, nome, conteudo",
+    [
+        (ler_leituras_sqlbi, "leituras_sqlbi.yaml", "- url: [sem fechar\n"),
+        (ler_observacoes, "observacoes.yaml", "chave: 'sem fechar\n"),
+        (ler_leituras_sqlbi, "leituras_sqlbi.yaml", None),
+    ],
+)
+def test_arquivo_mantido_a_mao_ilegivel_vira_erro_que_nomeia_o_arquivo(
+    tmp_path, leitor, nome, conteudo
+):
+    caminho = tmp_path / nome
+    if conteudo is None:
+        caminho.write_bytes(b"- titulo: \xff\xfe invalido\n")
+    else:
+        caminho.write_text(conteudo, encoding="utf-8")
+    with pytest.raises(ErroDeCatalogo, match=nome):
+        leitor(caminho)

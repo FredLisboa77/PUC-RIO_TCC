@@ -15,7 +15,7 @@ from datetime import date
 from pathlib import Path
 from typing import Literal, NamedTuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from rag.urls import normalizar_url
 
@@ -76,7 +76,12 @@ def achatar_toc(bruto: object, origem: str) -> list[ItemToc]:
             if not isinstance(no, dict):
                 continue
             if no.get("href"):
-                itens.append(ItemToc(href=no["href"], titulo=no.get("toc_title")))
+                try:
+                    itens.append(ItemToc(href=no["href"], titulo=no.get("toc_title")))
+                except ValidationError as erro:
+                    raise ErroDeRetrato(
+                        f"{origem}: item inválido {no!r} ({erro.error_count()} erro(s))"
+                    ) from erro
             visitar(no.get("children") or [])
 
     visitar(bruto["items"])
