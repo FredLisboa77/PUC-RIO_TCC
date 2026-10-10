@@ -18,9 +18,7 @@ O ADR-004 decidiu que o catálogo é **gerado** a partir dos `toc.json` do Micro
 |---|---|
 | `power-bi/guidance/toc.json` lista **160** links (o ADR-004 contou 142 em 22/09) | A seção muda; o catálogo precisa registrar **quando** foi lido, e o diff entre leituras precisa ser visível |
 | Referência de DAX: **510** páginas; de M: **769** | O roadmap previa ~60–120 documentos. O escopo aprovado (seção 2) chega a **1.420** — mudança decidida pelo Fred, registrada no backlog |
-| Duas âncoras das 9 regras ficam **fora** das três seções do ADR-004: `power-bi/connect-data/desktop-data-types` (PERF-003) e `power-bi/transform-model/desktop-date-tables` | Gerar só das três seções deixaria sem fonte duas regras em produção. As âncoras viram origem própria |
-
-> **Errata (09/10/2026, na implementação):** a âncora da PERF-003 não está em `connect-data`. Esse endereço responde 301 para `power-bi/transform-model/desktop-data-types`, que é onde o `toc.json` lista a página; a `url_canonica` da regra foi corrigida. As duas âncoras fora das origens ficam ambas em `power-bi/transform-model`, e `power-bi/connect-data` segue retratada sem fornecer âncora.
+| Duas âncoras das 9 regras ficam **fora** das três seções do ADR-004, ambas em `power-bi/transform-model`: `desktop-data-types` (PERF-003) e `desktop-date-tables` (MOD-005). O endereço que a PERF-003 citava, `power-bi/connect-data/desktop-data-types`, responde 301 para `transform-model` — a página mudou de seção; detectado pelo gerador na implementação e corrigido na regra em 09/10/2026 | Gerar só das três seções deixaria sem fonte duas regras em produção. As âncoras viram origem própria. A `url_canonica` de cada regra precisa ser o endereço atual, não um redirecionamento |
 | Os `toc.json` em **pt-BR** das cinco seções envolvidas têm **exatamente os mesmos caminhos** que os em inglês | A versão em português de cada página pode ser apontada sem raspar HTML — mas é conferida, não suposta |
 | Link relativo à raiz no `toc.json` (`/dax/best-practices/...`) **não traz o idioma** | Resolvido ingenuamente, vira `learn.microsoft.com/dax/...` e seria descartado; as 9 páginas de DAX que o guidance lista perderiam essa origem. A resolução prefixa o idioma (seção 2.2) |
 
@@ -47,7 +45,7 @@ Há uma quinta origem, de natureza diferente — **referência, não conteúdo**
 
 Por que só referência: seção 5.3. Decisão do Fred em 09/10/2026, entre quatro opções (só link; link mais pedido de autorização; coleta integral; adiar).
 
-Uma âncora fora das três seções tem o título resolvido pelo retrato do `toc.json` da **sua** seção. Hoje são duas seções nessa condição: `power-bi/connect-data` e `power-bi/transform-model`. Elas são retratadas, mas **não são origem**: só a página da âncora entra, não a seção inteira.
+Uma âncora fora das três seções tem o título resolvido pelo retrato do `toc.json` da **sua** seção. Hoje as duas âncoras nessa condição ficam em `power-bi/transform-model`. As seções de âncora são retratadas, mas **não são origem**: só a página da âncora entra, não a seção inteira. `power-bi/connect-data` também é retratada — entrou no desenho quando se supunha que a âncora da PERF-003 estava lá — e hoje não fornece nenhuma âncora.
 
 ### 2.2 Resolução de link
 
