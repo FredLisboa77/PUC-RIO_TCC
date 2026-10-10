@@ -2,7 +2,7 @@
 
 - **Data:** 09/10/2026
 - **Fase:** 3 — semana 6 do roadmap
-- **Status:** Rascunho — seções aprovadas uma a uma com o Fred
+- **Status:** Em revisão — as quatro seções do desenho aprovadas uma a uma pelo Fred
 - **Depende de:** `rag/sources.yaml` (G-8, spec `2026-10-09-catalogo-de-fontes-rag-design.md`)
 - **Decisões que este desenho executa:** ADR-004 (coleta pelas páginas públicas do Learn; HTML bruto guardado para reprocessar), R-13 (extrator quebra com mudança de layout)
 
@@ -144,3 +144,57 @@ interrompe).
 
 **Dependência nova:** `beautifulsoup4`, versão fixada no `requirements.txt`, usada só
 em `metadados_da_pagina` e `extrair`.
+
+## 5. Erros, testes e execução real
+
+### 5.1 Erros
+
+| Situação | Comportamento |
+|---|---|
+| Página com 404, outro erro HTTP ou redirecionamento | Linha `erro` no registro com o motivo; a coleta segue; nova tentativa na próxima execução |
+| 429 ou 503 | **Para na hora**, dizendo quantas páginas faltam; rodar de novo retoma |
+| 5 falhas seguidas | **Para**, com a última causa (proteção contra queda de internet) |
+| Ctrl+C ou desligamento no meio | Nada corrompido: o arquivo só ganha o nome final depois de completo, e a linha do registro só é escrita depois disso |
+| `rag/sources.yaml` ausente ou sem entrada indexável | Falha antes de qualquer requisição |
+| Extração: página sem H1 ou sem texto | Erro nomeado no resumo; as demais seguem |
+| Extração sem nenhuma página coletada | Falha indicando rodar `python -m rag.coleta` antes |
+
+### 5.2 Testes (pytest, sem rede)
+
+1. **Coleta:** grava HTML e linha do registro; retomada pula o que está `ok`; arquivo
+   apagado ou alterado (`sha256` diferente) é baixado de novo; erro comum registra e
+   segue; 429/503 e 5 falhas seguidas interrompem; `--limite`; a pausa é chamada entre
+   requisições; entradas do SQLBI (`indexar: false`) nunca são pedidas.
+2. **Metadados e extração, com HTML sintético:** leitura das `<meta>`; seções com
+   âncora, nível e caminho; cada tipo de bloco; código verbatim; exclusão de cada seção
+   de navegação; página sem H1 ou vazia vira erro; mesma entrada, mesma saída.
+3. **Dados reais** (pulados sem `rag/store/`): toda página `ok` tem JSON extraído; as
+   âncoras das 9 regras estão no texto extraído, **e a passagem que cada regra cita
+   aparece nele**. É o teste que prova que a RAG terá o trecho que cada regra cita.
+   As regras não guardam a passagem em código (`RegraMeta` não tem esse campo); o
+   teste traz, para cada regra, uma **frase-marca curta** — até ~10 palavras — da
+   passagem transcrita nas specs de regras, e confere que ela aparece na seção
+   extraída da página âncora. Trecho curto com fonte cabe na citação acadêmica
+   (Lei 9.610/98, art. 46) e não republica a página.
+
+### 5.3 Execução real (passo do plano)
+
+1. Ensaio com `--limite 20`, conferido.
+2. Coleta completa (~40 min), em segundo plano, acompanhada.
+3. Extração.
+
+Cada passo salvo: commit e números medidos no `progress-log.md`. O conteúdo coletado
+nunca vai para o Git.
+
+## 6. Fora de escopo
+
+- Chunking, embeddings, índice e recuperação.
+- Recoleta incremental (rebaixar só o que mudou, usando os metadados de versão).
+- DAX Guide (R-05 segue aberto para ele).
+
+## 7. Registros a fazer junto com a implementação
+
+- `requirements.txt`: `beautifulsoup4` com versão fixa.
+- `progress-log.md`: entrada com o ensaio, a coleta completa e a extração, com os
+  números medidos.
+- `status.md` e a página de acompanhamento do orientador: próximo passo atualizado.
