@@ -80,6 +80,16 @@ pip install -r requirements.txt --cert C:\ProgramData\Norton\Antivirus\wscert.pe
 
 Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa configuração. Como o `.venv` não é versionado, ele precisa ser refeito se o ambiente for recriado.
 
+### Catálogo de fontes da RAG
+
+```powershell
+python -m rag.catalogo            # gera rag/sources.yaml a partir de rag/tocs/ (offline)
+python -m rag.catalogo atualizar  # baixa os toc.json do Learn de novo e gera
+```
+
+`rag/sources.yaml` é gerado — não editar à mão. Notas vão em `rag/observacoes.yaml`;
+leituras complementares do SQLBI (só link, nunca indexadas) em `rag/leituras_sqlbi.yaml`.
+
 ### Modelo de linguagem
 
 Ollama, com `qwen2.5:7b-instruct-q4_K_M` como modelo principal e `qwen2.5:3b` como contingência — escolhidos no spike de 29/09/2026 (resultado na [ADR-002](docs/adr/ADR-002-stack-tecnologica.md)).

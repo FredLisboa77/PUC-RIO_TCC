@@ -263,9 +263,8 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Iniciar a Fase 3 — G-8, `rag/sources.yaml`** | P9 decidido em 09/10/2026: **não acionado**; o dataset fica P1–P7 com 53 achados (seção 4.2) |
+| 1 | **Coleta das páginas do catálogo** (`rag/store/`, fora do Git) | O catálogo do G-8 está pronto (09/10/2026): 1.420 páginas do Learn com `indexar: true`. A coleta precisa de pausa entre requisições e de ser retomável (spec do catálogo, seção 5.1), e deve registrar o H1 e a data de acesso de cada página |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
-| 3 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 6, que agora começa um roadmap-week depois do planejado (seção 2). As URLs canónicas das 9 regras já são, por construção, parte do catálogo que a RAG precisa conter |
 
 ---
 

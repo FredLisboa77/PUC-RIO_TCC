@@ -19,6 +19,8 @@ O ADR-004 decidiu que o catálogo é **gerado** a partir dos `toc.json` do Micro
 | `power-bi/guidance/toc.json` lista **160** links (o ADR-004 contou 142 em 22/09) | A seção muda; o catálogo precisa registrar **quando** foi lido, e o diff entre leituras precisa ser visível |
 | Referência de DAX: **510** páginas; de M: **769** | O roadmap previa ~60–120 documentos. O escopo aprovado (seção 2) chega a **1.420** — mudança decidida pelo Fred, registrada no backlog |
 | Duas âncoras das 9 regras ficam **fora** das três seções do ADR-004: `power-bi/connect-data/desktop-data-types` (PERF-003) e `power-bi/transform-model/desktop-date-tables` | Gerar só das três seções deixaria sem fonte duas regras em produção. As âncoras viram origem própria |
+
+> **Errata (09/10/2026, na implementação):** a âncora da PERF-003 não está em `connect-data`. Esse endereço responde 301 para `power-bi/transform-model/desktop-data-types`, que é onde o `toc.json` lista a página; a `url_canonica` da regra foi corrigida. As duas âncoras fora das origens ficam ambas em `power-bi/transform-model`, e `power-bi/connect-data` segue retratada sem fornecer âncora.
 | Os `toc.json` em **pt-BR** das cinco seções envolvidas têm **exatamente os mesmos caminhos** que os em inglês | A versão em português de cada página pode ser apontada sem raspar HTML — mas é conferida, não suposta |
 | Link relativo à raiz no `toc.json` (`/dax/best-practices/...`) **não traz o idioma** | Resolvido ingenuamente, vira `learn.microsoft.com/dax/...` e seria descartado; as 9 páginas de DAX que o guidance lista perderiam essa origem. A resolução prefixa o idioma (seção 2.2) |
 

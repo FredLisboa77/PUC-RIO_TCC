@@ -842,3 +842,52 @@ declarada no `riscos.md` e no `status.md`, para o ground truth da semana 8
 julgar. Registro no log de alertas de escopo do `backlog.md`.
 
 **Próximo passo:** G-8 — `rag/sources.yaml` a partir dos `toc.json`.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — G-8: catálogo de fontes da RAG
+
+`python -m rag.catalogo` gera `rag/sources.yaml` a partir de retratos datados dos
+`toc.json` do Learn (spec `docs/superpowers/specs/2026-10-09-catalogo-de-fontes-rag-design.md`,
+plano `docs/superpowers/plans/2026-10-09-catalogo-de-fontes-rag.md`).
+
+**Medido em 09/10/2026:** 1.426 entradas — **1.420 indexadas** (Learn) e **6 só
+referência** (SQLBI). Por origem: `toc:power-bi/guidance` 151, `toc:dax` 508,
+`toc:powerquery-m` 768, âncoras de regra 8 páginas, `curadoria:sqlbi` 6. Excluídos
+12 links (6 fora do Learn, 6 entradas de seção ou áreas não documentais). As 1.420
+páginas do Learn têm `url_pt_br`, todas conferidas no retrato pt-BR. Exatamente os
+números previstos na spec.
+
+**O gerador pegou um erro de verdade na primeira execução.** A âncora da
+**PERF-003** era `power-bi/connect-data/desktop-data-types`, e o `atualizar` falhou
+dizendo que ela não estava em nenhum retrato. Causa: a página **mudou de
+endereço** — o antigo responde 301 para `power-bi/transform-model/desktop-data-types`,
+que é onde o `toc.json` a lista. A passagem citada pela regra (*Accuracy of number
+type calculations*, "Rarely, calculations that sum...") foi conferida no endereço
+novo, e a `url_canonica` da regra foi corrigida. O erro de origem foi da spec, que
+situou a âncora em `connect-data` sem conferir o `toc.json` dessa seção. As 8 URLs
+de âncora respondem hoje 200, sem redirecionamento. É o tipo de falha que o desenho
+existe para tornar visível: sem o gerador, a regra continuaria citando um endereço
+velho, e a citação da RAG apontaria para um redirecionamento. Com a correção, a seção
+`power-bi/connect-data` segue retratada mas não fornece mais nenhuma âncora —
+mantida para não divergir da spec; removê-la é uma linha em `SECOES`.
+
+**Três correções que a verificação de boas práticas impôs ao desenho conversado:**
+- O `toc.json` bruto **não** vai para o Git — os termos de uso do Learn permitem uso
+  pessoal e não comercial, não republicar cópia literal. Versiona-se só a listagem
+  normalizada (caminho e título); o bruto fica em `rag/store/raw/tocs/`.
+- `licenca` descreve os termos de uso verificados, não CC BY 4.0, que não foi
+  comprovada para essas páginas.
+- O link relativo à raiz no `toc.json` (`/dax/...`) não traz o idioma; resolvido
+  sem prefixá-lo, tiraria do guidance as 9 páginas de boas práticas de DAX.
+
+**Decisões do Fred nesta etapa:** referências completas de DAX e M no corpus (de
+~60–120 para ~1.420 páginas); texto indexado em inglês com `url_pt_br` para o
+leitor; SQLBI só como leitura complementar, com 6 artigos curados (MOD-003,
+MOD-006 e MOD-007 sem artigo adequado).
+
+**Validação:** 289 testes passando; o teste de arquivo gerado foi visto falhar com
+uma edição à mão no `sources.yaml` e voltar a passar com `gerar`.
+
+**Próximo passo:** coleta das 1.420 páginas para `rag/store/`, com pausa entre
+requisições, retomável, registrando H1 e data de acesso.
