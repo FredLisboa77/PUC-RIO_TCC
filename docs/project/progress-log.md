@@ -779,3 +779,54 @@ sem falha; 267 de 267 expressões DAX de P1–P8 em escopo lidas sem lacuna.
 **Próximo passo:** levar a decisão do P9 ao orientador com as duas contas (53
 com a PERF-003, 37 sem ela) e, sem depender dela, iniciar a Fase 3 — G-8,
 `rag/sources.yaml` a partir dos `toc.json`.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — separadores de decimal e de lista: medido, o lexer está certo
+
+Pergunta do Fred: a ferramenta considera que, dependendo da língua do Power BI,
+a vírgula e o ponto trocam de papel (decimal × milhar/lista)? **Não precisa
+considerar — e agora isso é medido, não suposto.**
+
+**A fonte.** Marco Russo (SQLBI, 20/05/2020): *"Internally, DAX is not
+translated according to locale settings. The engine uses the period character
+(.) as a decimal separator and the comma (,) as a list separator. The PBIX file
+always uses this DAX syntax."* A opção *Configurações regionais > Separador DAX*
+muda só o que o editor exibe e aceita.
+
+**A medição.** Modelo de teste criado pelo Fred (`culture: pt-BR`; Windows
+pt-BR com `,` decimal, `.` milhar e `;` lista), opção trocada para os
+separadores da localidade e Desktop reiniciado:
+
+| Medida | Digitada no editor | Gravada no `model.bim` |
+|---|---|---|
+| `Teste2` | `10,5 * 2` | `10.5 * 2` |
+| `Teste3` | `DIVIDE(10,5; 2)` | `DIVIDE(10.5, 2)` |
+| `Teste` (criada antes, no modo padrão) | `10,5 *2` — erro de sintaxe | `10,5 *2`; reexibida no modo local como `10;5 *2` |
+
+A tradução acontece nos dois sentidos, só na interface. A terceira linha
+importa: uma fórmula inválida é gravada como foi digitada, e o texto gravado
+continua na notação padrão — a vírgula ali **é** separador de lista para o
+motor, tanto que o editor local a mostrou como `;`. O lexer lê `10,5 *2` como
+`10`, `,`, `5 * 2`, que é exatamente a leitura do motor. Não há leitura
+silenciosamente errada.
+
+**O que isso confirma no corpus.** Nenhum `;` nas 267 expressões de P1–P8;
+todos os decimais com ponto. Os oito modelos têm `culture: en-US` — inclusive
+o P8, montado pelo autor com formatos em `R$` —, então só o modelo de teste
+exercitou uma cultura pt-BR. Ele fica fora do dataset: a fonte dele é um Excel
+com caminho de usuário.
+
+**Onde a língua importa de verdade, e nenhuma regra examina hoje:**
+
+- **Conversão de texto em número em tempo de execução** — `VALUE("10,5")` em
+  DAX; `Number.FromText` e troca de tipo sem argumento de cultura em M. O
+  resultado depende da cultura de quem atualiza. Candidata do **grupo 4** (M),
+  sujeita à exigência de âncora.
+- **`formatString`** — lido pelo parser, sem regra. Também é gravado em notação
+  invariável (`#,0.00`) e só exibido conforme a cultura.
+- **Relatório final** — o trecho citado como evidência sai na notação gravada.
+  Um usuário com separadores locais vê `;` no editor e `,` no relatório; o
+  relatório deve dizer isso numa frase.
+
+**Próximo passo:** inalterado — decisão do P9 com o orientador e G-8.
