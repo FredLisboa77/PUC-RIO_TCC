@@ -129,3 +129,17 @@ def test_secao_propria_prefere_a_mais_longa():
     assert secao_propria(L + "power-bi/guidance/x", ["power-bi", "power-bi/guidance"]) == (
         "power-bi/guidance"
     )
+
+
+def test_raiz_do_idioma_sem_barra_e_excluida_e_nao_duplica_o_idioma():
+    url = resolver_href("https://learn.microsoft.com/en-us", "dax")
+    assert url == "https://learn.microsoft.com/en-us"
+    assert motivo_de_exclusao(url) == NAO_DOCUMENTAL
+    assert motivo_de_exclusao(resolver_href("https://learn.microsoft.com", "dax")) == (
+        NAO_DOCUMENTAL
+    )
+
+
+def test_idioma_com_tres_partes_e_trocado():
+    assert resolver_href("/sr-latn-rs/dax/x", "dax") == L + "dax/x"
+    assert caminho_sem_idioma("https://learn.microsoft.com/sr-latn-rs/dax/x") == "dax/x"

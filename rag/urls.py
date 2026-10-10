@@ -19,12 +19,14 @@ PREFIXOS_NAO_DOCUMENTAIS = ("contribute/", "answers/", "training/")
 """Áreas do Learn que aparecem na navegação mas não são documentação. Segunda
 barreira: as páginas de entrada delas já terminam em `/`."""
 
-_IDIOMA = re.compile(r"^/[a-z]{2}-[a-z]{2}/", re.IGNORECASE)
+_IDIOMA = re.compile(r"^/[a-z]{2}(?:-[a-z0-9]{2,4}){1,2}(?=/|$)", re.IGNORECASE)
+"""Segmento de idioma no início do caminho: `/en-us`, `/pt-br`, `/sr-latn-rs` —
+com ou sem barra depois, para que a raiz `/en-us` também seja reconhecida."""
 
 
 def _com_idioma(caminho: str, idioma: str) -> str:
     if _IDIOMA.match(caminho):
-        return _IDIOMA.sub(f"/{idioma}/", caminho, count=1)
+        return _IDIOMA.sub(f"/{idioma}", caminho, count=1)
     return f"/{idioma}{caminho}"
 
 
@@ -45,8 +47,12 @@ def motivo_de_exclusao(url: str) -> str | None:
     partes = urlsplit(url)
     if partes.netloc.lower() != HOST_LEARN:
         return FORA_DO_LEARN
-    caminho = _IDIOMA.sub("", partes.path, count=1).lower()
-    if partes.path.endswith("/") or caminho.startswith(PREFIXOS_NAO_DOCUMENTAIS):
+    caminho = _IDIOMA.sub("", partes.path, count=1).lstrip("/").lower()
+    if (
+        partes.path.endswith("/")
+        or not caminho
+        or caminho.startswith(PREFIXOS_NAO_DOCUMENTAIS)
+    ):
         return NAO_DOCUMENTAL
     return None
 
@@ -69,7 +75,7 @@ def normalizar_url(url: str) -> str:
 
 def caminho_sem_idioma(url: str) -> str:
     """`https://learn.microsoft.com/en-us/dax/x` → `dax/x`."""
-    return _IDIOMA.sub("", urlsplit(url).path, count=1)
+    return _IDIOMA.sub("", urlsplit(url).path, count=1).lstrip("/")
 
 
 def em_outro_idioma(url: str, idioma: str) -> str:

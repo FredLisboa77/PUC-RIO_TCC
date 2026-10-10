@@ -448,3 +448,31 @@ def test_main_sem_retratos_sai_com_erro_indicando_atualizar(tmp_path, monkeypatc
     assert main(["gerar"]) == 1
     assert "atualizar" in capsys.readouterr().err
     assert not (tmp_path / "sources.yaml").exists()
+
+
+def test_atualizar_valida_o_sqlbi_antes_de_qualquer_rede_ou_gravacao(tmp_path):
+    chamadas = []
+
+    def buscar(url):
+        chamadas.append(url)
+        return b'{"items": []}'
+
+    leituras = tmp_path / "leituras.yaml"
+    leituras.write_text(
+        "- url: https://outro-host.example/articles/x/\n  titulo: X\n  regras: [R-1]\n"
+        "  verificado_em: '2026-10-09'\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ErroDeCatalogo, match="www.sqlbi.com/articles"):
+        atualizar(
+            buscar=buscar,
+            hoje=HOJE,
+            pasta_tocs=tmp_path / "tocs",
+            pasta_bruta=tmp_path / "bruto",
+            destino=tmp_path / "sources.yaml",
+            observacoes=tmp_path / "nao-existe.yaml",
+            leituras=leituras,
+            ancoras={"R-1": L + "dax/pagina"},
+        )
+    assert chamadas == []
+    assert not (tmp_path / "tocs").exists()

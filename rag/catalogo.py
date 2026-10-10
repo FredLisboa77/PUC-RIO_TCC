@@ -359,12 +359,17 @@ def atualizar(
     ancoras: dict[str, str] | None = None,
 ) -> ResultadoCatalogo:
     arquivo_leituras = leituras or ARQUIVO_LEITURAS
+    ancoras = ancoras_do_registro() if ancoras is None else ancoras
+    leituras_sqlbi = ler_leituras_sqlbi(arquivo_leituras)
+    # Validar antes da rede: uma entrada fora do SQLBI não pode virar requisição
+    # a um host qualquer, nem deixar retratos novos gravados com `gerar` falhando.
+    _fontes_do_sqlbi(leituras_sqlbi, set(ancoras))
     tocs.baixar_retratos(
         buscar or tocs.buscar_padrao,
         hoje or date.today(),
         pasta_tocs or PASTA_TOCS,
         pasta_bruta or PASTA_BRUTA,
-        [leitura.url for leitura in ler_leituras_sqlbi(arquivo_leituras)],
+        [leitura.url for leitura in leituras_sqlbi],
     )
     return gerar(
         pasta_tocs=pasta_tocs,

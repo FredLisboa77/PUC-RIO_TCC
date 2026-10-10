@@ -209,3 +209,41 @@ def test_buscar_padrao_converte_erro_de_rede(monkeypatch):
     monkeypatch.setattr(urllib.request, "urlopen", urlopen_falso)
     with pytest.raises(ErroDeRetrato, match="sem rota"):
         buscar_padrao("https://learn.microsoft.com/en-us/dax/toc.json")
+
+
+class _RespostaFalsa:
+    def __init__(self, url_final, corpo=b"{}"):
+        self.status = 200
+        self._url_final = url_final
+        self._corpo = corpo
+
+    def geturl(self):
+        return self._url_final
+
+    def read(self):
+        return self._corpo
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def test_buscar_padrao_recusa_redirecionamento(monkeypatch):
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda pedido, timeout: _RespostaFalsa("https://www.sqlbi.com/articles/"),
+    )
+    with pytest.raises(ErroDeRetrato, match="redirecionado"):
+        buscar_padrao("https://www.sqlbi.com/articles/artigo-removido/")
+
+
+def test_buscar_padrao_aceita_a_mesma_url_com_diferenca_so_de_barra(monkeypatch):
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda pedido, timeout: _RespostaFalsa("https://www.sqlbi.com/articles/x/", b"ok"),
+    )
+    assert buscar_padrao("https://www.sqlbi.com/articles/x") == b"ok"

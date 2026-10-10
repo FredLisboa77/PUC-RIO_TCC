@@ -17,6 +17,8 @@ from typing import Literal, NamedTuple
 
 from pydantic import BaseModel
 
+from rag.urls import normalizar_url
+
 
 class Secao(NamedTuple):
     caminho: str
@@ -104,6 +106,11 @@ def buscar_padrao(url: str) -> bytes:
         with urllib.request.urlopen(pedido, timeout=TIMEOUT_S) as resposta:
             if resposta.status != 200:
                 raise ErroDeRetrato(f"{url}: HTTP {resposta.status}")
+            # `urlopen` segue 301/302 sozinho: sem esta checagem, um artigo removido
+            # e redirecionado para a home passaria como "respondeu 200".
+            final = resposta.geturl()
+            if normalizar_url(final) != normalizar_url(url):
+                raise ErroDeRetrato(f"{url}: redirecionado para {final}")
             return resposta.read()
     except urllib.error.HTTPError as erro:
         raise ErroDeRetrato(f"{url}: HTTP {erro.code}") from erro
