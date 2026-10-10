@@ -25,8 +25,8 @@ rejeitou uma regra de alto valor esperado (PERF-005) por falta de evidência
 suficiente — e **essa rejeição, não a contagem, é o resultado que a monografia
 defende**. Os sete projetos públicos do dataset foram convertidos em 09/10/2026 e
 renderam **53 achados**, acima do gatilho de ~40 do R-12 — mas 16 deles vêm da
-regra de precisão mais dependente de dado, e sem ela seriam 37. A decisão sobre o
-projeto de contingência P9 precisa considerar as duas contas (seção 4.2).
+regra de precisão mais dependente de dado, e sem ela seriam 37. O projeto de
+contingência P9 não foi acionado (seção 4.2).
 
 ---
 
@@ -186,8 +186,8 @@ lê. **Sem a PERF-003, P1–P7 somam 37 — abaixo do gatilho.** O ground truth 
 semana 8 dirá se a precisão dela sustenta a margem.
 
 **Consequência:** o R-12 cai de probabilidade Alta para Média e segue aberto. O
-P9 deixa de ser "quase certo"; a recomendação é não acioná-lo agora, mas decidir
-com o orientador olhando as duas contas, não só o 53.
+P9 **não foi acionado** (decisão de 09/10/2026): o dataset de métricas fica P1–P7,
+com os 53 achados, e a dependência da PERF-003 fica declarada para o ground truth.
 
 A medição revelou também o primeiro defeito do lexer que o P8 não mostrava —
 decimal sem zero à esquerda (`*.3`, no P2) —, já corrigido com teste.
@@ -263,7 +263,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Decidir o P9 com o orientador** | O gatilho do R-12 não disparou (53 achados em P1–P7), mas sem a PERF-003 seriam 37. A decisão precisa das duas contas (seção 4.2) |
+| 1 | **Iniciar a Fase 3 — G-8, `rag/sources.yaml`** | P9 decidido em 09/10/2026: **não acionado**; o dataset fica P1–P7 com 53 achados (seção 4.2) |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 | 3 | Iniciar a Fase 3: catálogo de fontes (`sources.yaml`) e coleta | Entregável da semana 6, que agora começa um roadmap-week depois do planejado (seção 2). As URLs canónicas das 9 regras já são, por construção, parte do catálogo que a RAG precisa conter |
 

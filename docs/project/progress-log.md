@@ -830,3 +830,15 @@ com caminho de usuário.
   relatório deve dizer isso numa frase.
 
 **Próximo passo:** inalterado — decisão do P9 com o orientador e G-8.
+
+---
+
+## 09/10/2026 — Decisão: P9 não acionado
+
+O Fred decidiu usar os **53 achados** de P1–P7: o slot P9 não é acionado e o
+dataset de métricas fica P1–P7, como no ADR-005. O gatilho foi definido sobre
+contagem, e a contagem o supera. A dependência da PERF-003 (37 sem ela) segue
+declarada no `riscos.md` e no `status.md`, para o ground truth da semana 8
+julgar. Registro no log de alertas de escopo do `backlog.md`.
+
+**Próximo passo:** G-8 — `rag/sources.yaml` a partir dos `toc.json`.
