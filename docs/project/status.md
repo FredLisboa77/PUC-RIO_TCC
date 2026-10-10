@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 6 de 13 — Fase 2 encerrada; P1–P7 convertidos e medidos · **Atualizado em:** 09/10/2026
+**Posição:** semana 6 de 13 — Fase 2 encerrada; Fase 3 iniciada com o catálogo de fontes pronto · **Atualizado em:** 09/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -17,7 +17,7 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **196 testes** automatizados passando. O maior risco técnico do
+Learn. São **299 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
@@ -26,7 +26,9 @@ suficiente — e **essa rejeição, não a contagem, é o resultado que a monogr
 defende**. Os sete projetos públicos do dataset foram convertidos em 09/10/2026 e
 renderam **53 achados**, acima do gatilho de ~40 do R-12 — mas 16 deles vêm da
 regra de precisão mais dependente de dado, e sem ela seriam 37. O projeto de
-contingência P9 não foi acionado (seção 4.2).
+contingência P9 não foi acionado (seção 4.2). A Fase 3 começou: o catálogo de
+fontes da RAG está pronto, com **1.420 páginas do Microsoft Learn** a indexar e 6
+artigos do SQLBI só como leitura complementar (seção 4.3).
 
 ---
 
@@ -35,8 +37,8 @@ contingência P9 não foi acionado (seção 4.2).
 | Fase | Semanas | Status | Fechamento |
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
-| F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX na branch `fase2-regras-de-dax`, a integrar) |
-| F3 — RAG e análise com LLM | 6–8 | **A iniciar** | Revisão de meio de projeto na semana 8 |
+| F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX na branch `fase2-regras-de-dax`, em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1)) |
+| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo de fontes (G-8) concluído em 09/10/2026; próximo: coleta. Revisão de meio de projeto na semana 8 |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
@@ -66,7 +68,8 @@ regras de M, depois abrir mão do PDF (R-07).
 | Lexer de DAX (`core/dax.py`) — leitura de texto livre, não mais hipótese | **137 de 137** expressões DAX do P8 tokenizadas, **zero** token `DESCONHECIDO` — o número que substitui "usamos expressões regulares" |
 | Varredura de DAX com lacuna declarada (`core/rules/expressoes.py`) | **105 de 105** expressões em escopo de autor cobertas, **0 lacunas** no P8; o runner agora declara essa cobertura junto dos achados |
 | 9 regras, cada uma com âncora no Microsoft Learn (8 estruturais + DAX-001) | `python -m core.rules.catalogo` imprime o catálogo com as URLs |
-| Suíte de testes | **196 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Catálogo de fontes da RAG (`python -m rag.catalogo`) | `rag/sources.yaml` com **1.420 páginas** do Learn a indexar (guidance inteiro, referências completas de DAX e de M, âncoras das 9 regras), todas com `url_pt_br` conferida, e 6 leituras do SQLBI só como referência; um teste falha se o arquivo divergir do que o gerador produz |
+| Suíte de testes | **299 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -192,6 +195,33 @@ com os 53 achados, e a dependência da PERF-003 fica declarada para o ground tru
 A medição revelou também o primeiro defeito do lexer que o P8 não mostrava —
 decimal sem zero à esquerda (`*.3`, no P2) —, já corrigido com teste.
 
+### 4.3 Catálogo de fontes da RAG (G-8) — primeiro entregável da Fase 3
+
+`python -m rag.catalogo` gera `rag/sources.yaml` a partir de retratos datados dos
+`toc.json` do Microsoft Learn — uma lista gerada e verificável, não digitada.
+
+| Origem | Páginas |
+|---|---|
+| Guidance do Power BI (inteiro) | 151 |
+| Referência de DAX (completa) | 508 |
+| Referência de Power Query M (completa) | 768 |
+| Âncoras das 9 regras fora dessas seções | 2 |
+| **Total a indexar** | **1.420** (9 páginas aparecem em duas origens) |
+
+Três decisões desta etapa que o orientador deve conhecer:
+
+- **Corpus ampliado.** O roadmap previa ~60–120 documentos; as referências
+  completas de DAX e de M levam a 1.420. O texto indexado segue em **inglês**
+  (ADR-002: o modelo de embeddings é monolíngue), e cada página leva o endereço da
+  versão em português para o leitor do relatório.
+- **SQLBI só como referência.** O site é de todos os direitos reservados e os termos
+  não concedem uso dos artigos; a Lei 9.610/98 (art. 46) cobre citação de passagens,
+  não o armazenamento de artigos inteiros. Seis artigos curados entram como
+  "para se aprofundar", com link e título, sem serem baixados (R-05 mitigado).
+- **O gerador pegou um erro numa regra em produção.** A âncora da PERF-003
+  apontava para um endereço do Learn que hoje redireciona (301) — a página mudou de
+  seção. A âncora foi corrigida, e a passagem citada conferida no endereço novo.
+
 ---
 
 ## 5. Decisão de método que o orientador deve conhecer
@@ -218,8 +248,8 @@ pendência 4.2 urgente.
 | Status | Riscos |
 |---|---|
 | **Resolvido** | R-02 (LLM na GPU de 6 GB), R-09 (poucos PBIP públicos) |
-| **Mitigado** | R-06 (dados sensíveis), R-08 (dependências no Windows, parcial), R-11 (OneDrive), R-14 (disco C: cheio) |
-| **Aberto** | R-01, R-03, R-04, R-05, R-07, R-10, R-12, R-13 |
+| **Mitigado** | R-05 (termos de uso do SQLBI — por desenho; aberto para o DAX Guide), R-06 (dados sensíveis), R-08 (dependências no Windows, parcial), R-11 (OneDrive), R-14 (disco C: cheio) |
+| **Aberto** | R-01, R-03, R-04, R-07, R-10, R-12, R-13 |
 
 ### O que merece atenção agora
 
@@ -276,8 +306,9 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 196 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 299 testes (os que leem o PBIP real são pulados sem data/)
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
+python -m rag.catalogo            # regenera o catálogo de fontes offline; não deve gerar diff
 ```
 
 Os testes que leem o PBIP real são **pulados** automaticamente numa cópia limpa
@@ -290,5 +321,5 @@ DAX (105 de 105 em escopo, 0 lacunas).
 As 8 regras estruturais foram desenvolvidas na branch `fase2-motor-de-regras`,
 já mergeada na `main` e preservada no remoto como registro do recorte daquela
 etapa. O grupo 2 de DAX (lexer, varredura, resolução de uso e DAX-001) foi
-desenvolvido na branch `fase2-regras-de-dax`, ainda não mergeada no momento
-deste fechamento de documentos.
+desenvolvido na branch `fase2-regras-de-dax`, junto com a medição de P1–P7 e o
+catálogo de fontes; está em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1).
