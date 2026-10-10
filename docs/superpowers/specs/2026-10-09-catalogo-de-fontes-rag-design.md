@@ -35,7 +35,15 @@ Uma página entra se vier de pelo menos uma origem:
 | `toc:powerquery-m` | **Toda** a referência de Power Query M | 768 |
 | `regra:<ID>` | A `url_canonica` de cada regra do registro | 9 âncoras, 8 URLs distintas |
 
-**Total: 1.420 páginas** — 1.418 das três seções (9 delas em `toc:power-bi/guidance` e `toc:dax` ao mesmo tempo) mais as 2 âncoras de fora.
+**Total do Learn: 1.420 páginas** — 1.418 das três seções (9 delas em `toc:power-bi/guidance` e `toc:dax` ao mesmo tempo) mais as 2 âncoras de fora.
+
+Há uma quinta origem, de natureza diferente — **referência, não conteúdo**:
+
+| Origem | Conteúdo | Indexada? |
+|---|---|---|
+| `curadoria:sqlbi` | Artigos de `www.sqlbi.com/articles/` escolhidos à mão, cada um ligado às regras que aprofunda, listados em `rag/leituras_sqlbi.yaml` | **Não.** Só URL e título entram no catálogo; nada é baixado nem indexado. O relatório os mostra como "para se aprofundar" |
+
+Por que só referência: seção 5.2. Decisão do Fred em 09/10/2026, entre quatro opções (só link; link mais pedido de autorização; coleta integral; adiar).
 
 Uma âncora fora das três seções tem o título resolvido pelo retrato do `toc.json` da **sua** seção. Hoje são duas seções nessa condição: `power-bi/connect-data` e `power-bi/transform-model`. Elas são retratadas, mas **não são origem**: só a página da âncora entra, não a seção inteira.
 
@@ -82,6 +90,7 @@ rag/tocs/<idioma>/<seção>.json                   listagem normalizada, version
         │  python -m rag.catalogo gerar           (offline, determinístico)
         │  + âncoras de core.rules.todas.REGISTRO
         │  + rag/observacoes.yaml                 (notas à mão)
+        │  + rag/leituras_sqlbi.yaml              (curadoria à mão, só links)
         ▼
 rag/sources.yaml                                  versionado; nunca editado à mão
         │  (próxima etapa: coleta → rag/store/, fora do Git)
@@ -112,7 +121,7 @@ rag/sources.yaml                                  versionado; nunca editado à m
 ### 3.2 `rag/catalogo.py` — montagem (função pura)
 
 - `ler_retratos(pasta) -> Retratos` — lê `rag/tocs/`; falha se faltar algum dos dez, nomeando o arquivo e indicando `atualizar`.
-- `montar_catalogo(retratos, ancoras, observacoes) -> list[Fonte]` — sem rede e sem ler o registro de regras sozinha. `ancoras` é `{id_regra: url}`; `observacoes` é `{id: texto}`. Saída ordenada por `id`. Recebe tudo por parâmetro, para que `rag/` não dependa de `core/` e os testes usem dados pequenos.
+- `montar_catalogo(retratos, ancoras, observacoes, leituras_sqlbi) -> list[Fonte]` — sem rede e sem ler o registro de regras sozinha. `ancoras` é `{id_regra: url}`; `observacoes` é `{id: texto}`; `leituras_sqlbi` é a lista lida de `rag/leituras_sqlbi.yaml`. Saída ordenada por `id`. Recebe tudo por parâmetro, para que `rag/` não dependa de `core/` e os testes usem dados pequenos.
 - `escrever_yaml(fontes, caminho)` — `yaml.safe_dump` com ordem de campos fixa, `sort_keys=False`, `allow_unicode=True` e `width` grande o bastante para não quebrar linha. Gerar duas vezes dá bytes idênticos.
 - `Fonte` é um modelo Pydantic, como o resto do projeto.
 
@@ -122,7 +131,25 @@ rag/sources.yaml                                  versionado; nunca editado à m
 - É a camada de comando que importa `core.rules.todas.REGISTRO` e extrai as âncoras.
 - Ao fim, imprime: total de páginas, contagem por origem, exclusões por motivo, quantas têm `url_pt_br`, e cada âncora com a entrada que a satisfez.
 
-### 3.4 Seção nova
+### 3.4 Curadoria do SQLBI (`rag/leituras_sqlbi.yaml`)
+
+Arquivo mantido à mão:
+
+```yaml
+- url: https://www.sqlbi.com/articles/<slug>/
+  titulo: <título do artigo>
+  regras: [DAX-001]
+  verificado_em: '2026-10-09'
+```
+
+`verificado_em` é a data em que o curador abriu o artigo e confirmou que ele aprofunda a regra; vira a `data_acesso` da entrada. É manual porque o que se atesta é a leitura humana, não só a resposta HTTP.
+
+- `montar_catalogo` recebe a lista já lida e gera uma `Fonte` por artigo, com `id: sqlbi:<slug>`, `indexar: false`, `origem: [curadoria:sqlbi]` e `regras` copiado.
+- Validação **offline** em `gerar`: host `www.sqlbi.com`, caminho começando em `/articles/`, ao menos uma regra, toda regra existente no registro, sem URL repetida.
+- Validação **com rede** em `atualizar`: cada URL tem de responder 200. Só o código de status é lido; o corpo da resposta é descartado e nada é gravado.
+- A lista inicial — de um a três artigos por regra, só onde houver um que de fato aprofunde a regra — é proposta na implementação e **aprovada pelo Fred artigo por artigo** antes do commit. Regra sem artigo adequado fica sem leitura complementar; não se força correspondência.
+
+### 3.5 Seção nova
 
 Quando uma regra futura tiver âncora fora das cinco seções, `gerar` falha nomeando a URL. A correção é uma linha em `SECOES` e um `atualizar`. Explícito, sem adivinhar em qual `toc.json` procurar.
 
@@ -137,19 +164,39 @@ Quando uma regra futura tiver âncora fora das cinco seções, `gerar` falha nom
   data_acesso: '2026-10-09'
   licenca: Termos de uso do Microsoft Learn — uso pessoal e não comercial; cópia local não redistribuída (https://learn.microsoft.com/en-us/legal/termsofuse)
   origem: [regra:DAX-001, toc:dax, toc:power-bi/guidance]
+  indexar: true
+  regras: [DAX-001]
+  observacao: null
+```
+
+Uma entrada do SQLBI, para comparação:
+
+```yaml
+- id: sqlbi:<slug>
+  url: https://www.sqlbi.com/articles/<slug>/
+  url_pt_br: null
+  titulo: <título do artigo>
+  organizacao: SQLBI
+  data_acesso: '2026-10-09'
+  licenca: © SQLBI, todos os direitos reservados — somente referência bibliográfica; conteúdo não coletado
+  origem: [curadoria:sqlbi]
+  indexar: false
+  regras: [DAX-001]
   observacao: null
 ```
 
 | Campo | Regra |
 |---|---|
-| `id` | `learn:` + caminho depois de `/en-us/`. O prefixo reserva espaço para fontes curadas futuras (`sqlbi:`, `daxguide:`) |
+| `id` | `learn:` + caminho depois de `/en-us/`; `sqlbi:` + slug do artigo. O prefixo separa as organizações e reserva espaço para outras (`daxguide:`) |
 | `url` | URL canônica en-US, normalizada (seção 2.2) |
 | `url_pt_br` | seção 2.4; `null` quando o caminho não está no retrato pt-BR |
 | `titulo` | Título de navegação do `toc.json`, preferindo o retrato da **própria seção** da página; depois, a ordem fixa `guidance`, `dax`, `powerquery-m`, seções de âncora. Medido em 09/10: as 9 páginas presentes em dois tocs têm o mesmo título nos dois |
 | `organizacao` | `Microsoft` |
-| `data_acesso` | Data do retrato que forneceu o título. É a data de **catalogação**; a data de acesso ao **conteúdo**, que vai na citação, é registrada pela coleta |
+| `data_acesso` | Learn: data do retrato que forneceu o título. SQLBI: `verificado_em` da curadoria. É a data de **catalogação**; a data de acesso ao **conteúdo**, que vai na citação, é registrada pela coleta |
 | `licenca` | Texto fixo da tabela acima (ver seção 5.2) |
 | `origem` | Lista ordenada, sem repetição |
+| `indexar` | `true` para o Learn; `false` para o SQLBI. A coleta, na etapa seguinte, só baixa as entradas com `true` |
+| `regras` | IDs das regras ligadas à página: para o Learn, as regras cuja âncora é a página (vazia na maioria); para o SQLBI, as da curadoria. É o que permite ao relatório achar a leitura complementar de um achado |
 | `observacao` | Vem de `rag/observacoes.yaml`; `null` quando não há nota |
 
 **Limitação declarada do `titulo`:** alguns títulos de navegação são genéricos (`Introduction` aparece 3 vezes). A coleta registrará o título real da página (H1) no manifesto do `rag/store/`, e é esse que a citação final usa.
@@ -172,7 +219,17 @@ Consequências para o desenho:
 2. **Correção em relação ao desenho conversado:** a primeira versão versionava o `toc.json` **bruto**. Isso publicaria num repositório público uma cópia literal de um arquivo da Microsoft. O desenho final versiona apenas a **listagem normalizada** (caminho e título), que é a mesma informação bibliográfica que o próprio `sources.yaml` já contém; o bruto fica em `rag/store/raw/tocs/`, fora do Git.
 3. **`licenca` não diz CC BY 4.0.** Essa licença vale para os repositórios públicos `MicrosoftDocs/*`, e o ADR-004 mostrou que o do Power BI é privado. O campo descreve o que foi verificado: os termos de uso, e a condição sob a qual o projeto os cumpre.
 
-### 5.3 Engenharia
+### 5.3 SQLBI — por que só referência
+
+Verificado em 09/10/2026, a pedido do Fred, que sugeriu indexar todos os artigos públicos de `www.sqlbi.com/articles/`:
+
+- **Direitos:** o rodapé do site traz *"© SQLBI. All rights are reserved."* Os termos e condições (`docs.sqlbi.com/terms-and-conditions/`, atualizados em 28/09/2026) tratam de cursos, assinaturas e pagamentos e **não concedem** permissão de uso dos artigos — ao contrário do Learn, cujos termos autorizam expressamente o uso pessoal e não comercial.
+- **`robots.txt`:** não bloqueia os artigos para `User-agent: *`, mas bloqueia por nome ferramentas de **cópia de site** (`WebCopier`, `Nutch`, entre outras) — indicação da intenção do dono contra o espelhamento.
+- **Lei 9.610/98, art. 46:** permite a citação de passagens com indicação de autor e origem, e a cópia privada de **pequenos trechos**. Guardar artigos inteiros para indexação não cabe em nenhuma das duas hipóteses.
+
+O link e o título, ao contrário, são referência bibliográfica. Por isso o SQLBI entra como leitura complementar (`indexar: false`) e a RAG continua citando apenas o Learn. Isso fecha o **R-05** para o SQLBI por desenho: não há armazenamento local a ser restringido pelos termos. O DAX Guide continua fora e o R-05 segue aberto para ele.
+
+### 5.4 Engenharia
 
 | Prática | Como o desenho atende |
 |---|---|
@@ -195,23 +252,28 @@ Consequências para o desenho:
 | Retrato com estrutura inesperada | Falha nomeando o arquivo |
 | Âncora de regra não encontrada em nenhum retrato | Falha listando as âncoras e as regras que as usam |
 | Nota em `observacoes.yaml` para `id` fora do catálogo | Falha — a nota não pode sumir em silêncio quando a Microsoft remove ou renomeia uma página |
+| Entrada de `leituras_sqlbi.yaml` fora de `www.sqlbi.com/articles/`, sem regra, com regra inexistente ou repetida | `gerar` falha nomeando a entrada |
+| `atualizar`: artigo do SQLBI que não responde 200 | Aborta antes de gravar qualquer retrato, nomeando o artigo — link morto não entra no relatório |
 | Link excluído | Não é erro; contado no resumo por motivo |
 
 ### 6.2 Testes (pytest, sem rede)
 
-1. **Unidade, com retratos pequenos feitos à mão:** os quatro tipos de `href` (seção 2.2), inclusive o relativo à raiz recebendo o idioma; cada motivo de exclusão; página com duas origens vira uma entrada com as duas; precedência de título; `url_pt_br` presente só quando o caminho está no retrato pt-BR; âncora resolvida por seção que não é origem; âncora ausente e nota órfã levantam erro; mesma entrada em outra ordem dá a mesma saída.
+1. **Unidade, com retratos pequenos feitos à mão:** os quatro tipos de `href` (seção 2.2), inclusive o relativo à raiz recebendo o idioma; cada motivo de exclusão; página com duas origens vira uma entrada com as duas; precedência de título; `url_pt_br` presente só quando o caminho está no retrato pt-BR; âncora resolvida por seção que não é origem; âncora ausente e nota órfã levantam erro; mesma entrada em outra ordem dá a mesma saída; entrada do SQLBI sai com `indexar: false` e com as regras da curadoria; cada violação da validação do SQLBI levanta erro; `regras` das entradas do Learn reflete as âncoras.
 2. **Determinismo:** gerar duas vezes produz bytes idênticos.
-3. **Retratos:** `buscar` falso; uma falha no meio preserva os retratos antigos; o bruto vai para a pasta fora do Git e a listagem normalizada para `rag/tocs/`.
-4. **Sobre os dados reais versionados** (sempre rodam, porque `rag/tocs/` está no Git): as 9 âncoras presentes; contagem entre 1.300 e 1.600; e o **`sources.yaml` do repositório idêntico ao que o gerador produz agora** — pega edição à mão e catálogo desatualizado em relação aos retratos.
+3. **Retratos:** `buscar` falso; uma falha no meio preserva os retratos antigos; o bruto vai para a pasta fora do Git e a listagem normalizada para `rag/tocs/`; a checagem do SQLBI não grava nada e aborta com link que não responde 200.
+4. **Sobre os dados reais versionados** (sempre rodam, porque `rag/tocs/` está no Git): as 9 âncoras presentes; contagem de entradas com `indexar: true` entre 1.300 e 1.600; e o **`sources.yaml` do repositório idêntico ao que o gerador produz agora** — pega edição à mão e catálogo desatualizado em relação aos retratos.
 
 ## 7. Fora de escopo
 
 - Coleta das páginas, chunking, embeddings, índice e recuperação.
-- SQLBI e DAX Guide — etapa própria, depois de fechar o R-05. O prefixo de `id` já reserva o espaço.
+- **Indexar** o conteúdo do SQLBI — recusado (seção 5.3). Entra só como referência.
+- DAX Guide — etapa própria, depois de fechar o R-05 para ele.
 - Qualquer mudança no ADR-002.
 
 ## 8. Registros a fazer junto com a implementação
 
 - `backlog.md`: G-8 concluído; mudança de escopo do corpus de ~60–120 para ~1.420 páginas, decidida pelo Fred em 09/10/2026, com o motivo (referências completas de DAX e M na base).
+- `backlog.md`, log de alertas de escopo: sugestão de indexar todos os artigos do SQLBI, **recusada** em favor de leitura complementar só com link (seção 5.3).
+- `riscos.md`: R-05 mitigado por desenho para o SQLBI; aberto para o DAX Guide.
 - `.gitignore`: nada a mudar — `rag/store/` já está ignorado, e `rag/tocs/` deve ser versionado.
 - `progress-log.md`: entrada da etapa, com as contagens medidas.
