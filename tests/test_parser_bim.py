@@ -1,6 +1,6 @@
 import json
 
-from conftest import escrever_pbip
+from conftest import coluna, escrever_pbip, hierarquia, nivel, role, tabela
 from core.parser_bim import ler_modelo
 
 
@@ -280,3 +280,213 @@ def test_normaliza_a_cardinalidade_do_relacionamento(tmp_path):
     assert (padrao.cardinalidade_origem, padrao.cardinalidade_destino) == ("muitos", "um")
     assert (um_para_um.cardinalidade_origem, um_para_um.cardinalidade_destino) == ("um", "um")
     assert (explicito.cardinalidade_origem, explicito.cardinalidade_destino) == ("muitos", "um")
+
+
+def test_le_sort_by_column(ler):
+    """10 colunas do P8 ordenam por outra coluna. Esquecer isso faria a
+    PERF-005 recomendar apagar a coluna de ordenação."""
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimDate",
+                colunas=[
+                    coluna("MesNome", ordenar_por="MesNumero"),
+                    coluna("MesNumero", tipo_dado="int64"),
+                ],
+            )
+        ]
+    )
+
+    assert modelo.tabelas[0].colunas[0].ordenar_por == "MesNumero"
+    assert modelo.tabelas[0].colunas[1].ordenar_por is None
+
+
+def test_le_hierarquias_e_seus_niveis(ler):
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimProduct",
+                colunas=[coluna("Categoria"), coluna("Produto")],
+                hierarquias=[
+                    hierarquia(
+                        "Produtos",
+                        niveis=[nivel("Categoria", "Categoria"), nivel("Produto", "Produto")],
+                    )
+                ],
+            )
+        ]
+    )
+
+    h = modelo.tabelas[0].hierarquias[0]
+    assert h.nome == "Produtos"
+    assert h.tabela == "DimProduct"
+    assert [n.coluna for n in h.niveis] == ["Categoria", "Produto"]
+    assert h.niveis[0].tabela == "DimProduct"
+
+
+def test_le_roles_com_expressao_de_filtro(ler):
+    modelo = ler(
+        tabelas=[tabela("Vendas", colunas=[coluna("Regiao")])],
+        roles=[role("Vendedor", tabela="Vendas", filtro="[Regiao] = \"Sul\"")],
+    )
+
+    assert modelo.roles[0].nome == "Vendedor"
+    assert modelo.roles[0].permissoes[0].tabela == "Vendas"
+    assert modelo.roles[0].permissoes[0].expressao_filtro == '[Regiao] = "Sul"'
+
+
+def test_modelo_sem_roles_tem_lista_vazia(ler):
+    """O P8 não tem a chave `roles`. Ausência não pode virar None."""
+    modelo = ler(tabelas=[tabela("Vendas")])
+    assert modelo.roles == []
+
+
+def test_le_a_ordem_do_nivel_de_hierarquia(ler):
+    """A chave é `ordinal`. Propriedade lida e nunca exercitada é como a
+    MOD-005 errou: ninguém percebe que o nome está errado."""
+    modelo = ler(
+        tabelas=[
+            tabela(
+                "DimProduct",
+                colunas=[coluna("Categoria"), coluna("Produto")],
+                hierarquias=[
+                    hierarquia(
+                        "Produtos",
+                        niveis=[
+                            nivel("Categoria", "Categoria", ordem=0),
+                            nivel("Produto", "Produto"),
+                        ],
+                    )
+                ],
+            )
+        ]
+    )
+
+    niveis = modelo.tabelas[0].hierarquias[0].niveis
+    assert niveis[0].ordem == 0
+    assert niveis[1].ordem is None
+
+
+def test_nulo_explicito_no_tmsl_nao_derruba_o_parser(tmp_path):
+    """`"annotations": null` derrubou as oito regras de uma vez em 06/10/2026.
+
+    `.get(chave, [])` devolve o padrao so quando a chave esta AUSENTE. Com a
+    chave presente e valor nulo devolve None, e a compreensao de lista estoura.
+    Toda lista lida do TMSL usa `or []` por isso — e todo escalar que alimenta
+    um campo obrigatorio do Pydantic usa `or ""`, pelo mesmo motivo: `"model":
+    null` e `"name": null` numa tabela sao a mesma classe de defeito, só que
+    um derruba com `AttributeError` antes de chegar ao Pydantic, e o outro com
+    `ValidationError` dentro dele.
+    """
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": None,
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas == []
+    assert modelo.relacionamentos == []
+    assert modelo.roles == []
+
+
+def test_nulo_explicito_dentro_do_model_nao_derruba_o_parser(tmp_path):
+    """As listas de dentro de `model` continuam tolerando `null`, isoladas do teste acima."""
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": None,
+            "relationships": None,
+            "roles": None,
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas == []
+    assert modelo.relacionamentos == []
+    assert modelo.roles == []
+
+
+def test_json_de_topo_nao_objeto_nao_derruba_o_parser_com_traceback_cru(tmp_path):
+    """Uma lista ou string no nível superior do JSON levanta erro claro, não
+    `AttributeError: 'list' object has no attribute 'get'`."""
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+
+    try:
+        ler_modelo(caminho)
+        assert False, "deveria ter levantado ValueError"
+    except ValueError as erro:
+        assert "não é um objeto" in str(erro)
+
+
+def test_nulo_explicito_em_escalar_obrigatorio_nao_derruba_o_parser(tmp_path):
+    """`"name": null` numa tabela, numa coluna e num nível de hierarquia: o
+    mesmo defeito do teste acima, agora num escalar que alimenta um campo
+    Pydantic não opcional em vez de uma lista.
+    """
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": [
+                {
+                    "name": None,
+                    "columns": [{"name": None, "dataType": "string"}],
+                    "hierarchies": [
+                        {"name": "H", "levels": [{"name": "N", "column": None}]}
+                    ],
+                }
+            ],
+            "roles": [
+                {
+                    "name": "Vendedor",
+                    "tablePermissions": [{"name": None, "filterExpression": "TRUE()"}],
+                }
+            ],
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    modelo = ler_modelo(caminho)
+
+    assert modelo.tabelas[0].nome == ""
+    assert modelo.tabelas[0].colunas[0].nome == ""
+    assert modelo.tabelas[0].hierarquias[0].niveis[0].coluna == ""
+    assert modelo.roles[0].permissoes[0].tabela == ""
+
+
+def test_nulo_explicito_dentro_da_tabela_nao_derruba_o_parser(tmp_path):
+    bruto = {
+        "name": "SemanticModel",
+        "compatibilityLevel": 1600,
+        "model": {
+            "culture": "pt-BR",
+            "tables": [
+                {
+                    "name": "Vendas",
+                    "columns": None,
+                    "measures": None,
+                    "partitions": None,
+                    "hierarchies": None,
+                    "annotations": None,
+                }
+            ],
+        },
+    }
+    caminho = tmp_path / "model.bim"
+    caminho.write_text(json.dumps(bruto), encoding="utf-8")
+
+    t = ler_modelo(caminho).tabelas[0]
+
+    assert (t.colunas, t.medidas, t.particoes, t.hierarquias) == ([], [], [], [])

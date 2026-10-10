@@ -1,6 +1,6 @@
 # Dataset de avaliação
 
-**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. P1–P7 ainda não baixados nem convertidos.
+**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. **P1–P7 baixados em 09/10/2026** (passo 1 do procedimento abaixo) e **ainda não convertidos** — os passos 2–5 exigem a GUI do Power BI Desktop.
 **Decisão de origem:** [ADR-005](../docs/adr/ADR-005-dataset-de-avaliacao.md).
 
 ## Origem
@@ -59,11 +59,87 @@ Para cada PBIX, na semana 4:
 5. Conferir que a pasta `<nome>.SemanticModel/` contém **`model.bim`** e **não** contém a pasta `definition/`.
 6. Registrar no `progress-log.md`: PBIP_ID, nome do arquivo, `version` lida no `definition.pbism`, e o número de tabelas e medidas.
 
+### Download de P1–P7 — feito em 09/10/2026
+
+Os sete `.pbix` foram baixados de `raw.githubusercontent.com/microsoft/powerbi-desktop-samples/main`
+para `data/pbix/`, nomeados `P<n>_<arquivo original>.pbix`. Todos conferidos: assinatura ZIP
+(`50 4b 03 04`) e tamanho idêntico ao que a API do GitHub informa para o commit de `main`.
+
+| PBIP_ID | Caminho no repositório | Tamanho |
+|---|---|---|
+| P1 | `2026 Power BI Samples Revamp/AdventureWorks Sales.pbix` | 8,4 MB |
+| P2 | `2026 Power BI Samples Revamp/Corporate Spend.pbix` | 0,7 MB |
+| P3 | `2026 Power BI Samples Revamp/Employee Hiring and History.pbix` | 8,5 MB |
+| P4 | `2026 Power BI Samples Revamp/Competitive Marketing Analysis.pbix` | 6,6 MB |
+| P5 | `2026 Power BI Samples Revamp/Store Sales.pbix` | 9,7 MB |
+| P6 | `Sample Reports/Supply Chain Sample.pbix` | 1,2 MB |
+| P7 | `Sample Reports/Revenue Opportunities.pbix` | 7,5 MB |
+
+**Armadilha de nome, registrada para reprodutibilidade:** **seis dos sete** nomes aparecem
+em mais de uma pasta do repositório, com conteúdos diferentes — só `Supply Chain Sample.pbix`
+é único. `Revenue Opportunities.pbix` é o caso extremo, em quatro pastas: 7.465.671 bytes em
+`Sample Reports` contra 245.930 em `2026 Power BI Samples Revamp` e 247.054 em
+`new-power-bi-service-samples` e `powerbi-service-samples` — 30 vezes menor. A coluna "Caminho no repositório" acima, não o nome do
+arquivo, é o que identifica cada projeto. A tabela dos 7 projetos já fixava a pasta de cada
+um, e foi ela que decidiu qual baixar.
+
+**Por que os passos 2–5 não podem ser automatizados.** Verificado nos arquivos baixados: o
+modelo semântico de um `.pbix` vive numa única entrada `DataModel` do ZIP — um ABF comprimido,
+não um `model.bim`. Nenhuma leitura do `.pbix` produz o PBIP; só o Desktop o escreve. (A camada
+de relatório, ao contrário, está em claro: P1–P5 já trazem `Report/definition/pages/`, o
+formato PBIR novo, e P6–P7 o `Report/Layout` antigo.)
+
+Power BI Desktop confirmado instalado nesta máquina: versão da Store **2.158.1304.0**. O ajuste
+do passo 3 (preview de TMDL desligado) **não é verificável por fora** — não aparece no hive de
+registro virtualizado do app da Store —, então a conferência visual do passo 3 é obrigatória, e
+não uma formalidade: a conversão para TMDL é irreversível (ADR-001).
+
+### Conversão de P1–P7 — feita em 09/10/2026
+
+Convertidos pelo autor no Desktop 2.158 e guardados em `data/pbip/P<n>_<nome>/`. Conferido nos
+sete: `model.bim` presente, pasta `definition/` ausente. Ao salvar, o Desktop gravou os sete
+relatórios em PBIR — inclusive P6–P7, que no `.pbix` estavam no `Report/Layout` antigo.
+
+| PBIP_ID | `version` | `compatibilityLevel` | Tabelas | Medidas |
+|---|---|---|---|---|
+| P1 | 4.2 | 1606 | 10 | 20 |
+| P2 | 4.2 | 1606 | 10 | 19 |
+| P3 | 4.2 | 1606 | 9 | 25 |
+| P4 | 4.2 | 1606 | 9 | 22 |
+| P5 | 4.2 | 1606 | 7 | 32 |
+| P6 | 4.2 | 1606 | 7 | 4 |
+| P7 | 4.2 | 1606 | 7 | 4 |
+
 `data/` está no `.gitignore`. Os arquivos não são versionados — este documento é o que torna o dataset reprodutível.
 
 ## Ground truth
 
 Construído manualmente na **semana 8**, antes de ver os resultados finais da ferramenta (risco R-04).
+
+### Contaminação já ocorrida e como o protocolo responde (registrado em 09/10/2026)
+
+A promessa acima já não vale por inteiro: em 09/10/2026 os 53 achados de P1–P7 foram
+vistos, e os da PERF-001 e da PERF-003 revistos um a um (`progress-log.md`). Anotar
+depois de ver a saída da ferramenta enviesa a anotação a favor dela, e o anotador é um
+só, sem medida de concordância (Fase 1, limitações declaradas). O protocolo passa a ser:
+
+1. **Congelar as regras antes do ground truth.** No dia em que a anotação começar,
+   criar a tag `regras-gt` no commit vigente. A avaliação da Fase 5 roda **só** sobre
+   essa tag; regra mudada depois dela é trabalho futuro, não resultado. (A tag não é
+   criada agora porque o grupo 4, regras de M, ainda está no MVP.)
+2. **Segundo anotador às cegas numa amostra.** Uma segunda pessoa — o orientador ou um
+   colega com domínio de Power BI — anota **2 dos 7 projetos** sem ver os achados da
+   ferramenta, com as mesmas regras de construção abaixo. A concordância entre os dois
+   anotadores é medida pelo **kappa de Cohen** (Cohen, 1960) e reportada na monografia.
+   Os 2 projetos são sorteados com semente registrada aqui, no dia do sorteio.
+3. **Anotar a partir do modelo, não da lista de achados.** O primeiro anotador percorre
+   cada modelo com um roteiro fixo (tabelas, relacionamentos, colunas, medidas,
+   partições), e só depois compara com a saída da ferramenta.
+4. **Ameaças à validade declaradas.** Ajustes feitos depois de ver P1–P7 entram na
+   monografia como tal: a correção do lexer para decimal sem zero à esquerda (achado no
+   P2) e a troca do endereço da âncora da PERF-003 (redirecionamento detectado pelo
+   catálogo). Nenhum dos dois mudou a contagem de achados, mas ambos foram motivados
+   pelo conjunto de teste.
 
 Formato de `eval/ground_truth.csv`:
 

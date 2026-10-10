@@ -5,7 +5,7 @@ Importar este módulo é o que faz as regras existirem para o `runner`. Sem ele 
 registros isolados sem depender da ordem de importação.
 """
 
-from core.rules import modelagem, performance  # noqa: F401 — o import registra
+from core.rules import dax, modelagem, performance  # noqa: F401 — o import registra
 from core.rules.registry import REGISTRO
 
 __all__ = ["REGISTRO"]

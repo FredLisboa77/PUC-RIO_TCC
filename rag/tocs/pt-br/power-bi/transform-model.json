@@ -1,0 +1,360 @@
+{
+  "secao": "power-bi/transform-model",
+  "idioma": "pt-br",
+  "url": "https://learn.microsoft.com/pt-br/power-bi/transform-model/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "documentação de transformação, formatação e modelagem de dados do Power BI"
+    },
+    {
+      "href": "desktop-query-overview",
+      "titulo": "O que é Editor do Power Query?"
+    },
+    {
+      "href": "desktop-data-types",
+      "titulo": "Tipos de dados no Power BI"
+    },
+    {
+      "href": "model-explorer",
+      "titulo": "Trabalhar com o Explorador de Modelos"
+    },
+    {
+      "href": "desktop-modeling-view",
+      "titulo": "Trabalhar com a exibição Modelagem"
+    },
+    {
+      "href": "desktop-data-view",
+      "titulo": "Trabalhar com o modo de exibição Tabela"
+    },
+    {
+      "href": "desktop-tmdl-view",
+      "titulo": "Trabalhar com o modo de exibição TMDL"
+    },
+    {
+      "href": "dax-query-view",
+      "titulo": "Trabalhar com a exibição de consulta DAX"
+    },
+    {
+      "href": "desktop-common-query-tasks",
+      "titulo": "Executar tarefas comuns de consulta"
+    },
+    {
+      "href": "power-query-new-experience-limitations",
+      "titulo": "Nova experiência do Power Query: limitações conhecidas e soluções alternativas"
+    },
+    {
+      "href": "desktop-data-privacy-firewall-partitions",
+      "titulo": "Permitir partições de firewall de privacidade de dados"
+    },
+    {
+      "href": "desktop-python-in-query-editor",
+      "titulo": "Usar o Python no Editor de Consultas"
+    },
+    {
+      "href": "desktop-r-in-query-editor",
+      "titulo": "Uso do R no Editor de Consultas"
+    },
+    {
+      "href": "desktop-combine-binaries",
+      "titulo": "Combinar arquivos (binários)"
+    },
+    {
+      "href": "desktop-add-column-from-example",
+      "titulo": "Adicionar uma coluna dos exemplos"
+    },
+    {
+      "href": "desktop-add-custom-column",
+      "titulo": "Adicionar uma coluna personalizada"
+    },
+    {
+      "href": "export-query-results",
+      "titulo": "Exportar resultados da consulta (versão prévia)"
+    },
+    {
+      "href": "desktop-shape-and-combine-data",
+      "titulo": "Formatar e combinar várias fontes de dados"
+    },
+    {
+      "href": "desktop-tutorial-analyzing-sales-data-from-excel-and-an-odata-feed",
+      "titulo": "Combinar dados de feed de Excel e OData"
+    },
+    {
+      "href": "desktop-tutorial-importing-and-analyzing-data-from-a-web-page",
+      "titulo": "Importar e analisar dados de páginas da Web"
+    },
+    {
+      "href": "dataflows/dataflows-introduction-self-service",
+      "titulo": "Introdução aos fluxos de dados (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-create",
+      "titulo": "Criar um fluxo de dados (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-configure-consume",
+      "titulo": "Configurar e consumir um fluxo de dados (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-fabric-capacity-workload-configuration",
+      "titulo": "Configurar cargas de trabalho de fluxo de dados do Power BI Premium (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-azure-data-lake-storage-integration",
+      "titulo": "Dataflows e Azure Data Lake Gen2 (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-fabric-capacity-features",
+      "titulo": "Recursos Premium de fluxos de dados (herdados)"
+    },
+    {
+      "href": "dataflows/dataflows-best-practices",
+      "titulo": "Práticas recomendadas de fluxos de dados (herdados)"
+    },
+    {
+      "href": "dataflows/dataflows-understand-optimize-refresh",
+      "titulo": "Entender e otimizar a atualização do fluxo de dados (herdado)"
+    },
+    {
+      "href": "dataflows/dataflows-directquery",
+      "titulo": "Usar DirectQuery com fluxos de dados (legado)"
+    },
+    {
+      "href": "dataflows/dataflows-features-limitations",
+      "titulo": "Considerações e limitações dos fluxos de dados (legado)"
+    },
+    {
+      "href": "dataflows/dataflows-streaming",
+      "titulo": "Fluxos de dados de streaming (desativados)"
+    },
+    {
+      "href": "dataflows/dataflows-develop-solutions",
+      "titulo": "Desenvolver soluções de fluxos de dados (herdado)"
+    },
+    {
+      "href": "desktop-connect-dataflows",
+      "titulo": "Conectar-se aos dados criados por fluxos de dados do Power Platform no Power BI Desktop (herdado)"
+    },
+    {
+      "href": "desktop-data-categorization",
+      "titulo": "Especificar categorias de dados no Power BI Desktop"
+    },
+    {
+      "href": "desktop-mobile-barcodes",
+      "titulo": "Marcar campos de código de barras em Power BI para o aplicativo móvel"
+    },
+    {
+      "href": "desktop-mobile-geofiltering",
+      "titulo": "Definir filtros geográficos em Power BI para o aplicativo móvel"
+    },
+    {
+      "href": "desktop-relationships-understand",
+      "titulo": "Entender relações de modelos"
+    },
+    {
+      "href": "desktop-create-and-manage-relationships",
+      "titulo": "Criar e gerenciar relações"
+    },
+    {
+      "href": "desktop-relationship-view",
+      "titulo": "Trabalhar com o modo de exibição Relação"
+    },
+    {
+      "href": "desktop-many-to-many-relationships",
+      "titulo": "Relacionamentos de muitos para muitos"
+    },
+    {
+      "href": "desktop-bidirectional-filtering",
+      "titulo": "Habilitar filtragem cruzada bidirecional"
+    },
+    {
+      "href": "desktop-tutorial-create-measures",
+      "titulo": "Crie suas próprias medidas"
+    },
+    {
+      "href": "desktop-tutorial-create-calculated-columns",
+      "titulo": "Criar colunas calculadas"
+    },
+    {
+      "href": "calculation-groups",
+      "titulo": "Criar grupos de cálculo"
+    },
+    {
+      "href": "desktop-quickstart-learn-dax-basics",
+      "titulo": "Conheça as noções básicas do DAX no Power BI Desktop"
+    },
+    {
+      "href": "desktop-calculations-options",
+      "titulo": "Usar opções de cálculos no Power BI Desktop"
+    },
+    {
+      "href": "desktop-measures",
+      "titulo": "Criar medidas para análise de dados"
+    },
+    {
+      "href": "desktop-quick-measures",
+      "titulo": "Criar medidas rápidas para cálculos comuns"
+    },
+    {
+      "href": "quick-measure-suggestions",
+      "titulo": "Sugestões de medida rápida"
+    },
+    {
+      "href": "desktop-calculated-columns",
+      "titulo": "Criar colunas calculadas"
+    },
+    {
+      "href": "desktop-calculated-tables",
+      "titulo": "Criar tabelas calculadas"
+    },
+    {
+      "href": "desktop-what-if",
+      "titulo": "Criar e usar parâmetros de hipóteses para visualizar variáveis"
+    },
+    {
+      "href": "desktop-time-intelligence",
+      "titulo": "Implementar cálculos baseados em tempo no Power BI"
+    },
+    {
+      "href": "desktop-date-tables",
+      "titulo": "Definir e usar tabelas de data"
+    },
+    {
+      "href": "desktop-auto-date-time",
+      "titulo": "Aplicar data/hora automática"
+    },
+    {
+      "href": "desktop-visual-calculations-overview",
+      "titulo": "Cálculos visuais"
+    },
+    {
+      "href": "desktop-visual-calculations-create",
+      "titulo": "Criar cálculos visuais"
+    },
+    {
+      "href": "desktop-user-defined-functions-overview",
+      "titulo": "Usando funções definidas pelo usuário da DAX"
+    },
+    {
+      "href": "desktop-import-and-display-kpis",
+      "titulo": "Importar e exibir os KPIs"
+    },
+    {
+      "href": "desktop-analytics-pane",
+      "titulo": "Usar o painel de Análise"
+    },
+    {
+      "href": "desktop-composite-models",
+      "titulo": "Modelos compostos"
+    },
+    {
+      "href": "desktop-storage-mode",
+      "titulo": "Gerenciar modo de armazenamento"
+    },
+    {
+      "href": "aggregations-advanced",
+      "titulo": "Agregações definidas pelo usuário"
+    },
+    {
+      "href": "value-filter-behavior",
+      "titulo": "Trabalhar com o comportamento do filtro de valor (versão prévia)"
+    },
+    {
+      "href": "desktop-default-member-multidimensional-models",
+      "titulo": "Trabalhar com modelos multidimensionais no Power BI"
+    },
+    {
+      "href": "service-edit-data-models",
+      "titulo": "Editar modelos de dados no serviço do Power BI"
+    },
+    {
+      "href": "service-model-options",
+      "titulo": "Configurar opções de modelo no serviço do Power BI"
+    },
+    {
+      "href": "service-semantic-model-version-history",
+      "titulo": "Usar o histórico de versões semânticas do modelo"
+    },
+    {
+      "href": "service-notebooks",
+      "titulo": "Usar blocos de anotações com seu modelo semântico"
+    },
+    {
+      "href": "copilot-web-modeling",
+      "titulo": "Copilot na modelagem da Web (versão prévia)"
+    },
+    {
+      "href": "/dax/dax-copilot",
+      "titulo": "Usar Copilot para escrever e explicar consultas DAX"
+    },
+    {
+      "href": "desktop-measure-copilot-descriptions",
+      "titulo": "Usar Copilot para criar descrições de medida"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-overview",
+      "titulo": "Usar Azure Log Analytics no Power BI"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-configure",
+      "titulo": "Configurando Azure Log Analytics no Power BI"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-faq",
+      "titulo": "Azure Log Analytics em Power BI – Perguntas frequentes"
+    },
+    {
+      "href": "desktop-external-tools",
+      "titulo": "Ferramentas externas no Power BI Desktop"
+    },
+    {
+      "href": "desktop-external-tools-register",
+      "titulo": "Registrar uma ferramenta externa"
+    },
+    {
+      "href": "desktop-field-list",
+      "titulo": "Usar a lista de campos no Power BI Desktop"
+    },
+    {
+      "href": "desktop-formula-editor",
+      "titulo": "Atalhos do Editor de fórmulas"
+    },
+    {
+      "href": "desktop-evaluation-configuration",
+      "titulo": "Configuração de avaliação para consultas DAX"
+    },
+    {
+      "href": "/contribute/",
+      "titulo": "Contribuir para os documentos do Fabric"
+    },
+    {
+      "href": "/answers/",
+      "titulo": "Perguntas e Respostas Microsoft"
+    },
+    {
+      "href": "https://ideas.fabric.microsoft.com/",
+      "titulo": "Ideias de tecido"
+    },
+    {
+      "href": "https://feedback.azure.com/",
+      "titulo": "Comentários do Azure"
+    },
+    {
+      "href": "https://community.fabric.microsoft.com/",
+      "titulo": "Community"
+    },
+    {
+      "href": "https://azure.microsoft.com/updates/",
+      "titulo": "Atualizações de serviço"
+    },
+    {
+      "href": "https://azure.status.microsoft/",
+      "titulo": "Status do Azure"
+    },
+    {
+      "href": "/training/fabric/",
+      "titulo": "Treinamento do Microsoft Learn"
+    }
+  ]
+}

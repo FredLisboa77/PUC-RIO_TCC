@@ -22,6 +22,9 @@ __pycache__/
 .cache/
 *.onnx
 
+# --- Scratch do fluxo de subagentes (ledger, briefs, pacotes de revisao) ---
+.superpowers/
+
 # --- Material pessoal, nao publicar em repositorio publico ---
 Diversos/
 _pessoal/

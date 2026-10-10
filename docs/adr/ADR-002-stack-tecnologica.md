@@ -1,6 +1,6 @@
 # ADR-002 — Stack tecnológica
 
-- **Status:** **VALIDADO** no spike de 29/09/2026 (ver o resultado no fim deste documento)
+- **Status:** **VALIDADO** no spike de 29/09/2026 (ver o resultado no fim deste documento); **emendado em 09/10/2026** (recuperação ancorada e conjunto de avaliação da recuperação)
 - **Data:** 22/09/2026 · **Revisão:** 22/09/2026 (C-1, C-2, C-6)
 
 ## Contexto
@@ -95,3 +95,57 @@ Consequência: a métrica de citação da Fase 5 deve distinguir **válida** (a 
 ### Ressalva de método
 
 Na primeira execução o 3B reprovou com 84,2 s no primeiro achado e 1,8 a 2,5 s nos demais. Era o carregamento do modelo do disco para a VRAM, não inferência. O script passou a fazer uma chamada de aquecimento fora da medição, e a carga é reportada em separado. O critério de 60 s da ADR-002 descreve custo por achado, e um custo pago uma vez por sessão não pertence a ele.
+
+## Emenda de 09/10/2026 — recuperação ancorada e conjunto de avaliação derivado das âncoras
+
+### Contexto
+
+Três fatos mudaram desde a decisão original:
+
+1. **O corpus cresceu.** O catálogo de fontes (G-8) tem 1.420 páginas a indexar, das
+   quais 1.276 são referência de funções DAX e M e 151 são guidance. Uma busca só por
+   palavras-chave sobre esse corpus pode trazer a página de uma função qualquer e
+   deixar de fora a passagem que sustenta a regra.
+2. **O spike de 29/09 já mostrou a falha.** O 7B citou `model-date-tables` em vez de
+   `auto-date-time`, a âncora da regra, porque as duas estavam entre os trechos
+   recuperados (seção "Duas limitações dos critérios", acima). A citação era válida e
+   não era pertinente.
+3. **A âncora de cada achado é conhecida.** Todo achado vem de uma regra, e toda regra
+   tem `url_canonica` verificada. A coleta (spec `2026-10-09-coleta-da-base-rag-design.md`)
+   guarda as âncoras de seção (`#ancora`) de cada página.
+
+### Decisão
+
+1. **Recuperação ancorada em dois níveis.** Para cada achado, a **seção âncora da regra
+   entra sempre** como primeiro trecho do contexto. A busca no índice **complementa** com
+   outros trechos, nunca substitui a âncora. A validação de citação da ADR-003 segue
+   igual; a métrica de citação **pertinente** da Fase 5 passa a ter um gabarito
+   objetivo: a seção âncora.
+2. **Conjunto de avaliação da recuperação derivado das âncoras, montado antes de
+   escolher chunking e embeddings.** Gabarito: para cada regra, a página, a seção e a
+   frase-marca da passagem citada. Consultas: uma por regra (9) e uma por achado de
+   P1–P7 (53), cada uma com a seção âncora da sua regra como trecho relevante.
+   Precision@K e MRR são medidos sobre ele, e é ele que decide chunking, tamanho de
+   trecho e o efeito de ter ampliado o corpus — decisão de 09/10 tomada sem medição.
+3. **Busca híbrida como alternativa a medir, não como decisão.** Palavra exata (BM25)
+   mais embeddings, fundidas por *Reciprocal Rank Fusion* (Cormack, Clarke & Büttcher,
+   2009). Texto técnico tem nomes exatos (`DIVIDE`, `CALCULATE`) que um modelo pequeno
+   de embeddings pode não distinguir; BM25 é linha de base forte em recuperação
+   *zero-shot* (Thakur et al., 2021, BEIR). Entra no MVP **só** se superar a busca
+   densa sozinha no conjunto do item 2.
+
+### Consequências
+
+- (+) O trecho que sustenta cada achado está garantido no contexto, independentemente
+  da qualidade da busca. A falha observada no spike deixa de ser possível para a fonte
+  principal.
+- (+) As decisões de chunking e de embeddings passam a ser medidas, não supostas.
+- (+) O tamanho do corpus deixa de ser risco para a citação principal; passa a afetar
+  só os trechos complementares, e isso é medido.
+- (−) Uma consulta de avaliação gerada a partir da própria regra favorece a âncora: o
+  número de Precision@K mede a recuperação **dado** o termo da regra, não uma pergunta
+  livre. A monografia deve dizer isso ao reportar o número.
+- (−) O conjunto tem 62 consultas e 9 gabaritos distintos, porque cada regra tem uma
+  âncora. É suficiente para comparar alternativas entre si, não para afirmar desempenho
+  geral da recuperação.
+

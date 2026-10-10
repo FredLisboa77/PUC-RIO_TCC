@@ -15,16 +15,16 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 | Fase | Período | Status |
 |---|---|---|
 | Fase 1 — Viabilidade e planejamento | Semanas 1–2 | **Concluída em 29/09/2026** — gate aprovado e spike de LLM validado |
-| Fase 2 — Leitura do PBIP e regras | Semanas 3–4 | **Concluída em 08/10/2026** — ingestão, parser e motor de regras com 8 regras estruturais, com 2 pendências da semana 4 |
-| **Fase 3 — RAG e análise com LLM** | Semanas 5–8 | **A iniciar** |
+| Fase 2 — Leitura do PBIP e regras | Semanas 3–5 | **Concluída em 08/10/2026** — ingestão, parser, motor de regras, lexer de DAX e 9 regras (8 estruturais + DAX-001) |
+| **Fase 3 — RAG e análise com LLM** | Semanas 6–8 | **Em andamento** |
 | Fase 4 — Interface e relatório | Semanas 9–10 | Não iniciada |
 | Fase 5 — Avaliação, documentação e banca | Semanas 11–13 | Não iniciada |
 
 O **resumo de andamento** — o que está pronto, o que ficou pendente e por quê — está em [`docs/project/status.md`](docs/project/status.md). O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico detalhado do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
 
-Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, e o motor de regras determinísticas com as 8 primeiras regras estruturais — 15 achados no PBIP real usado como estudo de caso. 101 testes passando.
+Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, um lexer de DAX que tokeniza as 137 expressões do PBIP real usado como estudo de caso com zero token desconhecido, e o motor de regras determinísticas com 9 regras (8 estruturais e a primeira de DAX, DAX-001) — 15 achados nesse PBIP real. 195 testes passando.
 
-Cada regra declara a página do Microsoft Learn que a sustenta, e `python -m core.rules.catalogo` imprime o catálogo. Regra sem essa âncora não entra no registro: a verificação das fontes antes de escrever código eliminou três das oito regras originalmente propostas, uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito.
+Cada regra declara a página do Microsoft Learn que a sustenta, e `python -m core.rules.catalogo` imprime o catálogo. Regra sem essa âncora não entra no registro: a verificação das fontes antes de escrever código eliminou três das nove regras estruturais originalmente propostas, uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito — e, nesta etapa, um terceiro teste do mesmo critério (suficiência de evidência) rejeitou uma regra inteira (coluna sem uso) antes do código, por falta de evidência sobre a camada de relatório que a ferramenta não lê.
 
 ## Decisões de arquitetura
 
@@ -80,6 +80,16 @@ pip install -r requirements.txt --cert C:\ProgramData\Norton\Antivirus\wscert.pe
 
 Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa configuração. Como o `.venv` não é versionado, ele precisa ser refeito se o ambiente for recriado.
 
+### Catálogo de fontes da RAG
+
+```powershell
+python -m rag.catalogo            # gera rag/sources.yaml a partir de rag/tocs/ (offline)
+python -m rag.catalogo atualizar  # baixa os toc.json do Learn de novo e gera
+```
+
+`rag/sources.yaml` é gerado — não editar à mão. Notas vão em `rag/observacoes.yaml`;
+leituras complementares do SQLBI (só link, nunca indexadas) em `rag/leituras_sqlbi.yaml`.
+
 ### Modelo de linguagem
 
 Ollama, com `qwen2.5:7b-instruct-q4_K_M` como modelo principal e `qwen2.5:3b` como contingência — escolhidos no spike de 29/09/2026 (resultado na [ADR-002](docs/adr/ADR-002-stack-tecnologica.md)).
@@ -104,7 +114,7 @@ python eval/spike_llm.py qwen2.5:3b qwen2.5:7b-instruct-q4_K_M
 pytest
 ```
 
-Os testes montam PBIP sintéticos em pasta temporária. Os nove testes que leem o PBIP real são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório — e com eles vai embora a rede de regressão das exclusões de escopo, que é o que trava as 15 ocorrências medidas.
+Os testes montam PBIP sintéticos em pasta temporária. Os testes de `tests/test_pbip_real.py` (16, ao fim desta etapa) leem o PBIP real e são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório — e com eles vai embora a rede de regressão das exclusões de escopo, que é o que trava as 15 ocorrências medidas, a cobertura do lexer (137 de 137 expressões, zero desconhecida) e a cobertura da varredura de DAX (105 de 105 em escopo, 0 lacunas).
 
 ## Nota sobre dados
 

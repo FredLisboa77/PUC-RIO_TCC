@@ -1,0 +1,3084 @@
+{
+  "secao": "powerquery-m",
+  "idioma": "en-us",
+  "url": "https://learn.microsoft.com/en-us/powerquery-m/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "Power Query M formula language"
+    },
+    {
+      "href": "quick-tour-of-the-power-query-m-formula-language",
+      "titulo": "Quick tour of the Power Query M formula language"
+    },
+    {
+      "href": "power-query-m-language-specification",
+      "titulo": "Power Query M language specification"
+    },
+    {
+      "href": "m-spec-introduction",
+      "titulo": "Introduction"
+    },
+    {
+      "href": "m-spec-lexical-structure",
+      "titulo": "Lexical Structure"
+    },
+    {
+      "href": "m-spec-basic-concepts",
+      "titulo": "Basic Concepts"
+    },
+    {
+      "href": "m-spec-values",
+      "titulo": "Values"
+    },
+    {
+      "href": "m-spec-types",
+      "titulo": "Types"
+    },
+    {
+      "href": "m-spec-operators",
+      "titulo": "Operators"
+    },
+    {
+      "href": "m-spec-let",
+      "titulo": "Let"
+    },
+    {
+      "href": "m-spec-conditionals",
+      "titulo": "Conditionals"
+    },
+    {
+      "href": "m-spec-functions",
+      "titulo": "Functions"
+    },
+    {
+      "href": "m-spec-error-handling",
+      "titulo": "Error Handling"
+    },
+    {
+      "href": "m-spec-sections",
+      "titulo": "Sections"
+    },
+    {
+      "href": "m-spec-consolidated-grammar",
+      "titulo": "Consolidated Grammar"
+    },
+    {
+      "href": "power-query-m-type-system",
+      "titulo": "Power Query M type system"
+    },
+    {
+      "href": "expressions-values-and-let-expression",
+      "titulo": "Expressions, values, and let expression"
+    },
+    {
+      "href": "comments",
+      "titulo": "Comments"
+    },
+    {
+      "href": "evaluation-model",
+      "titulo": "Evaluation model"
+    },
+    {
+      "href": "operators",
+      "titulo": "Operators"
+    },
+    {
+      "href": "type-conversion",
+      "titulo": "Types and type conversion"
+    },
+    {
+      "href": "metadata",
+      "titulo": "Metadata"
+    },
+    {
+      "href": "errors",
+      "titulo": "Errors"
+    },
+    {
+      "href": "m-local-fixed-utc-variants",
+      "titulo": "Local, fixed, and UTC variants"
+    },
+    {
+      "href": "durations",
+      "titulo": "Durations in Power Query M"
+    },
+    {
+      "href": "standard-numeric-format-strings",
+      "titulo": "Standard numeric format strings"
+    },
+    {
+      "href": "custom-numeric-format-strings",
+      "titulo": "Custom numeric format strings"
+    },
+    {
+      "href": "standard-date-and-time-format-strings",
+      "titulo": "Standard date and time format strings"
+    },
+    {
+      "href": "custom-date-and-time-format-strings",
+      "titulo": "Custom date and time format strings"
+    },
+    {
+      "href": "how-culture-affects-text-formatting",
+      "titulo": "How culture affects text formatting"
+    },
+    {
+      "href": "m-working-with-case",
+      "titulo": "Capitalization in Power Query M"
+    },
+    {
+      "href": "power-query-m-function-reference",
+      "titulo": "Functions overview"
+    },
+    {
+      "href": "understanding-power-query-m-functions",
+      "titulo": "Understanding Power Query M functions"
+    },
+    {
+      "href": "accessing-data-functions",
+      "titulo": "Accessing data functions overview"
+    },
+    {
+      "href": "accesscontrolentry-conditiontoidentities",
+      "titulo": "AccessControlEntry.ConditionToIdentities"
+    },
+    {
+      "href": "access-database",
+      "titulo": "Access.Database"
+    },
+    {
+      "href": "activedirectory-domains",
+      "titulo": "ActiveDirectory.Domains"
+    },
+    {
+      "href": "adobeanalytics-cubes",
+      "titulo": "AdobeAnalytics.Cubes"
+    },
+    {
+      "href": "adodotnet-datasource",
+      "titulo": "AdoDotNet.DataSource"
+    },
+    {
+      "href": "adodotnet-query",
+      "titulo": "AdoDotNet.Query"
+    },
+    {
+      "href": "analysisservices-database",
+      "titulo": "AnalysisServices.Database"
+    },
+    {
+      "href": "analysisservices-databases",
+      "titulo": "AnalysisServices.Databases"
+    },
+    {
+      "href": "arrow-document",
+      "titulo": "Arrow.Document"
+    },
+    {
+      "href": "arrow-frombinary",
+      "titulo": "Arrow.FromBinary"
+    },
+    {
+      "href": "arrow-tobinary",
+      "titulo": "Arrow.ToBinary"
+    },
+    {
+      "href": "azurestorage-blobcontents",
+      "titulo": "AzureStorage.BlobContents"
+    },
+    {
+      "href": "azurestorage-blobs",
+      "titulo": "AzureStorage.Blobs"
+    },
+    {
+      "href": "azurestorage-datalake",
+      "titulo": "AzureStorage.DataLake"
+    },
+    {
+      "href": "azurestorage-datalakecontents",
+      "titulo": "AzureStorage.DataLakeContents"
+    },
+    {
+      "href": "azurestorage-tables",
+      "titulo": "AzureStorage.Tables"
+    },
+    {
+      "href": "cdm-contents",
+      "titulo": "Cdm.Contents"
+    },
+    {
+      "href": "csv-document",
+      "titulo": "Csv.Document"
+    },
+    {
+      "href": "cube-addandexpanddimensioncolumn",
+      "titulo": "Cube.AddAndExpandDimensionColumn"
+    },
+    {
+      "href": "cube-addmeasurecolumn",
+      "titulo": "Cube.AddMeasureColumn"
+    },
+    {
+      "href": "cube-applyparameter",
+      "titulo": "Cube.ApplyParameter"
+    },
+    {
+      "href": "cube-attributememberid",
+      "titulo": "Cube.AttributeMemberId"
+    },
+    {
+      "href": "cube-attributememberproperty",
+      "titulo": "Cube.AttributeMemberProperty"
+    },
+    {
+      "href": "cube-collapseandremovecolumns",
+      "titulo": "Cube.CollapseAndRemoveColumns"
+    },
+    {
+      "href": "cube-dimensions",
+      "titulo": "Cube.Dimensions"
+    },
+    {
+      "href": "cube-displayfolders",
+      "titulo": "Cube.DisplayFolders"
+    },
+    {
+      "href": "cube-measureproperties",
+      "titulo": "Cube.MeasureProperties"
+    },
+    {
+      "href": "cube-measureproperty",
+      "titulo": "Cube.MeasureProperty"
+    },
+    {
+      "href": "cube-measures",
+      "titulo": "Cube.Measures"
+    },
+    {
+      "href": "cube-parameters",
+      "titulo": "Cube.Parameters"
+    },
+    {
+      "href": "cube-properties",
+      "titulo": "Cube.Properties"
+    },
+    {
+      "href": "cube-propertykey",
+      "titulo": "Cube.PropertyKey"
+    },
+    {
+      "href": "cube-replacedimensions",
+      "titulo": "Cube.ReplaceDimensions"
+    },
+    {
+      "href": "cube-transform",
+      "titulo": "Cube.Transform"
+    },
+    {
+      "href": "db2-database",
+      "titulo": "DB2.Database"
+    },
+    {
+      "href": "deltalake-metadata",
+      "titulo": "DeltaLake.Metadata"
+    },
+    {
+      "href": "deltalake-table",
+      "titulo": "DeltaLake.Table"
+    },
+    {
+      "href": "essbase-cubes",
+      "titulo": "Essbase.Cubes"
+    },
+    {
+      "href": "excel-currentworkbook",
+      "titulo": "Excel.CurrentWorkbook"
+    },
+    {
+      "href": "excel-workbook",
+      "titulo": "Excel.Workbook"
+    },
+    {
+      "href": "exchange-contents",
+      "titulo": "Exchange.Contents"
+    },
+    {
+      "href": "fabricai-prompt",
+      "titulo": "FabricAI.Prompt"
+    },
+    {
+      "href": "file-contents",
+      "titulo": "File.Contents"
+    },
+    {
+      "href": "folder-contents",
+      "titulo": "Folder.Contents"
+    },
+    {
+      "href": "folder-files",
+      "titulo": "Folder.Files"
+    },
+    {
+      "href": "googleanalytics-accounts",
+      "titulo": "GoogleAnalytics.Accounts"
+    },
+    {
+      "href": "hdfs-contents",
+      "titulo": "Hdfs.Contents"
+    },
+    {
+      "href": "hdfs-files",
+      "titulo": "Hdfs.Files"
+    },
+    {
+      "href": "hdinsight-containers",
+      "titulo": "HdInsight.Containers"
+    },
+    {
+      "href": "hdinsight-contents",
+      "titulo": "HdInsight.Contents"
+    },
+    {
+      "href": "hdinsight-files",
+      "titulo": "HdInsight.Files"
+    },
+    {
+      "href": "html-table",
+      "titulo": "Html.Table"
+    },
+    {
+      "href": "identity-from",
+      "titulo": "Identity.From"
+    },
+    {
+      "href": "identity-ismemberof",
+      "titulo": "Identity.IsMemberOf"
+    },
+    {
+      "href": "identityprovider-default",
+      "titulo": "IdentityProvider.Default"
+    },
+    {
+      "href": "informix-database",
+      "titulo": "Informix.Database"
+    },
+    {
+      "href": "json-document",
+      "titulo": "Json.Document"
+    },
+    {
+      "href": "json-fromvalue",
+      "titulo": "Json.FromValue"
+    },
+    {
+      "href": "mysql-database",
+      "titulo": "MySQL.Database"
+    },
+    {
+      "href": "odata-feed",
+      "titulo": "OData.Feed"
+    },
+    {
+      "href": "odbc-datasource",
+      "titulo": "Odbc.DataSource"
+    },
+    {
+      "href": "odbc-inferoptions",
+      "titulo": "Odbc.InferOptions"
+    },
+    {
+      "href": "odbc-query",
+      "titulo": "Odbc.Query"
+    },
+    {
+      "href": "oledb-datasource",
+      "titulo": "OleDb.DataSource"
+    },
+    {
+      "href": "oledb-query",
+      "titulo": "OleDb.Query"
+    },
+    {
+      "href": "oracle-database",
+      "titulo": "Oracle.Database"
+    },
+    {
+      "href": "pdf-tables",
+      "titulo": "Pdf.Tables"
+    },
+    {
+      "href": "postgresql-database",
+      "titulo": "PostgreSQL.Database"
+    },
+    {
+      "href": "rdata-frombinary",
+      "titulo": "RData.FromBinary"
+    },
+    {
+      "href": "salesforce-data",
+      "titulo": "Salesforce.Data"
+    },
+    {
+      "href": "salesforce-reports",
+      "titulo": "Salesforce.Reports"
+    },
+    {
+      "href": "sapbusinesswarehouse-cubes",
+      "titulo": "SapBusinessWarehouse.Cubes"
+    },
+    {
+      "href": "saphana-database",
+      "titulo": "SapHana.Database"
+    },
+    {
+      "href": "sharepoint-contents",
+      "titulo": "SharePoint.Contents"
+    },
+    {
+      "href": "sharepoint-files",
+      "titulo": "SharePoint.Files"
+    },
+    {
+      "href": "sharepoint-tables",
+      "titulo": "SharePoint.Tables"
+    },
+    {
+      "href": "soda-feed",
+      "titulo": "Soda.Feed"
+    },
+    {
+      "href": "sql-database",
+      "titulo": "Sql.Database"
+    },
+    {
+      "href": "sql-databases",
+      "titulo": "Sql.Databases"
+    },
+    {
+      "href": "sybase-database",
+      "titulo": "Sybase.Database"
+    },
+    {
+      "href": "teradata-database",
+      "titulo": "Teradata.Database"
+    },
+    {
+      "href": "webaction-request",
+      "titulo": "WebAction.Request"
+    },
+    {
+      "href": "web-browsercontents",
+      "titulo": "Web.BrowserContents"
+    },
+    {
+      "href": "web-contents",
+      "titulo": "Web.Contents"
+    },
+    {
+      "href": "web-headers",
+      "titulo": "Web.Headers"
+    },
+    {
+      "href": "web-page",
+      "titulo": "Web.Page"
+    },
+    {
+      "href": "xml-document",
+      "titulo": "Xml.Document"
+    },
+    {
+      "href": "xml-tables",
+      "titulo": "Xml.Tables"
+    },
+    {
+      "href": "binary-functions",
+      "titulo": "Binary functions overview"
+    },
+    {
+      "href": "binary-approximatelength",
+      "titulo": "Binary.ApproximateLength"
+    },
+    {
+      "href": "binary-buffer",
+      "titulo": "Binary.Buffer"
+    },
+    {
+      "href": "binary-combine",
+      "titulo": "Binary.Combine"
+    },
+    {
+      "href": "binary-compress",
+      "titulo": "Binary.Compress"
+    },
+    {
+      "href": "binary-decompress",
+      "titulo": "Binary.Decompress"
+    },
+    {
+      "href": "binary-from",
+      "titulo": "Binary.From"
+    },
+    {
+      "href": "binary-fromlist",
+      "titulo": "Binary.FromList"
+    },
+    {
+      "href": "binary-fromtext",
+      "titulo": "Binary.FromText"
+    },
+    {
+      "href": "binary-infercontenttype",
+      "titulo": "Binary.InferContentType"
+    },
+    {
+      "href": "binary-length",
+      "titulo": "Binary.Length"
+    },
+    {
+      "href": "binary-range",
+      "titulo": "Binary.Range"
+    },
+    {
+      "href": "binary-split",
+      "titulo": "Binary.Split"
+    },
+    {
+      "href": "binary-tolist",
+      "titulo": "Binary.ToList"
+    },
+    {
+      "href": "binary-totext",
+      "titulo": "Binary.ToText"
+    },
+    {
+      "href": "binary-view",
+      "titulo": "Binary.View"
+    },
+    {
+      "href": "binary-viewerror",
+      "titulo": "Binary.ViewError"
+    },
+    {
+      "href": "binary-viewfunction",
+      "titulo": "Binary.ViewFunction"
+    },
+    {
+      "href": "binaryformat-7bitencodedsignedinteger",
+      "titulo": "BinaryFormat.7BitEncodedSignedInteger"
+    },
+    {
+      "href": "binaryformat-7bitencodedunsignedinteger",
+      "titulo": "BinaryFormat.7BitEncodedUnsignedInteger"
+    },
+    {
+      "href": "binaryformat-binary",
+      "titulo": "BinaryFormat.Binary"
+    },
+    {
+      "href": "binaryformat-byte",
+      "titulo": "BinaryFormat.Byte"
+    },
+    {
+      "href": "binaryformat-byteorder",
+      "titulo": "BinaryFormat.ByteOrder"
+    },
+    {
+      "href": "binaryformat-choice",
+      "titulo": "BinaryFormat.Choice"
+    },
+    {
+      "href": "binaryformat-decimal",
+      "titulo": "BinaryFormat.Decimal"
+    },
+    {
+      "href": "binaryformat-double",
+      "titulo": "BinaryFormat.Double"
+    },
+    {
+      "href": "binaryformat-group",
+      "titulo": "BinaryFormat.Group"
+    },
+    {
+      "href": "binaryformat-length",
+      "titulo": "BinaryFormat.Length"
+    },
+    {
+      "href": "binaryformat-list",
+      "titulo": "BinaryFormat.List"
+    },
+    {
+      "href": "binaryformat-null",
+      "titulo": "BinaryFormat.Null"
+    },
+    {
+      "href": "binaryformat-record",
+      "titulo": "BinaryFormat.Record"
+    },
+    {
+      "href": "binaryformat-signedinteger16",
+      "titulo": "BinaryFormat.SignedInteger16"
+    },
+    {
+      "href": "binaryformat-signedinteger32",
+      "titulo": "BinaryFormat.SignedInteger32"
+    },
+    {
+      "href": "binaryformat-signedinteger64",
+      "titulo": "BinaryFormat.SignedInteger64"
+    },
+    {
+      "href": "binaryformat-single",
+      "titulo": "BinaryFormat.Single"
+    },
+    {
+      "href": "binaryformat-text",
+      "titulo": "BinaryFormat.Text"
+    },
+    {
+      "href": "binaryformat-transform",
+      "titulo": "BinaryFormat.Transform"
+    },
+    {
+      "href": "binaryformat-unsignedinteger16",
+      "titulo": "BinaryFormat.UnsignedInteger16"
+    },
+    {
+      "href": "binaryformat-unsignedinteger32",
+      "titulo": "BinaryFormat.UnsignedInteger32"
+    },
+    {
+      "href": "binaryformat-unsignedinteger64",
+      "titulo": "BinaryFormat.UnsignedInteger64"
+    },
+    {
+      "href": "sharpbinary",
+      "titulo": "#binary"
+    },
+    {
+      "href": "combiner-functions",
+      "titulo": "Combiner functions overview"
+    },
+    {
+      "href": "combiner-combinetextbydelimiter",
+      "titulo": "Combiner.CombineTextByDelimiter"
+    },
+    {
+      "href": "combiner-combinetextbyeachdelimiter",
+      "titulo": "Combiner.CombineTextByEachDelimiter"
+    },
+    {
+      "href": "combiner-combinetextbylengths",
+      "titulo": "Combiner.CombineTextByLengths"
+    },
+    {
+      "href": "combiner-combinetextbypositions",
+      "titulo": "Combiner.CombineTextByPositions"
+    },
+    {
+      "href": "combiner-combinetextbyranges",
+      "titulo": "Combiner.CombineTextByRanges"
+    },
+    {
+      "href": "comparer-functions",
+      "titulo": "Comparer functions overview"
+    },
+    {
+      "href": "comparer-equals",
+      "titulo": "Comparer.Equals"
+    },
+    {
+      "href": "comparer-fromculture",
+      "titulo": "Comparer.FromCulture"
+    },
+    {
+      "href": "comparer-ordinal",
+      "titulo": "Comparer.Ordinal"
+    },
+    {
+      "href": "comparer-ordinalignorecase",
+      "titulo": "Comparer.OrdinalIgnoreCase"
+    },
+    {
+      "href": "date-functions",
+      "titulo": "Date functions overview"
+    },
+    {
+      "href": "date-adddays",
+      "titulo": "Date.AddDays"
+    },
+    {
+      "href": "date-addmonths",
+      "titulo": "Date.AddMonths"
+    },
+    {
+      "href": "date-addquarters",
+      "titulo": "Date.AddQuarters"
+    },
+    {
+      "href": "date-addweeks",
+      "titulo": "Date.AddWeeks"
+    },
+    {
+      "href": "date-addyears",
+      "titulo": "Date.AddYears"
+    },
+    {
+      "href": "date-day",
+      "titulo": "Date.Day"
+    },
+    {
+      "href": "date-dayofweek",
+      "titulo": "Date.DayOfWeek"
+    },
+    {
+      "href": "date-dayofweekname",
+      "titulo": "Date.DayOfWeekName"
+    },
+    {
+      "href": "date-dayofyear",
+      "titulo": "Date.DayOfYear"
+    },
+    {
+      "href": "date-daysinmonth",
+      "titulo": "Date.DaysInMonth"
+    },
+    {
+      "href": "date-endofday",
+      "titulo": "Date.EndOfDay"
+    },
+    {
+      "href": "date-endofmonth",
+      "titulo": "Date.EndOfMonth"
+    },
+    {
+      "href": "date-endofquarter",
+      "titulo": "Date.EndOfQuarter"
+    },
+    {
+      "href": "date-endofweek",
+      "titulo": "Date.EndOfWeek"
+    },
+    {
+      "href": "date-endofyear",
+      "titulo": "Date.EndOfYear"
+    },
+    {
+      "href": "date-from",
+      "titulo": "Date.From"
+    },
+    {
+      "href": "date-fromtext",
+      "titulo": "Date.FromText"
+    },
+    {
+      "href": "date-isincurrentday",
+      "titulo": "Date.IsInCurrentDay"
+    },
+    {
+      "href": "date-isincurrentmonth",
+      "titulo": "Date.IsInCurrentMonth"
+    },
+    {
+      "href": "date-isincurrentquarter",
+      "titulo": "Date.IsInCurrentQuarter"
+    },
+    {
+      "href": "date-isincurrentweek",
+      "titulo": "Date.IsInCurrentWeek"
+    },
+    {
+      "href": "date-isincurrentyear",
+      "titulo": "Date.IsInCurrentYear"
+    },
+    {
+      "href": "date-isinnextday",
+      "titulo": "Date.IsInNextDay"
+    },
+    {
+      "href": "date-isinnextmonth",
+      "titulo": "Date.IsInNextMonth"
+    },
+    {
+      "href": "date-isinnextndays",
+      "titulo": "Date.IsInNextNDays"
+    },
+    {
+      "href": "date-isinnextnmonths",
+      "titulo": "Date.IsInNextNMonths"
+    },
+    {
+      "href": "date-isinnextnquarters",
+      "titulo": "Date.IsInNextNQuarters"
+    },
+    {
+      "href": "date-isinnextnweeks",
+      "titulo": "Date.IsInNextNWeeks"
+    },
+    {
+      "href": "date-isinnextnyears",
+      "titulo": "Date.IsInNextNYears"
+    },
+    {
+      "href": "date-isinnextquarter",
+      "titulo": "Date.IsInNextQuarter"
+    },
+    {
+      "href": "date-isinnextweek",
+      "titulo": "Date.IsInNextWeek"
+    },
+    {
+      "href": "date-isinnextyear",
+      "titulo": "Date.IsInNextYear"
+    },
+    {
+      "href": "date-isinpreviousday",
+      "titulo": "Date.IsInPreviousDay"
+    },
+    {
+      "href": "date-isinpreviousmonth",
+      "titulo": "Date.IsInPreviousMonth"
+    },
+    {
+      "href": "date-isinpreviousndays",
+      "titulo": "Date.IsInPreviousNDays"
+    },
+    {
+      "href": "date-isinpreviousnmonths",
+      "titulo": "Date.IsInPreviousNMonths"
+    },
+    {
+      "href": "date-isinpreviousnquarters",
+      "titulo": "Date.IsInPreviousNQuarters"
+    },
+    {
+      "href": "date-isinpreviousnweeks",
+      "titulo": "Date.IsInPreviousNWeeks"
+    },
+    {
+      "href": "date-isinpreviousnyears",
+      "titulo": "Date.IsInPreviousNYears"
+    },
+    {
+      "href": "date-isinpreviousquarter",
+      "titulo": "Date.IsInPreviousQuarter"
+    },
+    {
+      "href": "date-isinpreviousweek",
+      "titulo": "Date.IsInPreviousWeek"
+    },
+    {
+      "href": "date-isinpreviousyear",
+      "titulo": "Date.IsInPreviousYear"
+    },
+    {
+      "href": "date-isinyeartodate",
+      "titulo": "Date.IsInYearToDate"
+    },
+    {
+      "href": "date-isleapyear",
+      "titulo": "Date.IsLeapYear"
+    },
+    {
+      "href": "date-month",
+      "titulo": "Date.Month"
+    },
+    {
+      "href": "date-monthname",
+      "titulo": "Date.MonthName"
+    },
+    {
+      "href": "date-quarterofyear",
+      "titulo": "Date.QuarterOfYear"
+    },
+    {
+      "href": "date-startofday",
+      "titulo": "Date.StartOfDay"
+    },
+    {
+      "href": "date-startofmonth",
+      "titulo": "Date.StartOfMonth"
+    },
+    {
+      "href": "date-startofquarter",
+      "titulo": "Date.StartOfQuarter"
+    },
+    {
+      "href": "date-startofweek",
+      "titulo": "Date.StartOfWeek"
+    },
+    {
+      "href": "date-startofyear",
+      "titulo": "Date.StartOfYear"
+    },
+    {
+      "href": "date-torecord",
+      "titulo": "Date.ToRecord"
+    },
+    {
+      "href": "date-totext",
+      "titulo": "Date.ToText"
+    },
+    {
+      "href": "date-weekofmonth",
+      "titulo": "Date.WeekOfMonth"
+    },
+    {
+      "href": "date-weekofyear",
+      "titulo": "Date.WeekOfYear"
+    },
+    {
+      "href": "date-year",
+      "titulo": "Date.Year"
+    },
+    {
+      "href": "sharpdate",
+      "titulo": "#date"
+    },
+    {
+      "href": "datetime-functions",
+      "titulo": "DateTime functions overview"
+    },
+    {
+      "href": "datetime-addzone",
+      "titulo": "DateTime.AddZone"
+    },
+    {
+      "href": "datetime-date",
+      "titulo": "DateTime.Date"
+    },
+    {
+      "href": "datetime-fixedlocalnow",
+      "titulo": "DateTime.FixedLocalNow"
+    },
+    {
+      "href": "datetime-from",
+      "titulo": "DateTime.From"
+    },
+    {
+      "href": "datetime-fromfiletime",
+      "titulo": "DateTime.FromFileTime"
+    },
+    {
+      "href": "datetime-fromtext",
+      "titulo": "DateTime.FromText"
+    },
+    {
+      "href": "datetime-isincurrenthour",
+      "titulo": "DateTime.IsInCurrentHour"
+    },
+    {
+      "href": "datetime-isincurrentminute",
+      "titulo": "DateTime.IsInCurrentMinute"
+    },
+    {
+      "href": "datetime-isincurrentsecond",
+      "titulo": "DateTime.IsInCurrentSecond"
+    },
+    {
+      "href": "datetime-isinnexthour",
+      "titulo": "DateTime.IsInNextHour"
+    },
+    {
+      "href": "datetime-isinnextminute",
+      "titulo": "DateTime.IsInNextMinute"
+    },
+    {
+      "href": "datetime-isinnextnhours",
+      "titulo": "DateTime.IsInNextNHours"
+    },
+    {
+      "href": "datetime-isinnextnminutes",
+      "titulo": "DateTime.IsInNextNMinutes"
+    },
+    {
+      "href": "datetime-isinnextnseconds",
+      "titulo": "DateTime.IsInNextNSeconds"
+    },
+    {
+      "href": "datetime-isinnextsecond",
+      "titulo": "DateTime.IsInNextSecond"
+    },
+    {
+      "href": "datetime-isinprevioushour",
+      "titulo": "DateTime.IsInPreviousHour"
+    },
+    {
+      "href": "datetime-isinpreviousminute",
+      "titulo": "DateTime.IsInPreviousMinute"
+    },
+    {
+      "href": "datetime-isinpreviousnhours",
+      "titulo": "DateTime.IsInPreviousNHours"
+    },
+    {
+      "href": "datetime-isinpreviousnminutes",
+      "titulo": "DateTime.IsInPreviousNMinutes"
+    },
+    {
+      "href": "datetime-isinpreviousnseconds",
+      "titulo": "DateTime.IsInPreviousNSeconds"
+    },
+    {
+      "href": "datetime-isinprevioussecond",
+      "titulo": "DateTime.IsInPreviousSecond"
+    },
+    {
+      "href": "datetime-localnow",
+      "titulo": "DateTime.LocalNow"
+    },
+    {
+      "href": "datetime-time",
+      "titulo": "DateTime.Time"
+    },
+    {
+      "href": "datetime-torecord",
+      "titulo": "DateTime.ToRecord"
+    },
+    {
+      "href": "datetime-totext",
+      "titulo": "DateTime.ToText"
+    },
+    {
+      "href": "sharpdatetime",
+      "titulo": "#datetime"
+    },
+    {
+      "href": "datetimezone-functions",
+      "titulo": "DateTimeZone functions overview"
+    },
+    {
+      "href": "datetimezone-fixedlocalnow",
+      "titulo": "DateTimeZone.FixedLocalNow"
+    },
+    {
+      "href": "datetimezone-fixedutcnow",
+      "titulo": "DateTimeZone.FixedUtcNow"
+    },
+    {
+      "href": "datetimezone-from",
+      "titulo": "DateTimeZone.From"
+    },
+    {
+      "href": "datetimezone-fromfiletime",
+      "titulo": "DateTimeZone.FromFileTime"
+    },
+    {
+      "href": "datetimezone-fromtext",
+      "titulo": "DateTimeZone.FromText"
+    },
+    {
+      "href": "datetimezone-localnow",
+      "titulo": "DateTimeZone.LocalNow"
+    },
+    {
+      "href": "datetimezone-removezone",
+      "titulo": "DateTimeZone.RemoveZone"
+    },
+    {
+      "href": "datetimezone-switchzone",
+      "titulo": "DateTimeZone.SwitchZone"
+    },
+    {
+      "href": "datetimezone-tolocal",
+      "titulo": "DateTimeZone.ToLocal"
+    },
+    {
+      "href": "datetimezone-torecord",
+      "titulo": "DateTimeZone.ToRecord"
+    },
+    {
+      "href": "datetimezone-totext",
+      "titulo": "DateTimeZone.ToText"
+    },
+    {
+      "href": "datetimezone-toutc",
+      "titulo": "DateTimeZone.ToUtc"
+    },
+    {
+      "href": "datetimezone-utcnow",
+      "titulo": "DateTimeZone.UtcNow"
+    },
+    {
+      "href": "datetimezone-zonehours",
+      "titulo": "DateTimeZone.ZoneHours"
+    },
+    {
+      "href": "datetimezone-zoneminutes",
+      "titulo": "DateTimeZone.ZoneMinutes"
+    },
+    {
+      "href": "sharpdatetimezone",
+      "titulo": "#datetimezone"
+    },
+    {
+      "href": "duration-functions",
+      "titulo": "Duration functions overview"
+    },
+    {
+      "href": "duration-days",
+      "titulo": "Duration.Days"
+    },
+    {
+      "href": "duration-from",
+      "titulo": "Duration.From"
+    },
+    {
+      "href": "duration-fromtext",
+      "titulo": "Duration.FromText"
+    },
+    {
+      "href": "duration-hours",
+      "titulo": "Duration.Hours"
+    },
+    {
+      "href": "duration-minutes",
+      "titulo": "Duration.Minutes"
+    },
+    {
+      "href": "duration-seconds",
+      "titulo": "Duration.Seconds"
+    },
+    {
+      "href": "duration-torecord",
+      "titulo": "Duration.ToRecord"
+    },
+    {
+      "href": "duration-totaldays",
+      "titulo": "Duration.TotalDays"
+    },
+    {
+      "href": "duration-totalhours",
+      "titulo": "Duration.TotalHours"
+    },
+    {
+      "href": "duration-totalminutes",
+      "titulo": "Duration.TotalMinutes"
+    },
+    {
+      "href": "duration-totalseconds",
+      "titulo": "Duration.TotalSeconds"
+    },
+    {
+      "href": "duration-totext",
+      "titulo": "Duration.ToText"
+    },
+    {
+      "href": "sharpduration",
+      "titulo": "#duration"
+    },
+    {
+      "href": "error-handling",
+      "titulo": "Error handling functions overview"
+    },
+    {
+      "href": "diagnostics-activityid",
+      "titulo": "Diagnostics.ActivityId"
+    },
+    {
+      "href": "diagnostics-correlationid",
+      "titulo": "Diagnostics.CorrelationId"
+    },
+    {
+      "href": "diagnostics-trace",
+      "titulo": "Diagnostics.Trace"
+    },
+    {
+      "href": "error-record",
+      "titulo": "Error.Record"
+    },
+    {
+      "href": "expression-functions",
+      "titulo": "Expression functions overview"
+    },
+    {
+      "href": "expression-constant",
+      "titulo": "Expression.Constant"
+    },
+    {
+      "href": "expression-evaluate",
+      "titulo": "Expression.Evaluate"
+    },
+    {
+      "href": "expression-identifier",
+      "titulo": "Expression.Identifier"
+    },
+    {
+      "href": "function-values",
+      "titulo": "Function values overview"
+    },
+    {
+      "href": "function-from",
+      "titulo": "Function.From"
+    },
+    {
+      "href": "function-invoke",
+      "titulo": "Function.Invoke"
+    },
+    {
+      "href": "function-invokeafter",
+      "titulo": "Function.InvokeAfter"
+    },
+    {
+      "href": "function-invokewitherrorcontext",
+      "titulo": "Function.InvokeWithErrorContext"
+    },
+    {
+      "href": "function-isdatasource",
+      "titulo": "Function.IsDataSource"
+    },
+    {
+      "href": "function-scalarvector",
+      "titulo": "Function.ScalarVector"
+    },
+    {
+      "href": "lines-functions",
+      "titulo": "Lines functions overview"
+    },
+    {
+      "href": "lines-frombinary",
+      "titulo": "Lines.FromBinary"
+    },
+    {
+      "href": "lines-fromtext",
+      "titulo": "Lines.FromText"
+    },
+    {
+      "href": "lines-tobinary",
+      "titulo": "Lines.ToBinary"
+    },
+    {
+      "href": "lines-totext",
+      "titulo": "Lines.ToText"
+    },
+    {
+      "href": "list-functions",
+      "titulo": "List functions overview"
+    },
+    {
+      "href": "list-accumulate",
+      "titulo": "List.Accumulate"
+    },
+    {
+      "href": "list-alltrue",
+      "titulo": "List.AllTrue"
+    },
+    {
+      "href": "list-alternate",
+      "titulo": "List.Alternate"
+    },
+    {
+      "href": "list-anytrue",
+      "titulo": "List.AnyTrue"
+    },
+    {
+      "href": "list-average",
+      "titulo": "List.Average"
+    },
+    {
+      "href": "list-buffer",
+      "titulo": "List.Buffer"
+    },
+    {
+      "href": "list-combine",
+      "titulo": "List.Combine"
+    },
+    {
+      "href": "list-conformtopagereader",
+      "titulo": "List.ConformToPageReader"
+    },
+    {
+      "href": "list-contains",
+      "titulo": "List.Contains"
+    },
+    {
+      "href": "list-containsall",
+      "titulo": "List.ContainsAll"
+    },
+    {
+      "href": "list-containsany",
+      "titulo": "List.ContainsAny"
+    },
+    {
+      "href": "list-count",
+      "titulo": "List.Count"
+    },
+    {
+      "href": "list-covariance",
+      "titulo": "List.Covariance"
+    },
+    {
+      "href": "list-dates",
+      "titulo": "List.Dates"
+    },
+    {
+      "href": "list-datetimes",
+      "titulo": "List.DateTimes"
+    },
+    {
+      "href": "list-datetimezones",
+      "titulo": "List.DateTimeZones"
+    },
+    {
+      "href": "list-difference",
+      "titulo": "List.Difference"
+    },
+    {
+      "href": "list-distinct",
+      "titulo": "List.Distinct"
+    },
+    {
+      "href": "list-durations",
+      "titulo": "List.Durations"
+    },
+    {
+      "href": "list-findtext",
+      "titulo": "List.FindText"
+    },
+    {
+      "href": "list-first",
+      "titulo": "List.First"
+    },
+    {
+      "href": "list-firstn",
+      "titulo": "List.FirstN"
+    },
+    {
+      "href": "list-generate",
+      "titulo": "List.Generate"
+    },
+    {
+      "href": "list-insertrange",
+      "titulo": "List.InsertRange"
+    },
+    {
+      "href": "list-intersect",
+      "titulo": "List.Intersect"
+    },
+    {
+      "href": "list-isdistinct",
+      "titulo": "List.IsDistinct"
+    },
+    {
+      "href": "list-isempty",
+      "titulo": "List.IsEmpty"
+    },
+    {
+      "href": "list-last",
+      "titulo": "List.Last"
+    },
+    {
+      "href": "list-lastn",
+      "titulo": "List.LastN"
+    },
+    {
+      "href": "list-matchesall",
+      "titulo": "List.MatchesAll"
+    },
+    {
+      "href": "list-matchesany",
+      "titulo": "List.MatchesAny"
+    },
+    {
+      "href": "list-max",
+      "titulo": "List.Max"
+    },
+    {
+      "href": "list-maxn",
+      "titulo": "List.MaxN"
+    },
+    {
+      "href": "list-median",
+      "titulo": "List.Median"
+    },
+    {
+      "href": "list-min",
+      "titulo": "List.Min"
+    },
+    {
+      "href": "list-minn",
+      "titulo": "List.MinN"
+    },
+    {
+      "href": "list-mode",
+      "titulo": "List.Mode"
+    },
+    {
+      "href": "list-modes",
+      "titulo": "List.Modes"
+    },
+    {
+      "href": "list-nonnullcount",
+      "titulo": "List.NonNullCount"
+    },
+    {
+      "href": "list-numbers",
+      "titulo": "List.Numbers"
+    },
+    {
+      "href": "list-percentile",
+      "titulo": "List.Percentile"
+    },
+    {
+      "href": "list-positionof",
+      "titulo": "List.PositionOf"
+    },
+    {
+      "href": "list-positionofany",
+      "titulo": "List.PositionOfAny"
+    },
+    {
+      "href": "list-positions",
+      "titulo": "List.Positions"
+    },
+    {
+      "href": "list-product",
+      "titulo": "List.Product"
+    },
+    {
+      "href": "list-random",
+      "titulo": "List.Random"
+    },
+    {
+      "href": "list-range",
+      "titulo": "List.Range"
+    },
+    {
+      "href": "list-removefirstn",
+      "titulo": "List.RemoveFirstN"
+    },
+    {
+      "href": "list-removeitems",
+      "titulo": "List.RemoveItems"
+    },
+    {
+      "href": "list-removelastn",
+      "titulo": "List.RemoveLastN"
+    },
+    {
+      "href": "list-removematchingitems",
+      "titulo": "List.RemoveMatchingItems"
+    },
+    {
+      "href": "list-removenulls",
+      "titulo": "List.RemoveNulls"
+    },
+    {
+      "href": "list-removerange",
+      "titulo": "List.RemoveRange"
+    },
+    {
+      "href": "list-repeat",
+      "titulo": "List.Repeat"
+    },
+    {
+      "href": "list-replacematchingitems",
+      "titulo": "List.ReplaceMatchingItems"
+    },
+    {
+      "href": "list-replacerange",
+      "titulo": "List.ReplaceRange"
+    },
+    {
+      "href": "list-replacevalue",
+      "titulo": "List.ReplaceValue"
+    },
+    {
+      "href": "list-reverse",
+      "titulo": "List.Reverse"
+    },
+    {
+      "href": "list-select",
+      "titulo": "List.Select"
+    },
+    {
+      "href": "list-single",
+      "titulo": "List.Single"
+    },
+    {
+      "href": "list-singleordefault",
+      "titulo": "List.SingleOrDefault"
+    },
+    {
+      "href": "list-skip",
+      "titulo": "List.Skip"
+    },
+    {
+      "href": "list-sort",
+      "titulo": "List.Sort"
+    },
+    {
+      "href": "list-split",
+      "titulo": "List.Split"
+    },
+    {
+      "href": "list-standarddeviation",
+      "titulo": "List.StandardDeviation"
+    },
+    {
+      "href": "list-sum",
+      "titulo": "List.Sum"
+    },
+    {
+      "href": "list-times",
+      "titulo": "List.Times"
+    },
+    {
+      "href": "list-transform",
+      "titulo": "List.Transform"
+    },
+    {
+      "href": "list-transformmany",
+      "titulo": "List.TransformMany"
+    },
+    {
+      "href": "list-union",
+      "titulo": "List.Union"
+    },
+    {
+      "href": "list-zip",
+      "titulo": "List.Zip"
+    },
+    {
+      "href": "logical-functions",
+      "titulo": "Logical functions overview"
+    },
+    {
+      "href": "logical-from",
+      "titulo": "Logical.From"
+    },
+    {
+      "href": "logical-fromtext",
+      "titulo": "Logical.FromText"
+    },
+    {
+      "href": "logical-totext",
+      "titulo": "Logical.ToText"
+    },
+    {
+      "href": "number-functions",
+      "titulo": "Number functions overview"
+    },
+    {
+      "href": "byte-from",
+      "titulo": "Byte.From"
+    },
+    {
+      "href": "currency-from",
+      "titulo": "Currency.From"
+    },
+    {
+      "href": "decimal-from",
+      "titulo": "Decimal.From"
+    },
+    {
+      "href": "double-from",
+      "titulo": "Double.From"
+    },
+    {
+      "href": "int8-from",
+      "titulo": "Int8.From"
+    },
+    {
+      "href": "int16-from",
+      "titulo": "Int16.From"
+    },
+    {
+      "href": "int32-from",
+      "titulo": "Int32.From"
+    },
+    {
+      "href": "int64-from",
+      "titulo": "Int64.From"
+    },
+    {
+      "href": "number-abs",
+      "titulo": "Number.Abs"
+    },
+    {
+      "href": "number-acos",
+      "titulo": "Number.Acos"
+    },
+    {
+      "href": "number-asin",
+      "titulo": "Number.Asin"
+    },
+    {
+      "href": "number-atan",
+      "titulo": "Number.Atan"
+    },
+    {
+      "href": "number-atan2",
+      "titulo": "Number.Atan2"
+    },
+    {
+      "href": "number-bitwiseand",
+      "titulo": "Number.BitwiseAnd"
+    },
+    {
+      "href": "number-bitwisenot",
+      "titulo": "Number.BitwiseNot"
+    },
+    {
+      "href": "number-bitwiseor",
+      "titulo": "Number.BitwiseOr"
+    },
+    {
+      "href": "number-bitwiseshiftleft",
+      "titulo": "Number.BitwiseShiftLeft"
+    },
+    {
+      "href": "number-bitwiseshiftright",
+      "titulo": "Number.BitwiseShiftRight"
+    },
+    {
+      "href": "number-bitwisexor",
+      "titulo": "Number.BitwiseXor"
+    },
+    {
+      "href": "number-combinations",
+      "titulo": "Number.Combinations"
+    },
+    {
+      "href": "number-cos",
+      "titulo": "Number.Cos"
+    },
+    {
+      "href": "number-cosh",
+      "titulo": "Number.Cosh"
+    },
+    {
+      "href": "number-exp",
+      "titulo": "Number.Exp"
+    },
+    {
+      "href": "number-factorial",
+      "titulo": "Number.Factorial"
+    },
+    {
+      "href": "number-from",
+      "titulo": "Number.From"
+    },
+    {
+      "href": "number-fromtext",
+      "titulo": "Number.FromText"
+    },
+    {
+      "href": "number-integerdivide",
+      "titulo": "Number.IntegerDivide"
+    },
+    {
+      "href": "number-iseven",
+      "titulo": "Number.IsEven"
+    },
+    {
+      "href": "number-isnan",
+      "titulo": "Number.IsNaN"
+    },
+    {
+      "href": "number-isodd",
+      "titulo": "Number.IsOdd"
+    },
+    {
+      "href": "number-ln",
+      "titulo": "Number.Ln"
+    },
+    {
+      "href": "number-log",
+      "titulo": "Number.Log"
+    },
+    {
+      "href": "number-log10",
+      "titulo": "Number.Log10"
+    },
+    {
+      "href": "number-mod",
+      "titulo": "Number.Mod"
+    },
+    {
+      "href": "number-permutations",
+      "titulo": "Number.Permutations"
+    },
+    {
+      "href": "number-power",
+      "titulo": "Number.Power"
+    },
+    {
+      "href": "number-random",
+      "titulo": "Number.Random"
+    },
+    {
+      "href": "number-randombetween",
+      "titulo": "Number.RandomBetween"
+    },
+    {
+      "href": "number-round",
+      "titulo": "Number.Round"
+    },
+    {
+      "href": "number-roundawayfromzero",
+      "titulo": "Number.RoundAwayFromZero"
+    },
+    {
+      "href": "number-rounddown",
+      "titulo": "Number.RoundDown"
+    },
+    {
+      "href": "number-roundtowardzero",
+      "titulo": "Number.RoundTowardZero"
+    },
+    {
+      "href": "number-roundup",
+      "titulo": "Number.RoundUp"
+    },
+    {
+      "href": "number-sign",
+      "titulo": "Number.Sign"
+    },
+    {
+      "href": "number-sin",
+      "titulo": "Number.Sin"
+    },
+    {
+      "href": "number-sinh",
+      "titulo": "Number.Sinh"
+    },
+    {
+      "href": "number-sqrt",
+      "titulo": "Number.Sqrt"
+    },
+    {
+      "href": "number-tan",
+      "titulo": "Number.Tan"
+    },
+    {
+      "href": "number-tanh",
+      "titulo": "Number.Tanh"
+    },
+    {
+      "href": "number-totext",
+      "titulo": "Number.ToText"
+    },
+    {
+      "href": "percentage-from",
+      "titulo": "Percentage.From"
+    },
+    {
+      "href": "single-from",
+      "titulo": "Single.From"
+    },
+    {
+      "href": "record-functions",
+      "titulo": "Record functions overview"
+    },
+    {
+      "href": "geography-fromwellknowntext",
+      "titulo": "Geography.FromWellKnownText"
+    },
+    {
+      "href": "geography-towellknowntext",
+      "titulo": "Geography.ToWellKnownText"
+    },
+    {
+      "href": "geographypoint-from",
+      "titulo": "GeographyPoint.From"
+    },
+    {
+      "href": "geometry-fromwellknowntext",
+      "titulo": "Geometry.FromWellKnownText"
+    },
+    {
+      "href": "geometry-towellknowntext",
+      "titulo": "Geometry.ToWellKnownText"
+    },
+    {
+      "href": "geometrypoint-from",
+      "titulo": "GeometryPoint.From"
+    },
+    {
+      "href": "record-addfield",
+      "titulo": "Record.AddField"
+    },
+    {
+      "href": "record-combine",
+      "titulo": "Record.Combine"
+    },
+    {
+      "href": "record-field",
+      "titulo": "Record.Field"
+    },
+    {
+      "href": "record-fieldcount",
+      "titulo": "Record.FieldCount"
+    },
+    {
+      "href": "record-fieldnames",
+      "titulo": "Record.FieldNames"
+    },
+    {
+      "href": "record-fieldordefault",
+      "titulo": "Record.FieldOrDefault"
+    },
+    {
+      "href": "record-fieldvalues",
+      "titulo": "Record.FieldValues"
+    },
+    {
+      "href": "record-fromlist",
+      "titulo": "Record.FromList"
+    },
+    {
+      "href": "record-fromtable",
+      "titulo": "Record.FromTable"
+    },
+    {
+      "href": "record-hasfields",
+      "titulo": "Record.HasFields"
+    },
+    {
+      "href": "record-removefields",
+      "titulo": "Record.RemoveFields"
+    },
+    {
+      "href": "record-renamefields",
+      "titulo": "Record.RenameFields"
+    },
+    {
+      "href": "record-reorderfields",
+      "titulo": "Record.ReorderFields"
+    },
+    {
+      "href": "record-selectfields",
+      "titulo": "Record.SelectFields"
+    },
+    {
+      "href": "record-tolist",
+      "titulo": "Record.ToList"
+    },
+    {
+      "href": "record-totable",
+      "titulo": "Record.ToTable"
+    },
+    {
+      "href": "record-transformfields",
+      "titulo": "Record.TransformFields"
+    },
+    {
+      "href": "replacer-functions",
+      "titulo": "Replacer functions overview"
+    },
+    {
+      "href": "replacer-replacetext",
+      "titulo": "Replacer.ReplaceText"
+    },
+    {
+      "href": "replacer-replacevalue",
+      "titulo": "Replacer.ReplaceValue"
+    },
+    {
+      "href": "splitter-functions",
+      "titulo": "Splitter functions overview"
+    },
+    {
+      "href": "splitter-splitbynothing",
+      "titulo": "Splitter.SplitByNothing"
+    },
+    {
+      "href": "splitter-splittextbyanydelimiter",
+      "titulo": "Splitter.SplitTextByAnyDelimiter"
+    },
+    {
+      "href": "splitter-splittextbycharactertransition",
+      "titulo": "Splitter.SplitTextByCharacterTransition"
+    },
+    {
+      "href": "splitter-splittextbydelimiter",
+      "titulo": "Splitter.SplitTextByDelimiter"
+    },
+    {
+      "href": "splitter-splittextbyeachdelimiter",
+      "titulo": "Splitter.SplitTextByEachDelimiter"
+    },
+    {
+      "href": "splitter-splittextbylengths",
+      "titulo": "Splitter.SplitTextByLengths"
+    },
+    {
+      "href": "splitter-splittextbypositions",
+      "titulo": "Splitter.SplitTextByPositions"
+    },
+    {
+      "href": "splitter-splittextbyranges",
+      "titulo": "Splitter.SplitTextByRanges"
+    },
+    {
+      "href": "splitter-splittextbyrepeatedlengths",
+      "titulo": "Splitter.SplitTextByRepeatedLengths"
+    },
+    {
+      "href": "splitter-splittextbywhitespace",
+      "titulo": "Splitter.SplitTextByWhitespace"
+    },
+    {
+      "href": "table-functions",
+      "titulo": "Table functions overview"
+    },
+    {
+      "href": "itemexpression-from",
+      "titulo": "ItemExpression.From"
+    },
+    {
+      "href": "rowexpression-column",
+      "titulo": "RowExpression.Column"
+    },
+    {
+      "href": "rowexpression-from",
+      "titulo": "RowExpression.From"
+    },
+    {
+      "href": "table-addcolumn",
+      "titulo": "Table.AddColumn"
+    },
+    {
+      "href": "table-addfuzzyclustercolumn",
+      "titulo": "Table.AddFuzzyClusterColumn"
+    },
+    {
+      "href": "table-addindexcolumn",
+      "titulo": "Table.AddIndexColumn"
+    },
+    {
+      "href": "table-addjoincolumn",
+      "titulo": "Table.AddJoinColumn"
+    },
+    {
+      "href": "table-addkey",
+      "titulo": "Table.AddKey"
+    },
+    {
+      "href": "table-addrankcolumn",
+      "titulo": "Table.AddRankColumn"
+    },
+    {
+      "href": "table-aggregatetablecolumn",
+      "titulo": "Table.AggregateTableColumn"
+    },
+    {
+      "href": "table-alternaterows",
+      "titulo": "Table.AlternateRows"
+    },
+    {
+      "href": "table-approximaterowcount",
+      "titulo": "Table.ApproximateRowCount"
+    },
+    {
+      "href": "table-buffer",
+      "titulo": "Table.Buffer"
+    },
+    {
+      "href": "table-cleardown",
+      "titulo": "Table.ClearDown"
+    },
+    {
+      "href": "table-column",
+      "titulo": "Table.Column"
+    },
+    {
+      "href": "table-columncount",
+      "titulo": "Table.ColumnCount"
+    },
+    {
+      "href": "table-columnnames",
+      "titulo": "Table.ColumnNames"
+    },
+    {
+      "href": "table-columnsoftype",
+      "titulo": "Table.ColumnsOfType"
+    },
+    {
+      "href": "table-combine",
+      "titulo": "Table.Combine"
+    },
+    {
+      "href": "table-combinecolumns",
+      "titulo": "Table.CombineColumns"
+    },
+    {
+      "href": "table-combinecolumnstorecord",
+      "titulo": "Table.CombineColumnsToRecord"
+    },
+    {
+      "href": "table-conformtopagereader",
+      "titulo": "Table.ConformToPageReader"
+    },
+    {
+      "href": "table-contains",
+      "titulo": "Table.Contains"
+    },
+    {
+      "href": "table-containsall",
+      "titulo": "Table.ContainsAll"
+    },
+    {
+      "href": "table-containsany",
+      "titulo": "Table.ContainsAny"
+    },
+    {
+      "href": "table-demoteheaders",
+      "titulo": "Table.DemoteHeaders"
+    },
+    {
+      "href": "table-distinct",
+      "titulo": "Table.Distinct"
+    },
+    {
+      "href": "table-duplicatecolumn",
+      "titulo": "Table.DuplicateColumn"
+    },
+    {
+      "href": "table-expandlistcolumn",
+      "titulo": "Table.ExpandListColumn"
+    },
+    {
+      "href": "table-expandrecordcolumn",
+      "titulo": "Table.ExpandRecordColumn"
+    },
+    {
+      "href": "table-expandtablecolumn",
+      "titulo": "Table.ExpandTableColumn"
+    },
+    {
+      "href": "table-filldown",
+      "titulo": "Table.FillDown"
+    },
+    {
+      "href": "table-fillup",
+      "titulo": "Table.FillUp"
+    },
+    {
+      "href": "table-filterwithdatatable",
+      "titulo": "Table.FilterWithDataTable"
+    },
+    {
+      "href": "table-findtext",
+      "titulo": "Table.FindText"
+    },
+    {
+      "href": "table-first",
+      "titulo": "Table.First"
+    },
+    {
+      "href": "table-firstn",
+      "titulo": "Table.FirstN"
+    },
+    {
+      "href": "table-firstvalue",
+      "titulo": "Table.FirstValue"
+    },
+    {
+      "href": "table-fromcolumns",
+      "titulo": "Table.FromColumns"
+    },
+    {
+      "href": "table-fromlist",
+      "titulo": "Table.FromList"
+    },
+    {
+      "href": "table-frompartitions",
+      "titulo": "Table.FromPartitions"
+    },
+    {
+      "href": "table-fromrecords",
+      "titulo": "Table.FromRecords"
+    },
+    {
+      "href": "table-fromrows",
+      "titulo": "Table.FromRows"
+    },
+    {
+      "href": "table-fromvalue",
+      "titulo": "Table.FromValue"
+    },
+    {
+      "href": "table-fuzzygroup",
+      "titulo": "Table.FuzzyGroup"
+    },
+    {
+      "href": "table-fuzzyjoin",
+      "titulo": "Table.FuzzyJoin"
+    },
+    {
+      "href": "table-fuzzynestedjoin",
+      "titulo": "Table.FuzzyNestedJoin"
+    },
+    {
+      "href": "table-group",
+      "titulo": "Table.Group"
+    },
+    {
+      "href": "table-hascolumns",
+      "titulo": "Table.HasColumns"
+    },
+    {
+      "href": "table-insertrows",
+      "titulo": "Table.InsertRows"
+    },
+    {
+      "href": "table-isdistinct",
+      "titulo": "Table.IsDistinct"
+    },
+    {
+      "href": "table-isempty",
+      "titulo": "Table.IsEmpty"
+    },
+    {
+      "href": "table-join",
+      "titulo": "Table.Join"
+    },
+    {
+      "href": "table-keys",
+      "titulo": "Table.Keys"
+    },
+    {
+      "href": "table-last",
+      "titulo": "Table.Last"
+    },
+    {
+      "href": "table-lastn",
+      "titulo": "Table.LastN"
+    },
+    {
+      "href": "table-matchesallrows",
+      "titulo": "Table.MatchesAllRows"
+    },
+    {
+      "href": "table-matchesanyrows",
+      "titulo": "Table.MatchesAnyRows"
+    },
+    {
+      "href": "table-max",
+      "titulo": "Table.Max"
+    },
+    {
+      "href": "table-maxn",
+      "titulo": "Table.MaxN"
+    },
+    {
+      "href": "table-min",
+      "titulo": "Table.Min"
+    },
+    {
+      "href": "table-minn",
+      "titulo": "Table.MinN"
+    },
+    {
+      "href": "table-nestedjoin",
+      "titulo": "Table.NestedJoin"
+    },
+    {
+      "href": "table-partition",
+      "titulo": "Table.Partition"
+    },
+    {
+      "href": "table-partitionkey",
+      "titulo": "Table.PartionKey"
+    },
+    {
+      "href": "table-partitionvalues",
+      "titulo": "Table.PartitionValues"
+    },
+    {
+      "href": "table-pivot",
+      "titulo": "Table.Pivot"
+    },
+    {
+      "href": "table-positionof",
+      "titulo": "Table.PositionOf"
+    },
+    {
+      "href": "table-positionofany",
+      "titulo": "Table.PositionOfAny"
+    },
+    {
+      "href": "table-prefixcolumns",
+      "titulo": "Table.PrefixColumns"
+    },
+    {
+      "href": "table-profile",
+      "titulo": "Table.Profile"
+    },
+    {
+      "href": "table-promoteheaders",
+      "titulo": "Table.PromoteHeaders"
+    },
+    {
+      "href": "table-range",
+      "titulo": "Table.Range"
+    },
+    {
+      "href": "table-removecolumns",
+      "titulo": "Table.RemoveColumns"
+    },
+    {
+      "href": "table-removefirstn",
+      "titulo": "Table.RemoveFirstN"
+    },
+    {
+      "href": "table-removelastn",
+      "titulo": "Table.RemoveLastN"
+    },
+    {
+      "href": "table-removematchingrows",
+      "titulo": "Table.RemoveMatchingRows"
+    },
+    {
+      "href": "table-removerows",
+      "titulo": "Table.RemoveRows"
+    },
+    {
+      "href": "table-removerowswitherrors",
+      "titulo": "Table.RemoveRowsWithErrors"
+    },
+    {
+      "href": "table-renamecolumns",
+      "titulo": "Table.RenameColumns"
+    },
+    {
+      "href": "table-reordercolumns",
+      "titulo": "Table.ReorderColumns"
+    },
+    {
+      "href": "table-repeat",
+      "titulo": "Table.Repeat"
+    },
+    {
+      "href": "table-replaceerrorvalues",
+      "titulo": "Table.ReplaceErrorValues"
+    },
+    {
+      "href": "table-replacekeys",
+      "titulo": "Table.ReplaceKeys"
+    },
+    {
+      "href": "table-replacematchingrows",
+      "titulo": "Table.ReplaceMatchingRows"
+    },
+    {
+      "href": "table-replacepartitionkey",
+      "titulo": "Table.ReplacePartitionKey"
+    },
+    {
+      "href": "table-replacerelationshipidentity",
+      "titulo": "Table.ReplaceRelationshipIdentity"
+    },
+    {
+      "href": "table-replacerows",
+      "titulo": "Table.ReplaceRows"
+    },
+    {
+      "href": "table-replacevalue",
+      "titulo": "Table.ReplaceValue"
+    },
+    {
+      "href": "table-reverserows",
+      "titulo": "Table.ReverseRows"
+    },
+    {
+      "href": "table-rowcount",
+      "titulo": "Table.RowCount"
+    },
+    {
+      "href": "table-schema",
+      "titulo": "Table.Schema"
+    },
+    {
+      "href": "table-selectcolumns",
+      "titulo": "Table.SelectColumns"
+    },
+    {
+      "href": "table-selectrows",
+      "titulo": "Table.SelectRows"
+    },
+    {
+      "href": "table-selectrowswitherrors",
+      "titulo": "Table.SelectRowsWithErrors"
+    },
+    {
+      "href": "table-singlerow",
+      "titulo": "Table.SingleRow"
+    },
+    {
+      "href": "table-skip",
+      "titulo": "Table.Skip"
+    },
+    {
+      "href": "table-sort",
+      "titulo": "Table.Sort"
+    },
+    {
+      "href": "table-split",
+      "titulo": "Table.Split"
+    },
+    {
+      "href": "table-splitat",
+      "titulo": "Table.SplitAt"
+    },
+    {
+      "href": "table-splitcolumn",
+      "titulo": "Table.SplitColumn"
+    },
+    {
+      "href": "table-stopfolding",
+      "titulo": "Table.StopFolding"
+    },
+    {
+      "href": "table-tocolumns",
+      "titulo": "Table.ToColumns"
+    },
+    {
+      "href": "table-tolist",
+      "titulo": "Table.ToList"
+    },
+    {
+      "href": "table-torecords",
+      "titulo": "Table.ToRecords"
+    },
+    {
+      "href": "table-torows",
+      "titulo": "Table.ToRows"
+    },
+    {
+      "href": "table-transformcolumnnames",
+      "titulo": "Table.TransformColumnNames"
+    },
+    {
+      "href": "table-transformcolumns",
+      "titulo": "Table.TransformColumns"
+    },
+    {
+      "href": "table-transformcolumntypes",
+      "titulo": "Table.TransformColumnTypes"
+    },
+    {
+      "href": "table-transformrows",
+      "titulo": "Table.TransformRows"
+    },
+    {
+      "href": "table-transpose",
+      "titulo": "Table.Transpose"
+    },
+    {
+      "href": "table-unpivot",
+      "titulo": "Table.Unpivot"
+    },
+    {
+      "href": "table-unpivotothercolumns",
+      "titulo": "Table.UnpivotOtherColumns"
+    },
+    {
+      "href": "table-view",
+      "titulo": "Table.View"
+    },
+    {
+      "href": "table-viewerror",
+      "titulo": "Table.ViewError"
+    },
+    {
+      "href": "table-viewfunction",
+      "titulo": "Table.ViewFunction"
+    },
+    {
+      "href": "table-witherrorcontext",
+      "titulo": "Table.WithErrorContext"
+    },
+    {
+      "href": "tables-getrelationships",
+      "titulo": "Tables.GetRelationships"
+    },
+    {
+      "href": "sharptable",
+      "titulo": "#table"
+    },
+    {
+      "href": "text-functions",
+      "titulo": "Text functions overview"
+    },
+    {
+      "href": "character-fromnumber",
+      "titulo": "Character.FromNumber"
+    },
+    {
+      "href": "character-tonumber",
+      "titulo": "Character.ToNumber"
+    },
+    {
+      "href": "guid-from",
+      "titulo": "Guid.From"
+    },
+    {
+      "href": "text-afterdelimiter",
+      "titulo": "Text.AfterDelimiter"
+    },
+    {
+      "href": "text-at",
+      "titulo": "Text.At"
+    },
+    {
+      "href": "text-beforedelimiter",
+      "titulo": "Text.BeforeDelimiter"
+    },
+    {
+      "href": "text-betweendelimiters",
+      "titulo": "Text.BetweenDelimiters"
+    },
+    {
+      "href": "text-clean",
+      "titulo": "Text.Clean"
+    },
+    {
+      "href": "text-combine",
+      "titulo": "Text.Combine"
+    },
+    {
+      "href": "text-contains",
+      "titulo": "Text.Contains"
+    },
+    {
+      "href": "text-end",
+      "titulo": "Text.End"
+    },
+    {
+      "href": "text-endswith",
+      "titulo": "Text.EndsWith"
+    },
+    {
+      "href": "text-format",
+      "titulo": "Text.Format"
+    },
+    {
+      "href": "text-from",
+      "titulo": "Text.From"
+    },
+    {
+      "href": "text-frombinary",
+      "titulo": "Text.FromBinary"
+    },
+    {
+      "href": "text-infernumbertype",
+      "titulo": "Text.InferNumberType"
+    },
+    {
+      "href": "text-insert",
+      "titulo": "Text.Insert"
+    },
+    {
+      "href": "text-length",
+      "titulo": "Text.Length"
+    },
+    {
+      "href": "text-lower",
+      "titulo": "Text.Lower"
+    },
+    {
+      "href": "text-middle",
+      "titulo": "Text.Middle"
+    },
+    {
+      "href": "text-newguid",
+      "titulo": "Text.NewGuid"
+    },
+    {
+      "href": "text-padend",
+      "titulo": "Text.PadEnd"
+    },
+    {
+      "href": "text-padstart",
+      "titulo": "Text.PadStart"
+    },
+    {
+      "href": "text-positionof",
+      "titulo": "Text.PositionOf"
+    },
+    {
+      "href": "text-positionofany",
+      "titulo": "Text.PositionOfAny"
+    },
+    {
+      "href": "text-proper",
+      "titulo": "Text.Proper"
+    },
+    {
+      "href": "text-range",
+      "titulo": "Text.Range"
+    },
+    {
+      "href": "text-remove",
+      "titulo": "Text.Remove"
+    },
+    {
+      "href": "text-removerange",
+      "titulo": "Text.RemoveRange"
+    },
+    {
+      "href": "text-repeat",
+      "titulo": "Text.Repeat"
+    },
+    {
+      "href": "text-replace",
+      "titulo": "Text.Replace"
+    },
+    {
+      "href": "text-replacerange",
+      "titulo": "Text.ReplaceRange"
+    },
+    {
+      "href": "text-reverse",
+      "titulo": "Text.Reverse"
+    },
+    {
+      "href": "text-select",
+      "titulo": "Text.Select"
+    },
+    {
+      "href": "text-split",
+      "titulo": "Text.Split"
+    },
+    {
+      "href": "text-splitany",
+      "titulo": "Text.SplitAny"
+    },
+    {
+      "href": "text-start",
+      "titulo": "Text.Start"
+    },
+    {
+      "href": "text-startswith",
+      "titulo": "Text.StartsWith"
+    },
+    {
+      "href": "text-tobinary",
+      "titulo": "Text.ToBinary"
+    },
+    {
+      "href": "text-tolist",
+      "titulo": "Text.ToList"
+    },
+    {
+      "href": "text-trim",
+      "titulo": "Text.Trim"
+    },
+    {
+      "href": "text-trimend",
+      "titulo": "Text.TrimEnd"
+    },
+    {
+      "href": "text-trimstart",
+      "titulo": "Text.TrimStart"
+    },
+    {
+      "href": "text-upper",
+      "titulo": "Text.Upper"
+    },
+    {
+      "href": "time-functions",
+      "titulo": "Time functions overview"
+    },
+    {
+      "href": "time-endofhour",
+      "titulo": "Time.EndOfHour"
+    },
+    {
+      "href": "time-from",
+      "titulo": "Time.From"
+    },
+    {
+      "href": "time-fromtext",
+      "titulo": "Time.FromText"
+    },
+    {
+      "href": "time-hour",
+      "titulo": "Time.Hour"
+    },
+    {
+      "href": "time-minute",
+      "titulo": "Time.Minute"
+    },
+    {
+      "href": "time-second",
+      "titulo": "Time.Second"
+    },
+    {
+      "href": "time-startofhour",
+      "titulo": "Time.StartOfHour"
+    },
+    {
+      "href": "time-torecord",
+      "titulo": "Time.ToRecord"
+    },
+    {
+      "href": "time-totext",
+      "titulo": "Time.ToText"
+    },
+    {
+      "href": "sharptime",
+      "titulo": "#time"
+    },
+    {
+      "href": "type-functions",
+      "titulo": "Type functions overview"
+    },
+    {
+      "href": "type-addtablekey",
+      "titulo": "Type.AddTableKey"
+    },
+    {
+      "href": "type-closedrecord",
+      "titulo": "Type.ClosedRecord"
+    },
+    {
+      "href": "type-facets",
+      "titulo": "Type.Facets"
+    },
+    {
+      "href": "type-forfunction",
+      "titulo": "Type.ForFunction"
+    },
+    {
+      "href": "type-forrecord",
+      "titulo": "Type.ForRecord"
+    },
+    {
+      "href": "type-functionparameters",
+      "titulo": "Type.FunctionParameters"
+    },
+    {
+      "href": "type-functionrequiredparameters",
+      "titulo": "Type.FunctionRequiredParameters"
+    },
+    {
+      "href": "type-functionreturn",
+      "titulo": "Type.FunctionReturn"
+    },
+    {
+      "href": "type-is",
+      "titulo": "Type.Is"
+    },
+    {
+      "href": "type-isnullable",
+      "titulo": "Type.IsNullable"
+    },
+    {
+      "href": "type-isopenrecord",
+      "titulo": "Type.IsOpenRecord"
+    },
+    {
+      "href": "type-listitem",
+      "titulo": "Type.ListItem"
+    },
+    {
+      "href": "type-nonnullable",
+      "titulo": "Type.NonNullable"
+    },
+    {
+      "href": "type-openrecord",
+      "titulo": "Type.OpenRecord"
+    },
+    {
+      "href": "type-recordfields",
+      "titulo": "Type.RecordFields"
+    },
+    {
+      "href": "type-replacefacets",
+      "titulo": "Type.ReplaceFacets"
+    },
+    {
+      "href": "type-replacetablekeys",
+      "titulo": "Type.ReplaceTableKeys"
+    },
+    {
+      "href": "type-replacetablepartitionkey",
+      "titulo": "Type.ReplaceTablePartitionKey"
+    },
+    {
+      "href": "type-tablecolumn",
+      "titulo": "Type.TableColumn"
+    },
+    {
+      "href": "type-tablekeys",
+      "titulo": "Type.TableKeys"
+    },
+    {
+      "href": "type-tablepartitionkey",
+      "titulo": "Type.TablePartitionKey"
+    },
+    {
+      "href": "type-tablerow",
+      "titulo": "Type.TableRow"
+    },
+    {
+      "href": "type-tableschema",
+      "titulo": "Type.TableSchema"
+    },
+    {
+      "href": "type-union",
+      "titulo": "Type.Union"
+    },
+    {
+      "href": "uri-functions",
+      "titulo": "Uri functions overview"
+    },
+    {
+      "href": "uri-buildquerystring",
+      "titulo": "Uri.BuildQueryString"
+    },
+    {
+      "href": "uri-combine",
+      "titulo": "Uri.Combine"
+    },
+    {
+      "href": "uri-escapedatastring",
+      "titulo": "Uri.EscapeDataString"
+    },
+    {
+      "href": "uri-parts",
+      "titulo": "Uri.Parts"
+    },
+    {
+      "href": "value-functions",
+      "titulo": "Value functions overview"
+    },
+    {
+      "href": "action-witherrorcontext",
+      "titulo": "Action.WithErrorContext"
+    },
+    {
+      "href": "directquerycapabilities-from",
+      "titulo": "DirectQueryCapabilities.From"
+    },
+    {
+      "href": "embedded-value",
+      "titulo": "Embedded.Value"
+    },
+    {
+      "href": "excel-shapetable",
+      "titulo": "Excel.ShapeTable"
+    },
+    {
+      "href": "graph-nodes",
+      "titulo": "Graph.Nodes"
+    },
+    {
+      "href": "module-versions",
+      "titulo": "Module.Versions"
+    },
+    {
+      "href": "progress-datasourceprogress",
+      "titulo": "Progress.DataSourceProgress"
+    },
+    {
+      "href": "sqlexpression-schemafrom",
+      "titulo": "SqlExpression.SchemaFrom"
+    },
+    {
+      "href": "sqlexpression-toexpression",
+      "titulo": "SqlExpression.ToExpression"
+    },
+    {
+      "href": "value-add",
+      "titulo": "Value.Add"
+    },
+    {
+      "href": "value-alternates",
+      "titulo": "Value.Alternates"
+    },
+    {
+      "href": "value-as",
+      "titulo": "Value.As"
+    },
+    {
+      "href": "value-compare",
+      "titulo": "Value.Compare"
+    },
+    {
+      "href": "value-divide",
+      "titulo": "Value.Divide"
+    },
+    {
+      "href": "value-equals",
+      "titulo": "Value.Equals"
+    },
+    {
+      "href": "value-expression",
+      "titulo": "Value.Expression"
+    },
+    {
+      "href": "value-firewall",
+      "titulo": "Value.Firewall"
+    },
+    {
+      "href": "value-fromtext",
+      "titulo": "Value.FromText"
+    },
+    {
+      "href": "value-is",
+      "titulo": "Value.Is"
+    },
+    {
+      "href": "value-lineage",
+      "titulo": "Value.Lineage"
+    },
+    {
+      "href": "value-metadata",
+      "titulo": "Value.Metadata"
+    },
+    {
+      "href": "value-multiply",
+      "titulo": "Value.Multiply"
+    },
+    {
+      "href": "value-nativequery",
+      "titulo": "Value.NativeQuery"
+    },
+    {
+      "href": "value-nullableequals",
+      "titulo": "Value.NullableEquals"
+    },
+    {
+      "href": "value-optimize",
+      "titulo": "Value.Optimize"
+    },
+    {
+      "href": "value-removemetadata",
+      "titulo": "Value.RemoveMetadata"
+    },
+    {
+      "href": "value-replacemetadata",
+      "titulo": "Value.ReplaceMetadata"
+    },
+    {
+      "href": "value-replacetype",
+      "titulo": "Value.ReplaceType"
+    },
+    {
+      "href": "value-subtract",
+      "titulo": "Value.Subtract"
+    },
+    {
+      "href": "value-traits",
+      "titulo": "Value.Traits"
+    },
+    {
+      "href": "value-type",
+      "titulo": "Value.Type"
+    },
+    {
+      "href": "value-versionidentity",
+      "titulo": "Value.VersionIdentity"
+    },
+    {
+      "href": "value-versions",
+      "titulo": "Value.Versions"
+    },
+    {
+      "href": "value-viewerror",
+      "titulo": "Value.ViewError"
+    },
+    {
+      "href": "value-viewfunction",
+      "titulo": "Value.ViewFunction"
+    },
+    {
+      "href": "variable-value",
+      "titulo": "Variable.Value"
+    },
+    {
+      "href": "variable-valueordefault",
+      "titulo": "Variable.ValueOrDefault"
+    },
+    {
+      "href": "enumerations",
+      "titulo": "Enumerations"
+    },
+    {
+      "href": "accesscontrolkind-type",
+      "titulo": "AccessControlKind.Type"
+    },
+    {
+      "href": "binaryencoding-type",
+      "titulo": "BinaryEncoding.Type"
+    },
+    {
+      "href": "binaryoccurrence-type",
+      "titulo": "BinaryOccurrence.Type"
+    },
+    {
+      "href": "buffermode-type",
+      "titulo": "BufferMode.Type"
+    },
+    {
+      "href": "byteorder-type",
+      "titulo": "ByteOrder.Type"
+    },
+    {
+      "href": "compression-type",
+      "titulo": "Compression.Type"
+    },
+    {
+      "href": "csvstyle-type",
+      "titulo": "CsvStyle.Type"
+    },
+    {
+      "href": "day-type",
+      "titulo": "Day.Type"
+    },
+    {
+      "href": "extravalues-type",
+      "titulo": "ExtraValues.Type"
+    },
+    {
+      "href": "groupkind-type",
+      "titulo": "GroupKind.Type"
+    },
+    {
+      "href": "joinalgorithm-type",
+      "titulo": "JoinAlgorithm.Type"
+    },
+    {
+      "href": "joinkind-type",
+      "titulo": "JoinKind.Type"
+    },
+    {
+      "href": "joinside-type",
+      "titulo": "JoinSide.Type"
+    },
+    {
+      "href": "limitclausekind-type",
+      "titulo": "LimitClauseKind.Type"
+    },
+    {
+      "href": "missingfield-type",
+      "titulo": "MissingField.Type"
+    },
+    {
+      "href": "occurrence-optional",
+      "titulo": "Occurrence.Optional"
+    },
+    {
+      "href": "occurrence-repeating",
+      "titulo": "Occurrence.Repeating"
+    },
+    {
+      "href": "occurrence-required",
+      "titulo": "Occurrence.Required"
+    },
+    {
+      "href": "occurrence-type",
+      "titulo": "Occurrence.Type"
+    },
+    {
+      "href": "odataomitvalues-type",
+      "titulo": "ODataOmitValues.Type"
+    },
+    {
+      "href": "order-type",
+      "titulo": "Order.Type"
+    },
+    {
+      "href": "percentilemode-type",
+      "titulo": "PercentileMode.Type"
+    },
+    {
+      "href": "precision-type",
+      "titulo": "Precision.Type"
+    },
+    {
+      "href": "quotestyle-type",
+      "titulo": "QuoteStyle.Type"
+    },
+    {
+      "href": "rankkind-type",
+      "titulo": "RankKind.Type"
+    },
+    {
+      "href": "relativeposition-type",
+      "titulo": "RelativePosition.Type"
+    },
+    {
+      "href": "roundingmode-type",
+      "titulo": "RoundingMode.Type"
+    },
+    {
+      "href": "sapbusinesswarehouseexecutionmode-type",
+      "titulo": "SapBusinessWarehouseExecutionMode.Type"
+    },
+    {
+      "href": "saphanadistribution-type",
+      "titulo": "SapHanaDistribution.Type"
+    },
+    {
+      "href": "saphanarangeoperator-type",
+      "titulo": "SapHanaRangeOperator.Type"
+    },
+    {
+      "href": "textencoding-type",
+      "titulo": "TextEncoding.Type"
+    },
+    {
+      "href": "tracelevel-type",
+      "titulo": "TraceLevel.Type"
+    },
+    {
+      "href": "webmethod-type",
+      "titulo": "WebMethod.Type"
+    },
+    {
+      "href": "constants",
+      "titulo": "Constants"
+    },
+    {
+      "href": "itemexpression-item",
+      "titulo": "ItemExpression.Item"
+    },
+    {
+      "href": "number-e",
+      "titulo": "Number.E"
+    },
+    {
+      "href": "number-epsilon",
+      "titulo": "Number.Epsilon"
+    },
+    {
+      "href": "number-nan",
+      "titulo": "Number.NaN"
+    },
+    {
+      "href": "number-negativeinfinity",
+      "titulo": "Number.NegativeInfinity"
+    },
+    {
+      "href": "number-pi",
+      "titulo": "Number.PI"
+    },
+    {
+      "href": "number-positiveinfinity",
+      "titulo": "Number.PositiveInfinity"
+    },
+    {
+      "href": "rowexpression-row",
+      "titulo": "RowExpression.Row"
+    },
+    {
+      "href": "dynamic-values",
+      "titulo": "Dynamic values"
+    },
+    {
+      "href": "culture-current",
+      "titulo": "Culture.Current"
+    },
+    {
+      "href": "timezone-current",
+      "titulo": "TimeZone.Current"
+    }
+  ]
+}

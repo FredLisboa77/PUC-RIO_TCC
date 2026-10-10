@@ -79,6 +79,7 @@ def coluna(
     oculta: bool = False,
     annotations: dict[str, str] | None = None,
     variacao_para: str | None = None,
+    ordenar_por: str | None = None,
 ) -> dict:
     """Uma coluna TMSL. `tipo` é o `type`: `calculated`, `calculatedTableColumn`.
 
@@ -104,7 +105,30 @@ def coluna(
         bruto["isHidden"] = True
     if annotations:
         bruto["annotations"] = _annotations(annotations)
+    if ordenar_por is not None:
+        bruto["sortByColumn"] = ordenar_por
     return bruto
+
+
+def nivel(nome: str, coluna_de: str, *, ordem: int | None = None) -> dict:
+    """Um nível de hierarquia. `coluna_de` é o nome da coluna que ele usa."""
+    bruto: dict = {"name": nome, "column": coluna_de}
+    if ordem is not None:
+        bruto["ordinal"] = ordem
+    return bruto
+
+
+def hierarquia(nome: str, *, niveis: list[dict] | tuple = ()) -> dict:
+    return {"name": nome, "levels": list(niveis)}
+
+
+def role(nome: str, *, tabela: str, filtro: str) -> dict:
+    """Uma role de RLS com uma permissão de tabela e sua expressão de filtro."""
+    return {
+        "name": nome,
+        "modelPermission": "read",
+        "tablePermissions": [{"name": tabela, "filterExpression": filtro}],
+    }
 
 
 def medida(nome: str, expressao: str = "1") -> dict:
@@ -130,6 +154,7 @@ def tabela(
     colunas: list[dict] | tuple = (),
     medidas: list[dict] | tuple = (),
     particoes: list[dict] | tuple = (),
+    hierarquias: list[dict] | tuple = (),
     data_category: str | None = None,
     annotations: dict[str, str] | None = None,
 ) -> dict:
@@ -139,6 +164,8 @@ def tabela(
         "measures": list(medidas),
         "partitions": list(particoes),
     }
+    if hierarquias:
+        bruto["hierarchies"] = list(hierarquias)
     if data_category is not None:
         bruto["dataCategory"] = data_category
     if annotations:
@@ -183,16 +210,15 @@ def relacionamento(
     return bruto
 
 
-def modelo_tmsl(tabelas=(), relacionamentos=()) -> dict:
-    return {
-        "name": "SemanticModel",
-        "compatibilityLevel": 1600,
-        "model": {
-            "culture": "pt-BR",
-            "tables": list(tabelas),
-            "relationships": list(relacionamentos),
-        },
+def modelo_tmsl(tabelas=(), relacionamentos=(), roles=()) -> dict:
+    model: dict = {
+        "culture": "pt-BR",
+        "tables": list(tabelas),
+        "relationships": list(relacionamentos),
     }
+    if roles:
+        model["roles"] = list(roles)
+    return {"name": "SemanticModel", "compatibilityLevel": 1600, "model": model}
 
 
 def _annotations(pares: dict[str, str]) -> list[dict]:
@@ -207,10 +233,12 @@ def ler(tmp_path: Path):
     testes garante que o que a regra lê é o que o parser produz.
     """
 
-    def _ler(tabelas=(), relacionamentos=()) -> ModeloSemantico:
+    def _ler(tabelas=(), relacionamentos=(), roles=()) -> ModeloSemantico:
         caminho = tmp_path / "model.bim"
         caminho.write_text(
-            json.dumps(modelo_tmsl(tabelas, relacionamentos), ensure_ascii=False),
+            json.dumps(
+                modelo_tmsl(tabelas, relacionamentos, roles), ensure_ascii=False
+            ),
             encoding="utf-8",
         )
         return ler_modelo(caminho)
