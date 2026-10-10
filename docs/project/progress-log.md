@@ -891,3 +891,39 @@ uma edição à mão no `sources.yaml` e voltar a passar com `gerar`.
 
 **Próximo passo:** coleta das 1.420 páginas para `rag/store/`, com pausa entre
 requisições, retomável, registrando H1 e data de acesso.
+
+---
+
+## 09/10/2026 — Revisão do projeto contra a literatura
+
+A pedido do Fred, revisão de tudo o que foi feito (regras, avaliação, catálogo e a spec
+da coleta) contra a literatura de análise estática, avaliação de ferramentas, RAG e
+engenharia de software.
+
+**Alinhado com a literatura:** regras determinísticas como única fonte de achado e LLM
+só explicando com citação (atribuição: Bohnet et al., 2022; Gao et al., 2023); âncora
+verificada e terceiro teste contra falso positivo (Johnson et al., 2013; Sadowski et
+al., 2018); P8 para desenvolvimento e P1–P7 para teste; ADRs; TDD; coleta conforme
+`robots.txt` (RFC 9309) e termos de uso; trechos por seção com cabeçalho contextual.
+
+**Três pontos de risco, já respondidos nos documentos:**
+1. **Ground truth contaminado e com um só anotador** — os achados de P1–P7 foram vistos
+   antes do GT. Protocolo novo em `eval/dataset.md`: tag `regras-gt` antes da anotação,
+   segundo anotador às cegas em 2 dos 7 projetos com kappa de Cohen, anotação guiada
+   pelo modelo, ameaças à validade declaradas. R-04 sobe para probabilidade alta.
+2. **A recuperação não precisa adivinhar a âncora** — ADR-002 emendado: a seção âncora
+   da regra entra sempre no contexto. É a falha que o spike de 29/09 já tinha mostrado
+   (o 7B citou `model-date-tables` em vez de `auto-date-time`).
+3. **A avaliação da recuperação não tinha gabarito** — ADR-002 emendado: 62 consultas
+   (9 por regra, 53 por achado) com a seção âncora como gabarito, montadas antes de
+   escolher chunking e embeddings. Busca híbrida (BM25 + densa, RRF) fica como
+   alternativa a medir.
+
+**Melhorias de custo baixo:** registradas no `backlog.md` (CI, intervalos de Wilson,
+fidelidade das explicações, referência industrial de falso positivo, *datasheet* do
+dataset, testes por propriedades, recoleta com `ETag`).
+
+**Nada disso bloqueia a coleta:** a spec da coleta já guarda as âncoras de seção, que
+os pontos 2 e 3 usam.
+
+**Próximo passo:** plano de implementação da coleta e extração.

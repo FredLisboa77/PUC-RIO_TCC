@@ -54,6 +54,24 @@ Passagens transcritas:
 
 **A verificação mudou a regra, e por pouco não a derrubou.** O enunciado original — "divisão com `/` em vez de `DIVIDE`" — marcaria como defeito o que a própria página **recomenda** quando o denominador é constante: o mesmo erro que derrubou a PERF-004 em 06/10, reaberto por outra porta. A regra que entrou no código afirma apenas sobre denominador **não constante**, condição que as duas passagens acima sustentam juntas.
 
+## Revisão contra a literatura — melhorias registradas em 09/10/2026
+
+Revisão do projeto inteiro contra a literatura de análise estática, avaliação, RAG e
+engenharia de software. Os três pontos de risco já têm resposta registrada:
+contaminação do ground truth (`eval/dataset.md`, R-04), recuperação ancorada e conjunto
+de avaliação da recuperação (ADR-002, emenda de 09/10). As melhorias de custo baixo
+ficam aqui, para entrar quando a etapa correspondente chegar:
+
+| Melhoria | Quando | Base |
+|---|---|---|
+| Integração contínua: `pytest` a cada push e em todo PR, mais um linter (`ruff`) | Antes de integrar o PR #1, ou logo depois | Prática padrão; hoje o repositório não tem CI |
+| Precisão por regra com intervalo de confiança de Wilson, e por categoria, em vez de um número único | Fase 5 (semana 11) | Wilson (1927); n = 7 projetos |
+| Fidelidade das explicações: numa amostra, conferir se a citação sustenta o que o texto afirma, além de existir entre os trechos | Fase 5, na rubrica | Gao et al. (2023), ALCE; Es et al. (2023), RAGAS |
+| Situar o gatilho de precisão do R-03 (0,7) diante da referência industrial de menos de 10% de falsos positivos efetivos | Monografia, capítulo de avaliação | Sadowski et al. (2018), CACM |
+| Completar `eval/dataset.md` como *datasheet*: motivação, composição, processo de coleta, licenças, usos não recomendados | Semana 8, junto com o ground truth | Gebru et al. (2021), *Datasheets for Datasets* |
+| Testes gerados por propriedades no lexer de DAX e na resolução de URL | Quando um dos dois for mexido de novo | MacIver et al. (2019), Hypothesis |
+| Recoleta com cache HTTP (`ETag`/`If-None-Match`), baixando só o que mudou | Trabalho futuro da coleta | RFC 9111 |
+
 ## Candidatas a regra — registradas, não implementadas
 
 | Candidata | Âncora | Situação |
