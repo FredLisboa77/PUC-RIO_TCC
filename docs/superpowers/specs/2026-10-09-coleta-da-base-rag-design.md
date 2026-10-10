@@ -2,7 +2,7 @@
 
 - **Data:** 09/10/2026
 - **Fase:** 3 — semana 6 do roadmap
-- **Status:** Em revisão — as quatro seções do desenho aprovadas uma a uma pelo Fred
+- **Status:** Aprovado para implementação (09/10/2026)
 - **Depende de:** `rag/sources.yaml` (G-8, spec `2026-10-09-catalogo-de-fontes-rag-design.md`)
 - **Decisões que este desenho executa:** ADR-004 (coleta pelas páginas públicas do Learn; HTML bruto guardado para reprocessar), R-13 (extrator quebra com mudança de layout)
 
