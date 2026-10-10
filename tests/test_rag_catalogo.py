@@ -4,20 +4,33 @@ Os retratos dos testes são feitos à mão e pequenos; os reais, com 1.420
 páginas, são exercitados em `test_rag_dados_reais.py`.
 """
 
+import json
 import re
 from datetime import date
 
 import pytest
+import yaml
 
+from rag import catalogo
 from rag.catalogo import (
+    CABECALHO_YAML,
     LICENCA_LEARN,
     LICENCA_SQLBI,
     ErroDeCatalogo,
     Fonte,
     LeituraSqlbi,
+    atualizar,
+    como_yaml,
+    escrever_yaml,
+    gerar,
+    ler_leituras_sqlbi,
+    ler_observacoes,
+    ler_retratos,
+    main,
     montar_catalogo,
+    resumo,
 )
-from rag.tocs import SECOES, ItemToc, Retrato
+from rag.tocs import SECOES, ItemToc, Retrato, caminho_do_retrato, serializar_retrato
 from rag.urls import FORA_DO_LEARN, NAO_DOCUMENTAL
 
 HOJE = date(2026, 10, 9)
@@ -263,3 +276,175 @@ def test_nota_pode_ser_dada_a_uma_leitura_do_sqlbi():
         observacoes={"sqlbi:mark-as-date-table": "Complementa a âncora."},
     )
     assert por_id(resultado)["sqlbi:mark-as-date-table"].observacao == "Complementa a âncora."
+
+
+def gravar_retratos(pasta, en=None, pt=None):
+    for (idioma, secao), retrato in retratos(en, pt).items():
+        caminho = caminho_do_retrato(pasta, idioma, secao)
+        caminho.parent.mkdir(parents=True, exist_ok=True)
+        caminho.write_text(serializar_retrato(retrato), encoding="utf-8")
+
+
+def test_ler_retratos_volta_o_que_foi_gravado(tmp_path):
+    gravar_retratos(tmp_path, en={"dax": [("a", "A")]})
+    assert ler_retratos(tmp_path) == retratos(en={"dax": [("a", "A")]})
+
+
+def test_ler_retratos_sem_um_arquivo_falha_nomeando_e_indicando_atualizar(tmp_path):
+    gravar_retratos(tmp_path)
+    faltando = caminho_do_retrato(tmp_path, "pt-br", "powerquery-m")
+    faltando.unlink()
+    with pytest.raises(ErroDeCatalogo, match="atualizar") as erro:
+        ler_retratos(tmp_path)
+    assert "powerquery-m" in str(erro.value)
+
+
+def test_ler_retratos_com_estrutura_inesperada_falha(tmp_path):
+    gravar_retratos(tmp_path)
+    caminho_do_retrato(tmp_path, "en-us", "dax").write_text('{"x": 1}', encoding="utf-8")
+    with pytest.raises(ErroDeCatalogo, match="estrutura inesperada"):
+        ler_retratos(tmp_path)
+
+
+@pytest.mark.parametrize("conteudo", [None, "", "# só comentário\n", "# cabeçalho\n{}\n"])
+def test_observacoes_ausentes_ou_vazias_sao_vazias(tmp_path, conteudo):
+    caminho = tmp_path / "observacoes.yaml"
+    if conteudo is not None:
+        caminho.write_text(conteudo, encoding="utf-8")
+    assert ler_observacoes(caminho) == {}
+
+
+def test_observacoes_lidas(tmp_path):
+    caminho = tmp_path / "observacoes.yaml"
+    caminho.write_text("learn:dax/a: Nota sobre a página.\n", encoding="utf-8")
+    assert ler_observacoes(caminho) == {"learn:dax/a": "Nota sobre a página."}
+
+
+def test_observacoes_em_formato_errado_falham(tmp_path):
+    caminho = tmp_path / "observacoes.yaml"
+    caminho.write_text("- uma lista\n", encoding="utf-8")
+    with pytest.raises(ErroDeCatalogo, match="id -> texto"):
+        ler_observacoes(caminho)
+
+
+@pytest.mark.parametrize("conteudo", [None, "", "# só comentário\n", "[]\n"])
+def test_leituras_ausentes_ou_vazias_sao_vazias(tmp_path, conteudo):
+    caminho = tmp_path / "leituras.yaml"
+    if conteudo is not None:
+        caminho.write_text(conteudo, encoding="utf-8")
+    assert ler_leituras_sqlbi(caminho) == []
+
+
+def test_leituras_lidas(tmp_path):
+    caminho = tmp_path / "leituras.yaml"
+    caminho.write_text(
+        "- url: https://www.sqlbi.com/articles/mark-as-date-table/\n"
+        "  titulo: Mark as Date table\n"
+        "  regras: [MOD-005]\n"
+        "  verificado_em: '2026-10-09'\n",
+        encoding="utf-8",
+    )
+    assert ler_leituras_sqlbi(caminho) == [LEITURA]
+
+
+def test_leitura_sem_campo_obrigatorio_falha(tmp_path):
+    caminho = tmp_path / "leituras.yaml"
+    caminho.write_text("- url: https://www.sqlbi.com/articles/x/\n", encoding="utf-8")
+    with pytest.raises(ErroDeCatalogo, match="entrada inválida"):
+        ler_leituras_sqlbi(caminho)
+
+
+def test_yaml_e_deterministico_com_lf_e_unicode(tmp_path):
+    resultado = montar(en={"dax": [("a", "Ação")]})
+    um, outro = tmp_path / "um.yaml", tmp_path / "outro.yaml"
+    escrever_yaml(resultado.fontes, um)
+    escrever_yaml(resultado.fontes, outro)
+    assert um.read_bytes() == outro.read_bytes()
+    assert b"\r\n" not in um.read_bytes()
+    assert "Ação" in um.read_text(encoding="utf-8")
+
+
+def test_yaml_comeca_avisando_que_e_gerado_e_volta_igual():
+    resultado = montar(en={"dax": [("a", "A")]}, leituras=[])
+    texto = como_yaml(resultado.fontes)
+    assert texto.startswith(CABECALHO_YAML)
+    dados = yaml.safe_load(texto)
+    assert [Fonte.model_validate(d) for d in dados] == resultado.fontes
+    assert list(dados[0]) == list(Fonte.model_fields)
+
+
+def test_gerar_escreve_o_catalogo(tmp_path):
+    gravar_retratos(tmp_path / "tocs", en={"dax": [("a", "A")]})
+    destino = tmp_path / "sources.yaml"
+    resultado = gerar(
+        pasta_tocs=tmp_path / "tocs",
+        destino=destino,
+        observacoes=tmp_path / "nao-existe.yaml",
+        leituras=tmp_path / "nao-existe.yaml",
+        ancoras={},
+    )
+    assert destino.read_text(encoding="utf-8") == como_yaml(resultado.fontes)
+    assert [f.id for f in resultado.fontes] == ["learn:dax/a"]
+
+
+def test_atualizar_baixa_confere_o_sqlbi_e_gera(tmp_path):
+    chamadas = []
+
+    def buscar(url):
+        chamadas.append(url)
+        return json.dumps({"items": [{"href": "pagina", "toc_title": "Página"}]}).encode()
+
+    leituras = tmp_path / "leituras.yaml"
+    leituras.write_text(
+        "- url: https://www.sqlbi.com/articles/x/\n  titulo: X\n  regras: [R-1]\n"
+        "  verificado_em: '2026-10-09'\n",
+        encoding="utf-8",
+    )
+    resultado = atualizar(
+        buscar=buscar,
+        hoje=HOJE,
+        pasta_tocs=tmp_path / "tocs",
+        pasta_bruta=tmp_path / "bruto",
+        destino=tmp_path / "sources.yaml",
+        observacoes=tmp_path / "nao-existe.yaml",
+        leituras=leituras,
+        ancoras={"R-1": L + "dax/pagina"},
+    )
+    assert "https://www.sqlbi.com/articles/x/" in chamadas
+    assert {f.id for f in resultado.fontes} >= {"learn:dax/pagina", "sqlbi:x"}
+    assert (tmp_path / "sources.yaml").is_file()
+
+
+def test_resumo_traz_contagens_exclusoes_e_ancoras():
+    ancoras = {
+        "DAX-001": L + "dax/a",
+        "MOD-005": L + "power-bi/transform-model/desktop-date-tables",
+    }
+    resultado = montar(
+        en={
+            "dax": [("a", "A"), ("https://aka.ms/x", "Fora")],
+            "power-bi/transform-model": [("desktop-date-tables", "Date tables")],
+        },
+        ancoras=ancoras,
+        leituras=[LEITURA],
+    )
+    texto = resumo(resultado, ancoras)
+    # 2 do Learn (dax/a e a âncora de MOD-005), 1 do SQLBI, 1 link fora do Learn;
+    # `pt` replica `en`, então as duas do Learn têm url_pt_br.
+    assert "2 indexadas" in texto
+    assert "1 só referência" in texto
+    assert "toc:dax: 1" in texto
+    assert "regra: 2" in texto
+    assert "curadoria:sqlbi: 1" in texto
+    assert f"{FORA_DO_LEARN}: 1" in texto
+    assert "com url_pt_br: 2 de 2" in texto
+    assert "DAX-001 -> learn:dax/a" in texto
+    assert "MOD-005 -> learn:power-bi/transform-model/desktop-date-tables" in texto
+
+
+def test_main_sem_retratos_sai_com_erro_indicando_atualizar(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(catalogo, "PASTA_TOCS", tmp_path / "vazia")
+    monkeypatch.setattr(catalogo, "ARQUIVO_FONTES", tmp_path / "sources.yaml")
+    assert main(["gerar"]) == 1
+    assert "atualizar" in capsys.readouterr().err
+    assert not (tmp_path / "sources.yaml").exists()

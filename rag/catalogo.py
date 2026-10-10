@@ -7,14 +7,19 @@ baixa os retratos antes. Desenho: `docs/superpowers/specs/
 2026-10-09-catalogo-de-fontes-rag-design.md`.
 """
 
+import argparse
+import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel
+import yaml
+from pydantic import BaseModel, ValidationError
 
-from rag.tocs import SECOES, Retrato
+from rag import tocs
+from rag.tocs import IDIOMAS, SECOES, Retrato
 from rag.urls import (
     caminho_sem_idioma,
     em_outro_idioma,
@@ -31,6 +36,18 @@ LICENCA_LEARN = (
 LICENCA_SQLBI = (
     "© SQLBI, todos os direitos reservados — somente referência bibliográfica; "
     "conteúdo não coletado"
+)
+
+RAIZ = Path(__file__).resolve().parent
+PASTA_TOCS = RAIZ / "tocs"
+PASTA_BRUTA = RAIZ / "store" / "raw" / "tocs"
+ARQUIVO_FONTES = RAIZ / "sources.yaml"
+ARQUIVO_OBSERVACOES = RAIZ / "observacoes.yaml"
+ARQUIVO_LEITURAS = RAIZ / "leituras_sqlbi.yaml"
+
+CABECALHO_YAML = (
+    "# Gerado por `python -m rag.catalogo gerar` — não editar à mão.\n"
+    "# Notas: rag/observacoes.yaml. Leituras do SQLBI: rag/leituras_sqlbi.yaml.\n"
 )
 
 Retratos = dict[tuple[str, str], Retrato]
@@ -240,3 +257,172 @@ def montar_catalogo(
     return ResultadoCatalogo(
         fontes=[fontes[i] for i in sorted(fontes)], exclusoes=exclusoes
     )
+
+
+def ler_retratos(pasta: Path) -> Retratos:
+    retratos: Retratos = {}
+    for secao in SECOES:
+        for idioma in IDIOMAS:
+            caminho = tocs.caminho_do_retrato(pasta, idioma, secao.caminho)
+            if not caminho.is_file():
+                raise ErroDeCatalogo(
+                    f"falta o retrato {caminho} — rode `python -m rag.catalogo atualizar`"
+                )
+            try:
+                retratos[(idioma, secao.caminho)] = Retrato.model_validate_json(
+                    caminho.read_text(encoding="utf-8")
+                )
+            except ValidationError as erro:
+                raise ErroDeCatalogo(
+                    f"retrato com estrutura inesperada: {caminho}\n{erro}"
+                ) from erro
+    return retratos
+
+
+def _ler_yaml(caminho: Path) -> object:
+    if not caminho.is_file():
+        return None
+    return yaml.safe_load(caminho.read_text(encoding="utf-8"))
+
+
+def ler_observacoes(caminho: Path) -> dict[str, str]:
+    dados = _ler_yaml(caminho) or {}
+    if not isinstance(dados, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in dados.items()
+    ):
+        raise ErroDeCatalogo(f"{caminho}: esperado um mapeamento id -> texto")
+    return dados
+
+
+def ler_leituras_sqlbi(caminho: Path) -> list[LeituraSqlbi]:
+    dados = _ler_yaml(caminho) or []
+    if not isinstance(dados, list):
+        raise ErroDeCatalogo(f"{caminho}: esperada uma lista de leituras")
+    try:
+        return [LeituraSqlbi.model_validate(item) for item in dados]
+    except ValidationError as erro:
+        raise ErroDeCatalogo(f"{caminho}: entrada inválida\n{erro}") from erro
+
+
+def como_yaml(fontes: list[Fonte]) -> str:
+    corpo = yaml.safe_dump(
+        [f.model_dump() for f in fontes],
+        sort_keys=False,
+        allow_unicode=True,
+        width=10_000,
+        default_flow_style=False,
+    )
+    return CABECALHO_YAML + corpo
+
+
+def escrever_yaml(fontes: list[Fonte], caminho: Path) -> None:
+    """LF sempre: com `core.autocrlf` o Git converte no checkout, e o teste de
+    arquivo gerado compara texto, não bytes."""
+    caminho.write_text(como_yaml(fontes), encoding="utf-8", newline="\n")
+
+
+def ancoras_do_registro() -> dict[str, str]:
+    """`{id_regra: url_canonica}`. Importa o registro aqui, na camada de
+    comando, para que a montagem não dependa de `core/`."""
+    from core.rules.todas import REGISTRO
+
+    return {meta.id: meta.url_canonica for meta in REGISTRO.metas()}
+
+
+def gerar(
+    *,
+    pasta_tocs: Path | None = None,
+    destino: Path | None = None,
+    observacoes: Path | None = None,
+    leituras: Path | None = None,
+    ancoras: dict[str, str] | None = None,
+) -> ResultadoCatalogo:
+    resultado = montar_catalogo(
+        ler_retratos(pasta_tocs or PASTA_TOCS),
+        ancoras_do_registro() if ancoras is None else ancoras,
+        ler_observacoes(observacoes or ARQUIVO_OBSERVACOES),
+        ler_leituras_sqlbi(leituras or ARQUIVO_LEITURAS),
+    )
+    escrever_yaml(resultado.fontes, destino or ARQUIVO_FONTES)
+    return resultado
+
+
+def atualizar(
+    *,
+    buscar: tocs.Buscador | None = None,
+    hoje: date | None = None,
+    pasta_tocs: Path | None = None,
+    pasta_bruta: Path | None = None,
+    destino: Path | None = None,
+    observacoes: Path | None = None,
+    leituras: Path | None = None,
+    ancoras: dict[str, str] | None = None,
+) -> ResultadoCatalogo:
+    arquivo_leituras = leituras or ARQUIVO_LEITURAS
+    tocs.baixar_retratos(
+        buscar or tocs.buscar_padrao,
+        hoje or date.today(),
+        pasta_tocs or PASTA_TOCS,
+        pasta_bruta or PASTA_BRUTA,
+        [leitura.url for leitura in ler_leituras_sqlbi(arquivo_leituras)],
+    )
+    return gerar(
+        pasta_tocs=pasta_tocs,
+        destino=destino,
+        observacoes=observacoes,
+        leituras=arquivo_leituras,
+        ancoras=ancoras,
+    )
+
+
+def resumo(resultado: ResultadoCatalogo, ancoras: dict[str, str]) -> str:
+    fontes = resultado.fontes
+    indexadas = [f for f in fontes if f.indexar]
+    # Conta entradas, não origens: uma página âncora de duas regras conta 1 em "regra".
+    por_origem: Counter = Counter()
+    for f in fontes:
+        por_origem.update({"regra" if o.startswith("regra:") else o for o in f.origem})
+    linhas = [
+        f"Catálogo: {len(fontes)} entradas — {len(indexadas)} indexadas, "
+        f"{len(fontes) - len(indexadas)} só referência",
+        "Por origem:",
+        *(f"  {origem}: {n}" for origem, n in sorted(por_origem.items())),
+        "Excluídos:",
+        *(f"  {motivo}: {n}" for motivo, n in sorted(resultado.exclusoes.items())),
+        f"Learn com url_pt_br: {sum(1 for f in indexadas if f.url_pt_br)} de {len(indexadas)}",
+        "Âncoras:",
+    ]
+    for id_regra in sorted(ancoras):
+        entrada = next(f.id for f in indexadas if id_regra in f.regras)
+        linhas.append(f"  {id_regra} -> {entrada}")
+    return "\n".join(linhas)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m rag.catalogo",
+        description="Gera rag/sources.yaml a partir dos retratos dos toc.json do Learn.",
+    )
+    parser.add_argument(
+        "comando",
+        nargs="?",
+        choices=["gerar", "atualizar"],
+        default="gerar",
+        help="gerar (padrão, offline) ou atualizar (baixa os retratos e gera)",
+    )
+    args = parser.parse_args(argv)
+    try:
+        ancoras = ancoras_do_registro()
+        if args.comando == "atualizar":
+            resultado = atualizar(ancoras=ancoras)
+        else:
+            resultado = gerar(ancoras=ancoras)
+    except (ErroDeCatalogo, tocs.ErroDeRetrato) as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    print(resumo(resultado, ancoras))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
