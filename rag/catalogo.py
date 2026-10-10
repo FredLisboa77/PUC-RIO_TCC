@@ -10,6 +10,7 @@ baixa os retratos antes. Desenho: `docs/superpowers/specs/
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel
 
@@ -160,6 +161,57 @@ def _fontes_do_learn(
     return fontes, exclusoes
 
 
+def _fontes_do_sqlbi(
+    leituras: list[LeituraSqlbi], ids_de_regras: set[str]
+) -> list[Fonte]:
+    """Referências curadas: entram com `indexar: false` e nunca são baixadas.
+
+    O conteúdo do SQLBI é de todos os direitos reservados, sem permissão de uso
+    nos termos do site (spec, seção 5.3); link e título são referência
+    bibliográfica.
+    """
+    fontes: list[Fonte] = []
+    vistas: set[str] = set()
+    for leitura in leituras:
+        partes = urlsplit(leitura.url)
+        if (
+            partes.scheme != "https"
+            or partes.netloc.lower() != "www.sqlbi.com"
+            or not partes.path.startswith("/articles/")
+            or partes.path.rstrip("/") == "/articles"
+        ):
+            raise ErroDeCatalogo(
+                f"leitura do SQLBI fora de https://www.sqlbi.com/articles/: {leitura.url}"
+            )
+        if not leitura.regras:
+            raise ErroDeCatalogo(f"leitura do SQLBI sem regra: {leitura.url}")
+        desconhecidas = sorted(set(leitura.regras) - ids_de_regras)
+        if desconhecidas:
+            raise ErroDeCatalogo(
+                f"leitura do SQLBI com regra inexistente {', '.join(desconhecidas)}: "
+                f"{leitura.url}"
+            )
+        chave = normalizar_url(leitura.url)
+        if chave in vistas:
+            raise ErroDeCatalogo(f"leitura do SQLBI repetida: {leitura.url}")
+        vistas.add(chave)
+        fontes.append(
+            Fonte(
+                id="sqlbi:" + _ultimo_segmento(chave),
+                url=leitura.url,
+                url_pt_br=None,
+                titulo=leitura.titulo,
+                organizacao="SQLBI",
+                data_acesso=leitura.verificado_em.isoformat(),
+                licenca=LICENCA_SQLBI,
+                origem=["curadoria:sqlbi"],
+                indexar=False,
+                regras=sorted(set(leitura.regras)),
+            )
+        )
+    return fontes
+
+
 def montar_catalogo(
     retratos: Retratos,
     ancoras: dict[str, str],
@@ -167,12 +219,15 @@ def montar_catalogo(
     leituras_sqlbi: list[LeituraSqlbi],
 ) -> ResultadoCatalogo:
     """O catálogo, ordenado por `id`. Função pura: sem rede e sem arquivo.
+    As leituras do SQLBI entram como referência (`indexar: false`).
 
     Falha alto — `ErroDeCatalogo` — quando produzir o catálogo perderia algo em
     silêncio: retrato ausente, âncora de regra fora de todos os retratos, nota
     para uma página que saiu do catálogo.
     """
     fontes, exclusoes = _fontes_do_learn(retratos, ancoras)
+    for fonte in _fontes_do_sqlbi(leituras_sqlbi, set(ancoras)):
+        fontes[fonte.id] = fonte
 
     orfas = sorted(set(observacoes) - set(fontes))
     if orfas:

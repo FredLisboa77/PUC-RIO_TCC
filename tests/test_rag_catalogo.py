@@ -4,14 +4,17 @@ Os retratos dos testes são feitos à mão e pequenos; os reais, com 1.420
 páginas, são exercitados em `test_rag_dados_reais.py`.
 """
 
+import re
 from datetime import date
 
 import pytest
 
 from rag.catalogo import (
     LICENCA_LEARN,
+    LICENCA_SQLBI,
     ErroDeCatalogo,
     Fonte,
+    LeituraSqlbi,
     montar_catalogo,
 )
 from rag.tocs import SECOES, ItemToc, Retrato
@@ -190,3 +193,73 @@ def test_ordem_de_entrada_nao_muda_a_saida():
     outro = montar(en={"dax": list(reversed(itens))}, ancoras={"X-2": url, "X-1": url})
     assert um.fontes == outro.fontes
     assert [f.id for f in um.fontes] == ["learn:dax/a", "learn:dax/b", "learn:dax/c"]
+
+
+LEITURA = LeituraSqlbi(
+    url="https://www.sqlbi.com/articles/mark-as-date-table/",
+    titulo="Mark as Date table",
+    regras=["MOD-005"],
+    verificado_em=HOJE,
+)
+ANCORAS = {"MOD-005": L + "power-bi/transform-model/desktop-date-tables"}
+EN_ANCORA = {"power-bi/transform-model": [("desktop-date-tables", "Date tables")]}
+
+
+def test_leitura_do_sqlbi_vira_referencia_nao_indexada():
+    resultado = montar(en=EN_ANCORA, ancoras=ANCORAS, leituras=[LEITURA])
+    assert por_id(resultado)["sqlbi:mark-as-date-table"] == Fonte(
+        id="sqlbi:mark-as-date-table",
+        url="https://www.sqlbi.com/articles/mark-as-date-table/",
+        url_pt_br=None,
+        titulo="Mark as Date table",
+        organizacao="SQLBI",
+        data_acesso="2026-10-09",
+        licenca=LICENCA_SQLBI,
+        origem=["curadoria:sqlbi"],
+        indexar=False,
+        regras=["MOD-005"],
+        observacao=None,
+    )
+
+
+def test_learn_e_sqlbi_ficam_ordenados_juntos_por_id():
+    resultado = montar(en=EN_ANCORA, ancoras=ANCORAS, leituras=[LEITURA])
+    assert [f.id for f in resultado.fontes] == [
+        "learn:power-bi/transform-model/desktop-date-tables",
+        "sqlbi:mark-as-date-table",
+    ]
+
+
+@pytest.mark.parametrize(
+    "mudanca, trecho",
+    [
+        ({"url": "https://sqlbi.com/articles/x/"}, "https://www.sqlbi.com/articles/"),
+        ({"url": "https://www.sqlbi.com/blog/marco/x/"}, "https://www.sqlbi.com/articles/"),
+        ({"url": "http://www.sqlbi.com/articles/x/"}, "https://www.sqlbi.com/articles/"),
+        ({"url": "https://www.sqlbi.com/articles/"}, "https://www.sqlbi.com/articles/"),
+        ({"regras": []}, "sem regra"),
+        ({"regras": ["XYZ-001"]}, "XYZ-001"),
+    ],
+)
+def test_leitura_invalida_falha_nomeando_a_entrada(mudanca, trecho):
+    leitura = LEITURA.model_copy(update=mudanca)
+    with pytest.raises(ErroDeCatalogo, match=re.escape(trecho)):
+        montar(en=EN_ANCORA, ancoras=ANCORAS, leituras=[leitura])
+
+
+def test_leitura_repetida_falha():
+    sem_barra = LEITURA.model_copy(
+        update={"url": "https://www.sqlbi.com/articles/mark-as-date-table"}
+    )
+    with pytest.raises(ErroDeCatalogo, match="repetida"):
+        montar(en=EN_ANCORA, ancoras=ANCORAS, leituras=[LEITURA, sem_barra])
+
+
+def test_nota_pode_ser_dada_a_uma_leitura_do_sqlbi():
+    resultado = montar(
+        en=EN_ANCORA,
+        ancoras=ANCORAS,
+        leituras=[LEITURA],
+        observacoes={"sqlbi:mark-as-date-table": "Complementa a âncora."},
+    )
+    assert por_id(resultado)["sqlbi:mark-as-date-table"].observacao == "Complementa a âncora."
