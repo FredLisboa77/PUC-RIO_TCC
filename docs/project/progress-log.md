@@ -927,3 +927,35 @@ dataset, testes por propriedades, recoleta com `ETag`).
 os pontos 2 e 3 usam.
 
 **Próximo passo:** plano de implementação da coleta e extração.
+
+---
+
+## 09/10/2026 — Fim da sessão — ponto de retomada
+
+**Estado:** árvore limpa, 299 testes passando, branch `fase2-regras-de-dax` sincronizada
+com o GitHub e em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1)
+(ainda não mergeado).
+
+**Pronto e salvo nesta sessão:**
+- P1–P7 convertidos e medidos (53 achados; P9 não acionado).
+- Catálogo de fontes da RAG (G-8): `rag/sources.yaml` com 1.420 páginas do Learn e 6
+  leituras do SQLBI só como referência.
+- Revisão contra a literatura: protocolo do ground truth (`eval/dataset.md`, R-04) e
+  ADR-002 emendado (recuperação ancorada; conjunto de avaliação das âncoras).
+- Spec da coleta e extração **aprovada**:
+  `docs/superpowers/specs/2026-10-09-coleta-da-base-rag-design.md`.
+- Plano de implementação **escrito, aguardando o aval do Fred**:
+  `docs/superpowers/plans/2026-10-09-coleta-da-base-rag.md` (7 tasks).
+- Página do orientador atualizada:
+  <https://claude.ai/code/artifact/476dde6e-9da2-4871-8cfc-afc67784f0c0>.
+
+**Ambiente:** `beautifulsoup4==4.13.4` e `soupsieve==2.7` já estão instalados no
+`.venv`, mas ainda **não** estão no `requirements.txt` — entram na Task 1 do plano.
+
+**Pendências do Fred:** revisar e mergear o PR #1; compartilhar a página com o
+orientador (menu Share); combinar o segundo anotador do ground truth até a semana 7
+(R-04).
+
+**Próximo passo:** o Fred dá o aval ao plano da coleta (recomendação: execução nativa,
+como no G-8) e a execução começa pela Task 1. Cada task termina em commit e push; a
+execução real (Task 6) começa por um ensaio de 20 páginas.
