@@ -8,6 +8,9 @@ não a republicação de cópia literal (spec, seção 5.2).
 """
 
 import json
+import urllib.error
+import urllib.request
+from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 from typing import Literal, NamedTuple
@@ -82,3 +85,79 @@ def serializar_retrato(retrato: Retrato) -> str:
     """JSON com ordem de chaves e indentação fixas: o `git diff` entre dois
     retratos mostra exatamente o que a Microsoft mudou."""
     return json.dumps(retrato.model_dump(mode="json"), ensure_ascii=False, indent=2) + "\n"
+
+
+USER_AGENT = "powerbi-ai-auditor (+https://github.com/FredLisboa77/PUC-RIO_TCC)"
+"""Identifica o projeto e o repositório. Sem e-mail: o cabeçalho viaja para
+cada servidor consultado."""
+
+TIMEOUT_S = 30
+
+Buscador = Callable[[str], bytes]
+
+
+def buscar_padrao(url: str) -> bytes:
+    """GET com `urllib`. Sem repetição automática: falha é falha, e o comando é
+    rodado de novo."""
+    pedido = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(pedido, timeout=TIMEOUT_S) as resposta:
+            if resposta.status != 200:
+                raise ErroDeRetrato(f"{url}: HTTP {resposta.status}")
+            return resposta.read()
+    except urllib.error.HTTPError as erro:
+        raise ErroDeRetrato(f"{url}: HTTP {erro.code}") from erro
+    except (urllib.error.URLError, TimeoutError) as erro:
+        raise ErroDeRetrato(f"{url}: {erro}") from erro
+
+
+def _gravar_texto(caminho: Path, texto: str) -> None:
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    temporario = caminho.with_name(caminho.name + ".tmp")
+    temporario.write_text(texto, encoding="utf-8", newline="\n")
+    temporario.replace(caminho)
+
+
+def baixar_retratos(
+    buscar: Buscador,
+    hoje: date,
+    pasta_versionada: Path,
+    pasta_bruta: Path,
+    links_a_verificar: Sequence[str] = (),
+) -> list[Retrato]:
+    """Baixa os dez `toc.json` e confere os links de `links_a_verificar`.
+
+    Nada é gravado antes de tudo dar certo: uma falha no meio deixa os retratos
+    antigos intactos. Dos links a verificar só importa a resposta 200; o corpo
+    é descartado — é assim que o SQLBI é conferido sem ser copiado.
+    """
+    baixados: list[tuple[Retrato, bytes]] = []
+    for secao in SECOES:
+        for idioma in IDIOMAS:
+            url = url_do_toc(secao.caminho, idioma)
+            conteudo = buscar(url)
+            try:
+                bruto = json.loads(conteudo)
+            except (UnicodeDecodeError, json.JSONDecodeError) as erro:
+                raise ErroDeRetrato(f"{url}: JSON inválido ({erro})") from erro
+            retrato = Retrato(
+                secao=secao.caminho,
+                idioma=idioma,
+                url=url,
+                baixado_em=hoje,
+                itens=achatar_toc(bruto, url),
+            )
+            baixados.append((retrato, conteudo))
+
+    for link in links_a_verificar:
+        buscar(link)
+
+    for retrato, conteudo in baixados:
+        _gravar_texto(
+            caminho_do_retrato(pasta_versionada, retrato.idioma, retrato.secao),
+            serializar_retrato(retrato),
+        )
+        destino_bruto = caminho_do_retrato(pasta_bruta, retrato.idioma, retrato.secao)
+        destino_bruto.parent.mkdir(parents=True, exist_ok=True)
+        destino_bruto.write_bytes(conteudo)
+    return [retrato for retrato, _ in baixados]
