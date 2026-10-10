@@ -111,3 +111,36 @@ extração de novo sobre o HTML guardado, em segundos.
 catálogo 5.2). Testes de unidade usam HTML sintético escrito à mão imitando a
 estrutura medida acima; um teste sobre os dados reais roda só quando `rag/store/`
 existe, como os testes do PBIP real.
+
+## 4. Componentes e fluxo
+
+```
+rag/sources.yaml (indexar: true, 1.420)
+      │  python -m rag.coleta [--limite N] [--pausa S]     ← rede
+      ▼
+rag/store/raw/paginas/learn/**.html   +   rag/store/coleta.jsonl
+      │  python -m rag.extracao                            ← offline
+      ▼
+rag/store/textos/learn/**.json        (próxima etapa: chunking e índice)
+```
+
+No padrão do G-8 — núcleo puro, rede e arquivo nas bordas:
+
+1. **`rag/coleta.py`**
+   - `metadados_da_pagina(html) -> dict` — **pura**; lê `updated_at`, `ms.date`,
+     `git_commit_id` e `document_id` das `<meta>`.
+   - `coletar(...)` — recebe injetados o buscador, a função de pausa e o relógio: os
+     testes rodam sem rede, sem esperar 1 s por página e com datas fixas.
+   - Leitura do registro devolve a **última** linha de cada id, que decide a retomada.
+2. **`rag/extracao.py`**
+   - `extrair(html, id, url) -> PaginaExtraida` — **pura**; modelo Pydantic com
+     seções e blocos.
+   - O comando percorre as páginas `ok` do registro, grava os JSON e imprime o resumo.
+
+**Ajuste no G-8:** `rag.tocs.ErroDeRetrato` passa a carregar o **código HTTP** como
+atributo (`status: int | None`), não só no texto. É o que deixa a coleta distinguir
+página inexistente (404: registra e segue) de servidor pedindo para parar (429/503:
+interrompe).
+
+**Dependência nova:** `beautifulsoup4`, versão fixada no `requirements.txt`, usada só
+em `metadados_da_pagina` e `extrair`.
