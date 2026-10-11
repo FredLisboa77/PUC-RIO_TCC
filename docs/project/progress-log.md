@@ -990,3 +990,24 @@ diferente do de navegação (`aggregation-functions-dax`: "Aggregation functions
 `dax/abs-function-dax`: seções com âncora e caminho, código DAX intacto, metadados de
 versão presentes, sem "Feedback", "Additional resources" nem "In this article". Nada de
 `rag/store/` aparece no `git status`.
+
+**Coleta completa:** 1.420 de 1.420 páginas `ok` (1.400 nesta execução + 20 do
+ensaio), **0 erros**, nenhuma interrupção, 37,6 min com pausa de 1 s; 73 MB de HTML
+bruto em `rag/store/raw/paginas/`. Nenhuma página do catálogo sumiu ou foi
+redirecionada desde 09/10.
+
+**Extração completa:** 1.420 extraídas, **0 erros**, 13 MB de JSON em
+`rag/store/textos/`. Seções excluídas: `related-content` 543, `see-also` 76,
+`additional-resources` 1. Título real diferente do de navegação: 186 (130 do Power BI,
+31 de M, 24 de DAX, 1 do Fabric) — o catálogo usa o título curto do índice (ex.:
+"CONTAINSROW" contra "CONTAINSROW function"); a citação usará o H1.
+
+**Correção encontrada na execução real:** `guidance/white-paper-powerbi-security` traz
+uma seção "Additional resources" (só links) **dentro** do corpo, que o extrator deixava
+passar. A spec manda excluí-la; `additional-resources` entrou em `SECOES_EXCLUIDAS`, com
+teste que falhou antes, e o extrator passou à versão 2 (reextração em segundos, R-13).
+
+**Base contém o que as regras citam:** `tests/test_rag_store_real.py` — toda página do
+catálogo coletada e extraída na versão atual, e a frase-marca da passagem citada por
+**cada uma das 9 regras** encontrada no texto extraído da página âncora (11 testes,
+pulados sem `rag/store/`). Suíte: 358 testes passando.
