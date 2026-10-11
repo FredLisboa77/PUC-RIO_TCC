@@ -5,15 +5,36 @@ congelada e escolhe a vencedora pela regra fixada antes de medir. Desenho:
 `docs/superpowers/specs/2026-10-11-medicao-da-recuperacao-design.md`, seção 5.
 """
 
+import argparse
+import hashlib
+import json
+import sys
+from datetime import date
+from importlib.metadata import version
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
+import yaml
 from pydantic import BaseModel
 
-from rag.avaliacao import ConjuntoAvaliacao, Metricas, ResultadoConsulta, avaliar
+from rag.avaliacao import (
+    ARQUIVO_CONSULTAS,
+    RAIZ_REPO,
+    ConjuntoAvaliacao,
+    ErroDeAvaliacao,
+    Metricas,
+    ResultadoConsulta,
+    avaliar,
+    ler_conjunto,
+    ler_pagina_extraida,
+)
 from rag.busca import IndiceBm25, TipoBusca, criar_buscador
-from rag.chunking import Estrategia, TrechoIndexado
-from rag.embeddings import Embedder
+from rag.catalogo import ARQUIVO_FONTES
+from rag.chunking import Estrategia, TrechoIndexado, ids_do_corpus_guidance, montar_trechos
+from rag.coleta import paginas_do_catalogo
+from rag.embeddings import MODELO, PASTA_EMBEDDINGS, Embedder, EmbedderBge, ErroDeEmbeddings, vetores_com_cache
+from rag.extracao import VERSAO_EXTRATOR, PaginaExtraida
 from rag.texto import normalizar
 
 MARGEM = 1 / 9
@@ -176,3 +197,96 @@ def formatar_tabela(resultados: list[ResultadoConfiguracao], decisao: Decisao) -
         linhas.append(f"AVISO: {decisao.aviso_corpus}")
     linhas.append("Precision@K não entra na decisão; na janela ela conta passagens repetidas pela sobreposição.")
     return "\n".join(linhas)
+
+
+PASTA_RESULTADOS = RAIZ_REPO / "eval" / "results"
+VARIANTES = ("secao-sem", "secao-com", "janela-sem", "janela-com")
+
+
+def carregar_paginas() -> list[PaginaExtraida]:
+    """As páginas indexáveis do catálogo, extraídas, em ordem de id."""
+    return [ler_pagina_extraida(p.id) for p in paginas_do_catalogo(ARQUIVO_FONTES)]
+
+
+def trechos_das_variantes(paginas: list[PaginaExtraida]) -> dict[str, list[TrechoIndexado]]:
+    return {
+        f"{estrategia}-{'com' if cabecalho else 'sem'}": montar_trechos(paginas, estrategia, cabecalho)
+        for estrategia in ("secao", "janela")
+        for cabecalho in (False, True)
+    }
+
+
+def ambiente(trechos: dict[str, list[TrechoIndexado]]) -> dict:
+    return {
+        "data": date.today().isoformat(),
+        "modelo": MODELO,
+        "versoes": {
+            p: version(p) for p in ("torch", "sentence-transformers", "transformers", "rank-bm25", "chromadb", "numpy")
+        },
+        "trechos_por_variante": {v: len(t) for v, t in trechos.items()},
+        "versao_extrator": VERSAO_EXTRATOR,
+        "sha256_consultas": hashlib.sha256(ARQUIVO_CONSULTAS.read_bytes()).hexdigest(),
+    }
+
+
+def gravar_resultado(
+    caminho: Path, resultados: list[ResultadoConfiguracao], decisao: Decisao, ambiente: dict
+) -> None:
+    dados = {
+        "ambiente": ambiente,
+        "decisao": decisao.model_dump(mode="json"),
+        "resultados": [r.model_dump(mode="json") for r in resultados],
+    }
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    temporario = caminho.with_name(caminho.name + ".tmp")
+    temporario.write_text(json.dumps(dados, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    temporario.replace(caminho)
+
+
+def ler_resultado(caminho: Path) -> tuple[list[ResultadoConfiguracao], Decisao]:
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    return (
+        [ResultadoConfiguracao.model_validate(r) for r in dados["resultados"]],
+        Decisao.model_validate(dados["decisao"]),
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    argparse.ArgumentParser(
+        prog="python -m rag.medicao",
+        description="Mede as 24 combinações de recuperação com a régua congelada.",
+    ).parse_args(argv)
+    try:
+        conjunto = ler_conjunto(ARQUIVO_CONSULTAS)
+        paginas = carregar_paginas()
+        trechos = trechos_das_variantes(paginas)
+        for variante, lista in trechos.items():
+            falhas = verificar_oraculo(lista, conjunto)
+            if falhas:
+                raise ErroDeMedicao(f"oráculo: {variante} parte a frase-marca de {', '.join(falhas)}")
+        embedder = EmbedderBge()
+        vetores = {
+            v: vetores_com_cache(embedder, [t.texto_indexado for t in lista], pasta=PASTA_EMBEDDINGS, nome=v)
+            for v, lista in trechos.items()
+        }
+        fontes = yaml.safe_load(ARQUIVO_FONTES.read_text(encoding="utf-8"))
+        resultados = medir(
+            conjunto,
+            trechos=trechos,
+            vetores=vetores,
+            embedder=embedder,
+            paginas_guidance=ids_do_corpus_guidance(fontes),
+        )
+    except (ErroDeAvaliacao, ErroDeEmbeddings, ErroDeMedicao) as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    decisao = decidir(resultados)
+    destino = PASTA_RESULTADOS / f"recuperacao-{date.today().isoformat()}.json"
+    gravar_resultado(destino, resultados, decisao, ambiente(trechos))
+    print(formatar_tabela(resultados, decisao))
+    print(f"Resultado gravado em {destino.relative_to(RAIZ_REPO)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from rag.avaliacao import ConjuntoAvaliacao, Consulta, Gabarito, Metricas
+from rag import medicao as modulo_medicao
 from rag.chunking import TrechoIndexado
 from rag.medicao import (
     GRADE,
@@ -12,6 +13,9 @@ from rag.medicao import (
     ResultadoConfiguracao,
     decidir,
     formatar_tabela,
+    gravar_resultado,
+    ler_resultado,
+    main,
     medir,
     verificar_oraculo,
 )
@@ -148,3 +152,19 @@ def test_tabela_marca_a_vencedora():
     texto = formatar_tabela(resultados, decidir(resultados))
     assert "secao-sem-densa-completo" in texto and "*" in texto
     assert "0.556" in texto
+
+
+def test_resultado_faz_ida_e_volta_em_json(tmp_path):
+    resultados = [_resultado(acerto5=5 / 9), _resultado(busca="bm25", acerto5=2 / 9)]
+    decisao = decidir(resultados)
+    arquivo = tmp_path / "recuperacao.json"
+    gravar_resultado(arquivo, resultados, decisao, {"modelo": "m"})
+    lidos, decisao_lida = ler_resultado(arquivo)
+    assert lidos == resultados and decisao_lida == decisao
+    assert b"\r\n" not in arquivo.read_bytes()
+
+
+def test_main_sem_conjunto_sai_com_erro(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(modulo_medicao, "ARQUIVO_CONSULTAS", tmp_path / "nao-existe.yaml")
+    assert main([]) == 1
+    assert "rag.avaliacao gerar" in capsys.readouterr().err
