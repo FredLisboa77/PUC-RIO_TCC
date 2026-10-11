@@ -27,11 +27,13 @@ from rag.coleta import (
     ler_registro,
 )
 
-VERSAO_EXTRATOR = 1
+VERSAO_EXTRATOR = 2
 
-SECOES_EXCLUIDAS = frozenset({"related-content", "next-steps", "see-also"})
-"""Seções do corpo que são só listas de links. "In this article", "Feedback" e
-"Additional resources" já ficam fora do corpo do artigo."""
+SECOES_EXCLUIDAS = frozenset({"related-content", "next-steps", "see-also", "additional-resources"})
+"""Seções do corpo que são só listas de links. "In this article", "Feedback" e o
+"Additional resources" do rodapé já ficam fora do corpo do artigo; o
+`additional-resources` entra aqui porque há página que o traz dentro do corpo
+(`guidance/white-paper-powerbi-security`, coleta de 11/10/2026)."""
 
 _ROTULOS_DE_NOTA = {
     "NOTE": "Note",

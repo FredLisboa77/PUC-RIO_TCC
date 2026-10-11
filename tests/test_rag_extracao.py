@@ -210,3 +210,15 @@ def test_main_sem_coleta_sai_com_erro(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(modulo_extracao, "ARQUIVO_FONTES", tmp_path / "nao-existe.yaml")
     assert main([]) == 1
     assert "rag.coleta" in capsys.readouterr().err
+
+
+def test_additional_resources_dentro_do_corpo_tambem_sai():
+    corpo = (
+        "<p>Texto do artigo.</p>"
+        '<h2 id="additional-resources">Additional resources</h2>'
+        "<p>For more information, see the following resources.</p>"
+        '<ul><li><a href="z">Power BI API reference</a></li></ul>'
+    )
+    resultado = extrair(pagina(corpo), "x:y", URL)
+    assert [s.ancora for s in resultado.secoes] == ["calculate"]
+    assert resultado.secoes_excluidas == ["additional-resources"]
