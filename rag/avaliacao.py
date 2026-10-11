@@ -167,3 +167,143 @@ def ler_conjunto(caminho: Path) -> ConjuntoAvaliacao:
     if not caminho.is_file():
         raise ErroDeAvaliacao(f"{caminho} não existe — rode `python -m rag.avaliacao gerar`")
     return ConjuntoAvaliacao.model_validate(yaml.safe_load(caminho.read_text(encoding="utf-8")))
+
+
+KS = (1, 3, 5, 10)
+K_MAX = 10
+
+
+class Trecho(BaseModel):
+    """O que um recuperador devolve. A régua não sabe de chunking nem de índice."""
+
+    texto: str
+    id_pagina: str
+    ancora: str | None = None
+
+
+Buscador = Callable[[str, int], list[Trecho]]
+
+
+class ResultadoConsulta(BaseModel):
+    id: str
+    id_regra: str
+    tipo: Literal["regra", "achado"]
+    posicao: int | None
+    """Posição (a partir de 1) do primeiro trecho relevante; `None` se não houve até K_MAX."""
+    relevantes_ate: dict[int, int]
+    primeiro_devolvido: str | None
+    """`id_pagina#ancora` do primeiro trecho devolvido, para explicar o erro."""
+
+
+class Metricas(BaseModel):
+    consultas: int
+    acerto: dict[int, float]
+    precisao: dict[int, float]
+    mrr: float
+
+
+class RelatorioRecuperacao(BaseModel):
+    macro: Metricas
+    micro: Metricas
+    por_tipo: dict[str, Metricas]
+    por_regra: dict[str, Metricas]
+    resultados: list[ResultadoConsulta]
+
+    @property
+    def erros(self) -> list[ResultadoConsulta]:
+        return [r for r in self.resultados if r.posicao is None or r.posicao > 1]
+
+
+def _metricas(resultados: list[ResultadoConsulta]) -> Metricas:
+    n = len(resultados)
+    return Metricas(
+        consultas=n,
+        acerto={k: sum(1 for r in resultados if r.posicao is not None and r.posicao <= k) / n for k in KS},
+        precisao={k: sum(r.relevantes_ate[k] for r in resultados) / (k * n) for k in KS},
+        mrr=sum(1 / r.posicao for r in resultados if r.posicao is not None) / n,
+    )
+
+
+def _media(metricas: list[Metricas]) -> Metricas:
+    n = len(metricas)
+    return Metricas(
+        consultas=sum(m.consultas for m in metricas),
+        acerto={k: sum(m.acerto[k] for m in metricas) / n for k in KS},
+        precisao={k: sum(m.precisao[k] for m in metricas) / n for k in KS},
+        mrr=sum(m.mrr for m in metricas) / n,
+    )
+
+
+def avaliar(buscar: Buscador, conjunto: ConjuntoAvaliacao) -> RelatorioRecuperacao:
+    """Mede um recuperador sobre o conjunto. A busca é feita uma vez por consulta,
+    com K_MAX; os cortes menores saem da mesma lista."""
+    if not conjunto.consultas:
+        raise ErroDeAvaliacao("nenhuma consulta no conjunto")
+    frases = {g.id_regra: normalizar(g.frase_marca) for g in conjunto.gabaritos}
+    sem_gabarito = sorted({c.id_regra for c in conjunto.consultas} - set(frases))
+    if sem_gabarito:
+        raise ErroDeAvaliacao(f"consulta(s) de regra sem gabarito: {', '.join(sem_gabarito)}")
+
+    resultados = []
+    for consulta in conjunto.consultas:
+        trechos = buscar(consulta.texto, K_MAX)
+        if len(trechos) > K_MAX:
+            raise ErroDeAvaliacao(
+                f"{consulta.id}: o recuperador devolveu {len(trechos)} trechos para K = {K_MAX}"
+            )
+        relevante = [frases[consulta.id_regra] in normalizar(t.texto) for t in trechos]
+        resultados.append(
+            ResultadoConsulta(
+                id=consulta.id,
+                id_regra=consulta.id_regra,
+                tipo=consulta.tipo,
+                posicao=next((i + 1 for i, r in enumerate(relevante) if r), None),
+                relevantes_ate={k: sum(relevante[:k]) for k in KS},
+                primeiro_devolvido=(
+                    f"{trechos[0].id_pagina}#{trechos[0].ancora or ''}" if trechos else None
+                ),
+            )
+        )
+
+    regras = sorted({r.id_regra for r in resultados})
+    por_regra = {regra: _metricas([r for r in resultados if r.id_regra == regra]) for regra in regras}
+    por_tipo = {
+        tipo: _metricas([r for r in resultados if r.tipo == tipo])
+        for tipo in ("regra", "achado")
+        if any(r.tipo == tipo for r in resultados)
+    }
+    return RelatorioRecuperacao(
+        macro=_media(list(por_regra.values())),
+        micro=_metricas(resultados),
+        por_tipo=por_tipo,
+        por_regra=por_regra,
+        resultados=resultados,
+    )
+
+
+def _linha(rotulo: str, m: Metricas) -> str:
+    acertos = " · ".join(f"acerto@{k} {m.acerto[k]:.3f}" for k in KS)
+    return f"{rotulo}: {acertos} · MRR@10 {m.mrr:.3f}"
+
+
+def formatar_relatorio(relatorio: RelatorioRecuperacao) -> str:
+    linhas = [
+        _linha("Macro por regra (decide)", relatorio.macro),
+        _linha(f"Micro ({relatorio.micro.consultas} consultas)", relatorio.micro),
+        *(
+            _linha(f"Tipo {tipo} ({m.consultas} consultas)", m)
+            for tipo, m in relatorio.por_tipo.items()
+        ),
+        "Por regra:",
+        *(_linha(f"  {regra} ({m.consultas})", m) for regra, m in relatorio.por_regra.items()),
+        "Precision@K (micro): "
+        + " · ".join(f"@{k} {relatorio.micro.precisao[k]:.3f}" for k in KS)
+        + " — com uma só passagem relevante por consulta, tende a acerto@K / K.",
+        f"Consultas fora da posição 1: {len(relatorio.erros)}",
+    ]
+    for erro in relatorio.erros:
+        onde = (
+            f"primeiro acerto na posição {erro.posicao}" if erro.posicao is not None else "não apareceu"
+        )
+        linhas.append(f"  {erro.id}: {onde} — primeiro devolvido: {erro.primeiro_devolvido or '(nada)'}")
+    return "\n".join(linhas)

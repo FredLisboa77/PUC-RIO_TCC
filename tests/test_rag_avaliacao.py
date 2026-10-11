@@ -10,13 +10,17 @@ from core.rules.todas import REGISTRO
 from core.rules.base import Achado, Evidencia
 from rag.avaliacao import (
     ARQUIVO_GABARITO,
+    K_MAX,
     ConjuntoAvaliacao,
     Consulta,
     ErroDeAvaliacao,
     FraseMarca,
     Gabarito,
+    Trecho,
+    avaliar,
     como_yaml,
     deduzir_secao,
+    formatar_relatorio,
     gerar,
     id_da_pagina,
     ler_conjunto,
@@ -188,3 +192,98 @@ def test_yaml_faz_ida_e_volta_com_nomes_especiais(tmp_path):
 def test_ler_conjunto_ausente_falha_indicando_o_gerador(tmp_path):
     with pytest.raises(ErroDeAvaliacao, match="rag.avaliacao gerar"):
         ler_conjunto(tmp_path / "nao-existe.yaml")
+
+
+RELEVANTE = Trecho(texto="Text with “Alpha” Beta here.", id_pagina="p", ancora="a")
+OUTRO = Trecho(texto="other", id_pagina="q", ancora="b")
+
+CONJUNTO = ConjuntoAvaliacao(
+    gabaritos=[
+        Gabarito(id_regra="R1", frase_marca='"alpha" beta', id_pagina="p", ancora="a"),
+        Gabarito(id_regra="R2", frase_marca="gamma", id_pagina="p", ancora="c"),
+    ],
+    consultas=[
+        Consulta(id="REGRA/R1", tipo="regra", id_regra="R1", texto="q1"),
+        Consulta(id="P1/R1/1", tipo="achado", projeto="P1", id_regra="R1", objeto="T", texto="q2"),
+        Consulta(id="REGRA/R2", tipo="regra", id_regra="R2", texto="q3"),
+    ],
+)
+
+RESPOSTAS = {"q1": [RELEVANTE, OUTRO, OUTRO], "q2": [OUTRO, OUTRO, RELEVANTE], "q3": []}
+
+
+def _buscar(texto, k):
+    return RESPOSTAS[texto][:k]
+
+
+def test_metricas_micro_contadas_a_mao():
+    micro = avaliar(_buscar, CONJUNTO).micro
+    assert micro.consultas == 3
+    assert micro.acerto[1] == pytest.approx(1 / 3)
+    assert micro.acerto[3] == pytest.approx(2 / 3)
+    assert micro.mrr == pytest.approx(4 / 9)
+    assert micro.precisao[3] == pytest.approx(2 / 9)
+
+
+def test_macro_e_a_media_das_regras_e_difere_da_micro():
+    relatorio = avaliar(_buscar, CONJUNTO)
+    assert relatorio.por_regra["R1"].acerto[1] == pytest.approx(1 / 2)
+    assert relatorio.por_regra["R1"].mrr == pytest.approx(2 / 3)
+    assert relatorio.por_regra["R2"].acerto[10] == 0
+    assert relatorio.macro.acerto[1] == pytest.approx(1 / 4)
+    assert relatorio.macro.acerto[3] == pytest.approx(1 / 2)
+    assert relatorio.macro.mrr == pytest.approx(1 / 3)
+    assert relatorio.macro.mrr != pytest.approx(relatorio.micro.mrr)
+
+
+def test_corte_por_tipo():
+    por_tipo = avaliar(_buscar, CONJUNTO).por_tipo
+    assert por_tipo["regra"].consultas == 2 and por_tipo["regra"].acerto[1] == pytest.approx(1 / 2)
+    assert por_tipo["achado"].acerto[1] == 0 and por_tipo["achado"].acerto[3] == 1
+
+
+def test_erros_listam_posicao_e_primeiro_devolvido():
+    erros = avaliar(_buscar, CONJUNTO).erros
+    assert [(e.id, e.posicao, e.primeiro_devolvido) for e in erros] == [
+        ("P1/R1/1", 3, "q#b"),
+        ("REGRA/R2", None, None),
+    ]
+
+
+def test_aspas_tipograficas_casam_com_aspas_retas():
+    assert avaliar(_buscar, CONJUNTO).resultados[0].posicao == 1
+
+
+def test_consulta_de_regra_sem_gabarito_falha_antes_de_medir():
+    chamadas = []
+
+    def buscar(texto, k):
+        chamadas.append(texto)
+        return []
+
+    conjunto = CONJUNTO.model_copy(
+        update={"consultas": [*CONJUNTO.consultas, Consulta(id="REGRA/R9", tipo="regra", id_regra="R9", texto="q9")]}
+    )
+    with pytest.raises(ErroDeAvaliacao, match="R9"):
+        avaliar(buscar, conjunto)
+    assert chamadas == []
+
+
+def test_recuperador_que_devolve_mais_que_k_falha():
+    with pytest.raises(ErroDeAvaliacao, match="REGRA/R1.*11"):
+        avaliar(lambda texto, k: [OUTRO] * (K_MAX + 1), CONJUNTO)
+
+
+def test_conjunto_sem_consultas_falha():
+    with pytest.raises(ErroDeAvaliacao, match="nenhuma consulta"):
+        avaliar(_buscar, CONJUNTO.model_copy(update={"consultas": []}))
+
+
+def test_relatorio_formatado():
+    texto = formatar_relatorio(avaliar(_buscar, CONJUNTO))
+    assert "Macro por regra (decide)" in texto
+    assert "MRR@10 0.333" in texto
+    assert "Micro (3 consultas)" in texto
+    assert "P1/R1/1: primeiro acerto na posição 3" in texto
+    assert "REGRA/R2: não apareceu" in texto
+    assert "Precision@K" in texto
