@@ -92,6 +92,12 @@ python -m rag.extracao            # extrai o texto por seção para rag/store/te
 
 `rag/store/` não é versionado: é cópia local do Microsoft Learn, para uso pessoal e não comercial.
 
+```powershell
+python -m rag.avaliacao gerar     # gera eval/recuperacao/consultas.yaml (precisa de rag/store/ e data/pbip/)
+```
+
+`eval/recuperacao/gabarito.yaml` (frases-marca) é escrito à mão; `consultas.yaml` é gerado — não editar à mão.
+
 `rag/sources.yaml` é gerado — não editar à mão. Notas vão em `rag/observacoes.yaml`;
 leituras complementares do SQLBI (só link, nunca indexadas) em `rag/leituras_sqlbi.yaml`.
 

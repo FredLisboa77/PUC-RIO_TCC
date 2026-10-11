@@ -1026,3 +1026,37 @@ Suíte: **365 testes passando**.
 
 **Próximo passo:** conjunto de avaliação da recuperação (62 consultas com a seção
 âncora como gabarito, ADR-002) e, depois, chunking e embeddings.
+
+---
+
+## 11/10/2026 — Fase 3 — conjunto de avaliação da recuperação
+
+A régua que vai decidir chunking, embeddings e busca híbrida está pronta e congelada,
+antes de qualquer medição (emenda de 09/10 da ADR-002). Spec
+`2026-10-11-conjunto-de-avaliacao-da-recuperacao-design.md`, plano de mesmo nome.
+
+**Decisões do Fred:** (1) a consulta de cada achado é a que o pipeline real vai mandar
+— os termos da regra em inglês mais o tipo e o nome do objeto (`montar_consulta`, em
+`rag/consulta.py`, é a mesma função que o pipeline vai usar); (2) um trecho acerta quando
+contém a frase-marca da regra, o que pune o chunking que corta a passagem; (3) esta etapa
+entrega conjunto e métricas, sem medir; (4) as consultas são geradas e versionadas,
+conferidas por teste.
+
+**Gabarito deduzido da base:** a seção âncora de cada regra é a única que contém a
+frase-marca. DAX-001, MOD-001 e MOD-007 → `recommendations`; MOD-002 →
+`bi-directional-relationship-guidance`; MOD-003 → `star-schema-relevance-to-power-bi-semantic-models`;
+MOD-005 → `set-and-use-date-tables-in-power-bi-desktop`; MOD-006 → `snowflake-dimensions`
+(mesma página da MOD-003, seção diferente); PERF-001 → `preference-for-custom-columns`;
+PERF-003 → `accuracy-of-number-type-calculations`.
+
+**Consultas:** 62 (9 por regra, 53 por achado). Por regra: PERF-001 20, PERF-003 17,
+MOD-003 8, DAX-001 7, MOD-006 4, MOD-001 2, MOD-007 2, MOD-002 1, MOD-005 1 — a MOD-002 e
+a MOD-005 só têm a consulta da própria regra. Por esse desequilíbrio, o número que decide
+é a **macro por regra**; a micro e o corte por tipo (regra × achado) vêm como referência.
+
+**Encontrado na execução:** o resumo do comando usava `→` e o console padrão do Windows
+(cp1252) derrubava o comando depois de gravar o arquivo; trocado por `->`, com teste.
+
+Suíte: **410 testes passando**.
+
+**Próximo passo:** brainstorming da medição de chunking e embeddings com a régua.
