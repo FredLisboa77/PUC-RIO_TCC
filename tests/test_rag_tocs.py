@@ -5,6 +5,7 @@ arquivo bruto: os termos de uso do Learn não permitem publicar cópia literal
 num repositório público (spec, seção 5.2).
 """
 
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -281,3 +282,21 @@ def test_erro_de_rede_tem_status_vazio(monkeypatch):
 def test_erro_de_retrato_sem_status_continua_valendo():
     assert ErroDeRetrato("x").status is None
     assert str(ErroDeRetrato("mensagem", status=404)) == "mensagem"
+
+
+@pytest.mark.parametrize(
+    "falha",
+    [
+        http.client.IncompleteRead(b"meio"),
+        http.client.RemoteDisconnected("fechou"),
+        ConnectionResetError("reset"),
+    ],
+)
+def test_conexao_cortada_vira_erro_de_retrato_sem_status(monkeypatch, falha):
+    def urlopen_falso(pedido, timeout):
+        raise falha
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen_falso)
+    with pytest.raises(ErroDeRetrato) as erro:
+        buscar_padrao("https://learn.microsoft.com/en-us/dax/abs-function-dax")
+    assert erro.value.status is None

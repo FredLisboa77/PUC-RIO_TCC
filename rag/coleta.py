@@ -103,7 +103,9 @@ def ler_registro(caminho: Path) -> dict[str, RegistroColeta]:
     meio da escrita é ignorada; linha inválida em qualquer outro lugar é erro."""
     if not caminho.is_file():
         return {}
-    linhas = caminho.read_text(encoding="utf-8").splitlines()
+    # `errors="replace"`: um corte no meio de um caractere acentuado (o `motivo`
+    # pode trazer mensagem do Windows em português) vira linha inválida, não exceção.
+    linhas = caminho.read_bytes().decode("utf-8", errors="replace").splitlines()
     ultimos: dict[str, RegistroColeta] = {}
     for numero, linha in enumerate(linhas, 1):
         if not linha.strip():
@@ -127,8 +129,21 @@ def ja_coletada(registro: RegistroColeta | None, pasta_paginas: Path) -> bool:
     return hashlib.sha256(arquivo.read_bytes()).hexdigest() == registro.sha256
 
 
+def _descartar_linha_cortada(caminho: Path) -> None:
+    """Corta o resto de uma última linha sem quebra (desligamento no meio da
+    escrita). Sem isso, a próxima linha se colaria nela e viraria linha inválida
+    no meio do registro."""
+    if not caminho.is_file():
+        return
+    with open(caminho, "rb+") as arquivo:
+        conteudo = arquivo.read()
+        if conteudo and not conteudo.endswith(b"\n"):
+            arquivo.truncate(conteudo.rfind(b"\n") + 1)
+
+
 def anexar_registro(caminho: Path, registro: RegistroColeta) -> None:
     caminho.parent.mkdir(parents=True, exist_ok=True)
+    _descartar_linha_cortada(caminho)
     with open(caminho, "a", encoding="utf-8", newline="\n") as arquivo:
         arquivo.write(registro.model_dump_json() + "\n")
 
@@ -148,6 +163,15 @@ def _gravar_atomico(caminho: Path, conteudo: bytes) -> None:
     temporario = caminho.with_name(caminho.name + ".tmp")
     temporario.write_bytes(conteudo)
     temporario.replace(caminho)
+
+
+def _parece_queda(erro: tocs.ErroDeRetrato) -> bool:
+    """Falha que sugere rede ou servidor fora do ar — a que conta para as
+    `FALHAS_SEGUIDAS_MAX`. Página inexistente (4xx) ou redirecionada é o catálogo
+    envelhecendo: registra e segue, sem travar as páginas seguintes."""
+    if erro.status is not None:
+        return erro.status >= 500
+    return not erro.redirecionada
 
 
 def coletar(
@@ -185,7 +209,8 @@ def coletar(
             )
             anexar_registro(arquivo_registro, registro)
             resumo.erros.append(registro)
-            falhas_seguidas += 1
+            if _parece_queda(erro):
+                falhas_seguidas += 1
             if erro.status in STATUS_PARAR:
                 resumo.interrompida = (
                     f"o servidor pediu para parar (HTTP {erro.status}) em {pagina.url}"

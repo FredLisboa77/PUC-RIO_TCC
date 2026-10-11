@@ -7,6 +7,7 @@ fora do Git: os termos de uso do Learn permitem uso pessoal e não comercial,
 não a republicação de cópia literal (spec, seção 5.2).
 """
 
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -48,9 +49,12 @@ class ErroDeRetrato(Exception):
     para parar (429/503: interrompe).
     """
 
-    def __init__(self, mensagem: str, status: int | None = None) -> None:
+    def __init__(
+        self, mensagem: str, status: int | None = None, *, redirecionada: bool = False
+    ) -> None:
         super().__init__(mensagem)
         self.status = status
+        self.redirecionada = redirecionada
 
 
 class ItemToc(BaseModel):
@@ -124,11 +128,13 @@ def buscar_padrao(url: str) -> bytes:
             # e redirecionado para a home passaria como "respondeu 200".
             final = resposta.geturl()
             if normalizar_url(final) != normalizar_url(url):
-                raise ErroDeRetrato(f"{url}: redirecionado para {final}")
+                raise ErroDeRetrato(f"{url}: redirecionado para {final}", redirecionada=True)
             return resposta.read()
     except urllib.error.HTTPError as erro:
         raise ErroDeRetrato(f"{url}: HTTP {erro.code}", status=erro.code) from erro
-    except (urllib.error.URLError, TimeoutError) as erro:
+    # OSError cobre TimeoutError e conexão resetada; HTTPException cobre resposta
+    # cortada no meio (`IncompleteRead`, `RemoteDisconnected`).
+    except (urllib.error.URLError, http.client.HTTPException, OSError) as erro:
         raise ErroDeRetrato(f"{url}: {erro}") from erro
 
 

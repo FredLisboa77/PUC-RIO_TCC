@@ -283,3 +283,37 @@ def test_pagina_que_nao_decodifica_como_utf8_nao_derruba_a_coleta(tmp_path):
     resumo = _coletar(SimuladorLatin1(), _paginas(1), tmp_path)
     assert resumo.coletadas == ["learn:dax/p0"]
     assert ler_registro(tmp_path / "coleta.jsonl")["learn:dax/p0"].updated_at is None
+
+
+def test_retomada_depois_de_linha_truncada_continua_legivel(tmp_path):
+    _coletar(Simulador(), _paginas(1), tmp_path)
+    with open(tmp_path / "coleta.jsonl", "a", encoding="utf-8") as arquivo:
+        arquivo.write('{"id": "learn:dax/p1", "url": "u", "situ')
+    resumo = _coletar(Simulador(), _paginas(2), tmp_path)
+    assert resumo.coletadas == ["learn:dax/p1"]
+    assert set(ler_registro(tmp_path / "coleta.jsonl")) == {"learn:dax/p0", "learn:dax/p1"}
+
+
+def test_ultima_linha_cortada_no_meio_de_um_caractere_e_ignorada(tmp_path):
+    caminho = tmp_path / "coleta.jsonl"
+    anexar_registro(caminho, _ok("a"))
+    with open(caminho, "ab") as arquivo:
+        arquivo.write('{"id": "b", "motivo": "conex'.encode() + "ã".encode()[:1])
+    assert set(ler_registro(caminho)) == {"a"}
+
+
+def test_404_seguidos_nao_contam_como_queda_de_rede(tmp_path):
+    paginas = _paginas(7)
+    falhas = {p.url: ErroDeRetrato(f"{p.url}: HTTP 404", status=404) for p in paginas[:6]}
+    falhas[paginas[0].url] = ErroDeRetrato(f"{paginas[0].url}: redirecionado para x", redirecionada=True)
+    resumo = _coletar(Simulador(falhas), paginas, tmp_path)
+    assert resumo.interrompida is None
+    assert resumo.coletadas == ["learn:dax/p6"]
+
+
+def test_cinco_erros_de_servidor_seguidos_interrompem(tmp_path):
+    paginas = _paginas(8)
+    sim = Simulador({p.url: ErroDeRetrato(f"{p.url}: HTTP 500", status=500) for p in paginas})
+    resumo = _coletar(sim, paginas, tmp_path)
+    assert len(sim.pedidos) == 5
+    assert "5 falhas seguidas" in resumo.interrompida
