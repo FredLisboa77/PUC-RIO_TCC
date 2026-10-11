@@ -2,7 +2,7 @@
 
 - **Data:** 11/10/2026
 - **Fase:** 3, semana 6 do roadmap
-- **Status:** Rascunho, aguardando revisão do Fred
+- **Status:** Aprovado para implementação (11/10/2026)
 - **Depende de:** a régua congelada (spec `2026-10-11-conjunto-de-avaliacao-da-recuperacao-design.md`: `eval/recuperacao/consultas.yaml` e `rag.avaliacao.avaliar`) e a base extraída em `rag/store/textos/`
 - **Decisões que este desenho executa:** ADR-002 (embeddings `bge-small-en-v1.5`, ChromaDB persistente) e sua emenda de 09/10/2026, itens 2 e 3 (chunking e tamanho decididos por medição; busca híbrida só se superar a densa)
 
