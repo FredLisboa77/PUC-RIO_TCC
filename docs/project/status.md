@@ -17,7 +17,7 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **410 testes** automatizados passando. O maior risco técnico do
+Learn. São **477 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
@@ -73,7 +73,8 @@ regras de M, depois abrir mão do PDF (R-07).
 | Catálogo de fontes da RAG (`python -m rag.catalogo`) | `rag/sources.yaml` com **1.420 páginas** do Learn a indexar (guidance inteiro, referências completas de DAX e de M, âncoras das 9 regras), todas com `url_pt_br` conferida, e 6 leituras do SQLBI só como referência; um teste falha se o arquivo divergir do que o gerador produz |
 | Coleta e extração da base RAG (`python -m rag.coleta`, `python -m rag.extracao`) | **1.420 páginas** coletadas (0 erros, 37,6 min, 73 MB) e extraídas por seção, com âncora, caminho e blocos tipados (13 MB); a passagem citada por cada uma das 9 regras conferida no texto extraído (`tests/test_rag_store_real.py`) |
 | Conjunto de avaliação da recuperação (`python -m rag.avaliacao gerar`) | 9 gabaritos com a seção âncora deduzida da base, 62 consultas (9 por regra, 53 por achado de P1–P7) congeladas em `eval/recuperacao/consultas.yaml`; métricas acerto@K, Precision@K e MRR@10, com a macro por regra como número que decide |
-| Suíte de testes | **410 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Recuperação escolhida por medição (`python -m rag.medicao`, `python -m rag.indice construir`) | 24 combinações medidas com a régua; vence, pela regra fixada antes, **seção + BM25 sobre o corpus completo** (macro acerto@5 = 1,000); índice construído e conferido contra a medição. Efeito teto e decisão por uma consulta declarados (emenda de 11/10 da ADR-002) |
+| Suíte de testes | **477 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -297,7 +298,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Medir chunking e embeddings com o conjunto de avaliação** | A régua está congelada (11/10/2026). A medição decide o chunking, o tamanho do trecho e se a busca híbrida entra no MVP (emenda de 09/10 da ADR-002) |
+| 1 | **Geração com o LLM e citação obrigatória (semana 7)** | A recuperação está escolhida e indexada: a seção âncora mais os trechos complementares do índice entram no prompt |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
 ---
@@ -310,7 +311,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 410 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 477 testes (os que leem o PBIP real são pulados sem data/)
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 python -m rag.catalogo            # regenera o catálogo de fontes offline; não deve gerar diff
 ```

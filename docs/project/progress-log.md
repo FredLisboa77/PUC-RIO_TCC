@@ -1102,11 +1102,25 @@ idênticos**. Oráculo aprovado nas 4 variantes.
 
 (Tabela completa, com as 24 combinações, no JSON.) Pela regra fixada antes de medir,
 **vence `secao-sem-bm25-completo`**: macro acerto@5 = 1,000, complexidade 0. Oito
-combinações empatam em 1,000; a densa sem cabeçalho fica fora do empate por **uma única
+combinações empatam a menos de 1/9 da melhor (7 delas em 1,000); a densa sem cabeçalho fica fora do empate por **uma única
 consulta** (`REGRA/MOD-005`, primeiro acerto na posição 7). O corpus `guidance` não
 superou o completo (sem aviso).
 
 **Pontos para o Fred antes do índice:** (1) **efeito teto** — o acerto@5 satura em 1,000
-para 8 das 12 candidatas, então a métrica que decide quase não discrimina; (2) a decisão
+para 7 das 12 candidatas (8 empatam a menos de 1/9), então a métrica que decide quase não discrimina; (2) a decisão
 pende de uma consulta; (3) a vencedora dispensa embeddings na consulta, o que muda o papel
 do `bge-small` e do ChromaDB previstos na ADR-002.
+
+**Decisão do Fred depois da medição:** manter a regra fixada — vence
+`secao-sem-bm25-completo` — em vez de trocá-la depois de ver os números, para que a
+medição continue valendo como evidência. Efeito teto, consulta decisiva e a híbrida como
+alternativa a reavaliar estão na emenda de 11/10 da ADR-002.
+
+**Índice:** `python -m rag.indice construir` gravou os trechos da vencedora
+(`rag/store/indice/`, 13 MB) e a coleção ChromaDB com os vetores (`rag/store/chroma/`,
+58 MB). O teste confirma que o buscador carregado do índice reproduz a macro acerto@5
+medida. Com a vencedora BM25, a consulta não passa pelo Chroma.
+
+Suíte: **477 testes passando**.
+
+**Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7).
