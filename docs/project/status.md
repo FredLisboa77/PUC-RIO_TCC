@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 6 de 13 — Fase 2 encerrada; Fase 3 iniciada com o catálogo de fontes pronto · **Atualizado em:** 09/10/2026
+**Posição:** semana 6 de 13 — Fase 2 encerrada; Fase 3: catálogo de fontes e base coletada · **Atualizado em:** 11/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -17,7 +17,7 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **299 testes** automatizados passando. O maior risco técnico do
+Learn. São **358 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
@@ -28,7 +28,9 @@ renderam **53 achados**, acima do gatilho de ~40 do R-12 — mas 16 deles vêm d
 regra de precisão mais dependente de dado, e sem ela seriam 37. O projeto de
 contingência P9 não foi acionado (seção 4.2). A Fase 3 começou: o catálogo de
 fontes da RAG está pronto, com **1.420 páginas do Microsoft Learn** a indexar e 6
-artigos do SQLBI só como leitura complementar (seção 4.3).
+artigos do SQLBI só como leitura complementar (seção 4.3). Em 11/10/2026 as 1.420
+páginas foram coletadas e extraídas por seção, sem erro, e a passagem citada por cada
+uma das 9 regras foi conferida no texto extraído.
 
 ---
 
@@ -69,7 +71,8 @@ regras de M, depois abrir mão do PDF (R-07).
 | Varredura de DAX com lacuna declarada (`core/rules/expressoes.py`) | **105 de 105** expressões em escopo de autor cobertas, **0 lacunas** no P8; o runner agora declara essa cobertura junto dos achados |
 | 9 regras, cada uma com âncora no Microsoft Learn (8 estruturais + DAX-001) | `python -m core.rules.catalogo` imprime o catálogo com as URLs |
 | Catálogo de fontes da RAG (`python -m rag.catalogo`) | `rag/sources.yaml` com **1.420 páginas** do Learn a indexar (guidance inteiro, referências completas de DAX e de M, âncoras das 9 regras), todas com `url_pt_br` conferida, e 6 leituras do SQLBI só como referência; um teste falha se o arquivo divergir do que o gerador produz |
-| Suíte de testes | **299 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Coleta e extração da base RAG (`python -m rag.coleta`, `python -m rag.extracao`) | **1.420 páginas** coletadas (0 erros, 37,6 min, 73 MB) e extraídas por seção, com âncora, caminho e blocos tipados (13 MB); a passagem citada por cada uma das 9 regras conferida no texto extraído (`tests/test_rag_store_real.py`) |
+| Suíte de testes | **358 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -293,7 +296,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Coleta das páginas do catálogo** (`rag/store/`, fora do Git) | O catálogo do G-8 está pronto (09/10/2026): 1.420 páginas do Learn com `indexar: true`. A coleta precisa de pausa entre requisições e de ser retomável (spec do catálogo, seção 5.1), e deve registrar o H1 e a data de acesso de cada página |
+| 1 | **Conjunto de avaliação da recuperação e chunking** | ADR-002, emenda de 09/10: o gabarito (seção âncora de cada regra) é montado antes de escolher chunking e embeddings |
 | 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
 ---
@@ -306,7 +309,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 299 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 358 testes (os que leem o PBIP real são pulados sem data/)
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 python -m rag.catalogo            # regenera o catálogo de fontes offline; não deve gerar diff
 ```

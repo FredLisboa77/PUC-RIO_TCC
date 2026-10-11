@@ -85,7 +85,12 @@ Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa con
 ```powershell
 python -m rag.catalogo            # gera rag/sources.yaml a partir de rag/tocs/ (offline)
 python -m rag.catalogo atualizar  # baixa os toc.json do Learn de novo e gera
+python -m rag.coleta --limite 20  # ensaio: baixa as 20 primeiras páginas pendentes
+python -m rag.coleta              # baixa as páginas do catálogo para rag/store/ (retomável)
+python -m rag.extracao            # extrai o texto por seção para rag/store/textos/ (offline)
 ```
+
+`rag/store/` não é versionado: é cópia local do Microsoft Learn, para uso pessoal e não comercial.
 
 `rag/sources.yaml` é gerado — não editar à mão. Notas vão em `rag/observacoes.yaml`;
 leituras complementares do SQLBI (só link, nunca indexadas) em `rag/leituras_sqlbi.yaml`.
