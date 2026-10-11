@@ -2,7 +2,7 @@
 
 - **Data:** 11/10/2026
 - **Fase:** 3, semana 6 do roadmap
-- **Status:** Rascunho, aguardando revisão do Fred
+- **Status:** Aprovado para implementação (11/10/2026)
 - **Depende de:** a base extraída em `rag/store/textos/` (spec `2026-10-09-coleta-da-base-rag-design.md`) e os PBIP P1–P7 em `data/pbip/`
 - **Decisão que este desenho executa:** emenda de 09/10/2026 da ADR-002, item 2: conjunto de avaliação da recuperação derivado das âncoras, montado **antes** de escolher chunking e embeddings
 
