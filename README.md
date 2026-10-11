@@ -94,6 +94,8 @@ python -m rag.extracao            # extrai o texto por seção para rag/store/te
 
 ```powershell
 python -m rag.avaliacao gerar     # gera eval/recuperacao/consultas.yaml (precisa de rag/store/ e data/pbip/)
+python -m rag.medicao             # mede as 24 combinacoes de recuperacao e grava eval/results/
+python -m rag.indice construir    # constroi o indice da combinacao vencedora em rag/store/
 ```
 
 `eval/recuperacao/gabarito.yaml` (frases-marca) é escrito à mão; `consultas.yaml` é gerado — não editar à mão.

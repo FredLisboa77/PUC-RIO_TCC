@@ -1068,3 +1068,68 @@ puro dos blocos, sem markdown, e um recuperador "oráculo", que devolve a seçã
 precisa dar acerto@1 = 1,0 em todas as regras, como teste de sanidade da régua.
 
 **Próximo passo:** brainstorming da medição de chunking e embeddings com a régua.
+
+---
+
+## 11/10/2026 — Fase 3 — medição da recuperação
+
+Spec `2026-10-11-medicao-da-recuperacao-design.md`, plano de mesmo nome. Código das
+Tasks 1–5 pronto (chunking, embeddings com cache, buscas densa/BM25/híbrida, grade,
+oráculo e regra de decisão); 472 testes passando.
+
+**Ajustes na execução:**
+- **Limite de tokens:** 350 palavras não garantiam 512 tokens: 70 de 8.561 trechos de
+  seção e 45 de 5.393 janelas passavam (JSON de exemplo, tabelas de datas, código, com 3
+  a 4 tokens por palavra; o maior tinha 1.458). Reduzir o limite de palavras exigiria ~120
+  e picotaria o corpus todo; **decisão do Fred:** o chunking recebe o contador de tokens
+  do modelo e parte ao meio só o trecho que passa. As 9 âncoras têm de 148 a 398 tokens.
+- **Download do modelo:** o Norton intercepta o TLS e o httpx (usado pelo Hugging Face)
+  não confia na raiz dele, como já acontecia com o pip. O download foi feito apontando
+  `SSL_CERT_FILE` para o certifi mais a raiz do Norton, só naquele comando; 129 MB em
+  `D:\dev\hf-cache`.
+
+**Medição (`eval/results/recuperacao-2026-10-11.json`):** 30,3 min na primeira execução
+(embeddings em CPU, ~5,5 s por lote de 64); 80 s na segunda, com o cache, e **resultados
+idênticos**. Oráculo aprovado nas 4 variantes.
+
+| Combinação (corpus completo) | acerto@1 | acerto@5 | MRR@10 |
+|---|---|---|---|
+| seção, sem cabeçalho, densa | 0,431 | 0,889 | 0,617 |
+| seção, sem cabeçalho, **BM25** (vencedora pela regra) | 0,444 | 1,000 | 0,613 |
+| seção, sem cabeçalho, híbrida | 0,556 | 1,000 | 0,687 |
+| seção, com cabeçalho, densa | 0,403 | 1,000 | 0,643 |
+| janela, com cabeçalho, híbrida | 0,556 | 1,000 | 0,737 |
+
+(Tabela completa, com as 24 combinações, no JSON.) Pela regra fixada antes de medir,
+**vence `secao-sem-bm25-completo`**: macro acerto@5 = 1,000, complexidade 0. Oito
+combinações empatam a menos de 1/9 da melhor (7 delas em 1,000); a densa sem cabeçalho fica fora do empate por **uma única
+consulta** (`REGRA/MOD-005`, primeiro acerto na posição 7). O corpus `guidance` não
+superou o completo (sem aviso).
+
+**Pontos para o Fred antes do índice:** (1) **efeito teto** — o acerto@5 satura em 1,000
+para 7 das 12 candidatas (8 empatam a menos de 1/9), então a métrica que decide quase não discrimina; (2) a decisão
+pende de uma consulta; (3) a vencedora dispensa embeddings na consulta, o que muda o papel
+do `bge-small` e do ChromaDB previstos na ADR-002.
+
+**Decisão do Fred depois da medição:** manter a regra fixada — vence
+`secao-sem-bm25-completo` — em vez de trocá-la depois de ver os números, para que a
+medição continue valendo como evidência. Efeito teto, consulta decisiva e a híbrida como
+alternativa a reavaliar estão na emenda de 11/10 da ADR-002.
+
+**Índice:** `python -m rag.indice construir` gravou os trechos da vencedora
+(`rag/store/indice/`, 13 MB) e a coleção ChromaDB com os vetores (`rag/store/chroma/`,
+58 MB). O teste confirma que o buscador carregado do índice reproduz a macro acerto@5
+medida. Com a vencedora BM25, a consulta não passa pelo Chroma.
+
+**Revisão final da branch (revisor independente):** sem achado crítico. Corrigidos com
+teste que falhou antes: o índice ignorava em silêncio a escolha de corpus (agora recusa
+qualquer corpus que não seja o completo) e o resumo do comando quebrava no console do
+Windows. O caminho denso e o híbrido do `carregar_buscador`, que o resultado BM25 não
+exercitava, ganharam teste contra um Chroma sintético. Seis menores adiados (no ledger
+da execução): espaço L2 em vez de cosseno na coleção, índice inconsistente se `construir`
+cair no meio, teste de gêmeos fraco, oráculo por página e não por seção, quebra de linha
+perdida nos ~115 trechos partidos por tokens, modelo não registrado no `config.json`.
+
+Suíte: **483 testes passando**.
+
+**Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7).

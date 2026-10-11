@@ -6,3 +6,12 @@ pytest==9.1.1
 pyyaml==6.0.3
 beautifulsoup4==4.13.4
 soupsieve==2.7
+
+# Fase 3 - recuperacao (torch so de CPU: a GPU fica para o LLM)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu
+transformers==5.17.0
+sentence-transformers==6.1.0
+numpy==2.4.6
+rank-bm25==0.2.2
+chromadb==1.5.9

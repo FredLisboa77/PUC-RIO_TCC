@@ -149,3 +149,62 @@ Três fatos mudaram desde a decisão original:
   âncora. É suficiente para comparar alternativas entre si, não para afirmar desempenho
   geral da recuperação.
 
+## Emenda de 11/10/2026 — recuperação escolhida por medição
+
+### O que foi medido
+
+Com a régua congelada antes de qualquer medição (spec
+`2026-10-11-conjunto-de-avaliacao-da-recuperacao-design.md`: 9 gabaritos, 62 consultas,
+acerto de um trecho = conter a frase-marca), foram medidas 24 combinações (spec
+`2026-10-11-medicao-da-recuperacao-design.md`): chunking por seção (até 350 palavras) ou
+por janela (200 palavras, passo 150), com ou sem cabeçalho de contexto, busca densa
+(`bge-small-en-v1.5`), BM25 ou híbrida (RRF, k = 60), sobre o corpus completo (1.420
+páginas) ou só guidance + âncoras (153). Regra de decisão fixada antes: maior macro
+acerto@5 no corpus completo; a menos de 1/9 dela, vence a mais simples. Trechos acima de
+512 tokens (~0,8%: JSON, datas, código) são partidos pelo contador de tokens do modelo.
+Resultado em `eval/results/recuperacao-2026-10-11.json`, reproduzido idêntico numa
+segunda execução.
+
+| Corpus completo | acerto@1 | acerto@5 | MRR@10 |
+|---|---|---|---|
+| seção, sem cabeçalho, densa | 0,431 | 0,889 | 0,617 |
+| seção, sem cabeçalho, **BM25** | 0,444 | **1,000** | 0,613 |
+| seção, sem cabeçalho, híbrida | 0,556 | 1,000 | 0,687 |
+| seção, com cabeçalho, densa | 0,403 | 1,000 | 0,643 |
+| seção, com cabeçalho, BM25 | 0,500 | 1,000 | 0,635 |
+| seção, com cabeçalho, híbrida | 0,500 | 1,000 | 0,694 |
+| janela, sem cabeçalho, densa | 0,418 | 0,889 | 0,620 |
+| janela, sem cabeçalho, BM25 | 0,444 | 0,861 | 0,605 |
+| janela, sem cabeçalho, híbrida | 0,549 | 0,986 | 0,677 |
+| janela, com cabeçalho, densa | 0,382 | 1,000 | 0,645 |
+| janela, com cabeçalho, BM25 | 0,477 | 0,889 | 0,646 |
+| janela, com cabeçalho, híbrida | 0,556 | 1,000 | 0,737 |
+
+### Decisão
+
+**Recuperação do MVP: chunking por seção, sem cabeçalho, busca BM25, corpus completo**
+— a vencedora pela regra fixada antes de medir (macro acerto@5 = 1,000, complexidade 0).
+O Fred decidiu, depois de ver o resultado, **manter a regra** em vez de trocá-la, para que
+a medição continue valendo como evidência.
+
+- O item 3 da emenda de 09/10 se resolve assim: a busca híbrida **não entra** no MVP —
+  empatou em acerto@5 e a regra prefere a mais simples.
+- O `bge-small-en-v1.5` e o ChromaDB continuam instalados e o índice da vencedora guarda
+  os vetores, mas **a consulta do MVP não usa embeddings**.
+- Na semana 7, o pipeline monta a consulta com `rag.consulta.montar_consulta` e busca com
+  `rag.indice.carregar_buscador()`; a seção âncora da regra continua entrando sempre no
+  contexto (emenda de 09/10, item 1).
+
+### Limitações declaradas
+
+- (−) **Efeito teto:** 7 das 12 candidatas chegam a acerto@5 = 1,000 (e 8 empatam a menos
+  de 1/9), porque as consultas
+  carregam os termos da regra (viés já previsto na emenda de 09/10). A métrica que decide
+  quase não discrimina.
+- (−) **Uma consulta decide:** a densa fica fora do empate só porque `REGRA/MOD-005` acha
+  a âncora na posição 7. A MOD-005 tem uma consulta e pesa 1/9 na macro.
+- (+) **A ampliação do corpus não atrapalhou:** o corpus guidance não superou o completo
+  em acerto@5 (as duas melhores ficam em 1,000).
+- **A reavaliar:** se a geração da semana 7 mostrar trechos complementares fracos, a
+  híbrida (melhor acerto@1 e MRR entre as simples) é a primeira alternativa, já medida e
+  pronta em `rag.busca`.
