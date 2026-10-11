@@ -1059,4 +1059,12 @@ a MOD-005 só têm a consulta da própria regra. Por esse desequilíbrio, o núm
 
 Suíte: **410 testes passando**.
 
+**Revisão final da branch (revisor independente):** pronta para merge, sem achado
+crítico ou importante. Cinco menores adiados. Os dois que pesam na próxima etapa:
+Precision@K conta trechos sobrepostos mais de uma vez, então isso precisa ser decidido
+antes de comparar chunkings com sobreposição; e a lista de erros não sai no `model_dump`
+do relatório. Recomendação para a spec da medição: o `Trecho.texto` precisa ser o texto
+puro dos blocos, sem markdown, e um recuperador "oráculo", que devolve a seção âncora,
+precisa dar acerto@1 = 1,0 em todas as regras, como teste de sanidade da régua.
+
 **Próximo passo:** brainstorming da medição de chunking e embeddings com a régua.
