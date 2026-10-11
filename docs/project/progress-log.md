@@ -959,3 +959,19 @@ orientador (menu Share); combinar o segundo anotador do ground truth até a sema
 **Próximo passo:** o Fred dá o aval ao plano da coleta (recomendação: execução nativa,
 como no G-8) e a execução começa pela Task 1. Cada task termina em commit e push; a
 execução real (Task 6) começa por um ensaio de 20 páginas.
+
+---
+
+## 11/10/2026 — PR #1 mergeado; coleta segue em branch nova
+
+**Feito:** `gh` 2.102.0 instalado e autenticado; PR #1 (grupo 2 de DAX, P1–P7 medidos e
+catálogo de fontes) mergeado na `main` por merge commit (`f56498d`), sem conflitos nem
+checks pendentes. A escolha do merge commit preserva os hashes citados no progress-log e
+nas specs. A branch `fase2-regras-de-dax` fica no remoto como registro.
+
+**Decisão do Fred:** a coleta da RAG segue na branch `fase2-coleta-rag`, criada da `main`
+atualizada, com push autorizado; cada etapa vira um PR menor.
+
+**Validação:** 299 testes passando na `main` pós-merge.
+
+**Próximo passo:** o Fred dá o aval ao plano da coleta e a execução começa pela Task 1.

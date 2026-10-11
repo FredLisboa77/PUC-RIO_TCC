@@ -37,7 +37,7 @@ artigos do SQLBI só como leitura complementar (seção 4.3).
 | Fase | Semanas | Status | Fechamento |
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
-| F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX na branch `fase2-regras-de-dax`, em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1)) |
+| F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo de fontes (G-8) concluído em 09/10/2026; próximo: coleta. Revisão de meio de projeto na semana 8 |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
@@ -322,4 +322,6 @@ As 8 regras estruturais foram desenvolvidas na branch `fase2-motor-de-regras`,
 já mergeada na `main` e preservada no remoto como registro do recorte daquela
 etapa. O grupo 2 de DAX (lexer, varredura, resolução de uso e DAX-001) foi
 desenvolvido na branch `fase2-regras-de-dax`, junto com a medição de P1–P7 e o
-catálogo de fontes; está em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1).
+catálogo de fontes, e mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1)
+em 11/10/2026 (merge commit, preservando os commits citados nos documentos). A coleta
+da base RAG segue na branch `fase2-coleta-rag`.
