@@ -37,6 +37,17 @@ def _cliente(pasta_chroma: Path):
     return chromadb.PersistentClient(path=str(pasta_chroma), settings=Settings(anonymized_telemetry=False))
 
 
+def _exigir_corpus_completo(configuracao: Configuracao) -> None:
+    """O índice cobre sempre o corpus completo. Outro corpus só entra por decisão
+    explícita (regra de decisão, item 1) e exige filtrar aqui — não pode passar em
+    silêncio."""
+    if configuracao.corpus != "completo":
+        raise ErroDeIndice(
+            f"configuração {configuracao.nome} usa o corpus {configuracao.corpus}; "
+            "o índice só cobre o corpus completo"
+        )
+
+
 def resultado_mais_recente(pasta: Path) -> Path:
     arquivos = sorted(pasta.glob("recuperacao-*.json")) if pasta.is_dir() else []
     if not arquivos:
@@ -53,6 +64,7 @@ def construir(
 ) -> Configuracao:
     _, decisao = ler_resultado(resultado_mais_recente(pasta_resultados))
     configuracao = decisao.vencedora
+    _exigir_corpus_completo(configuracao)
     embedder = EmbedderBge()
     # Os trechos são montados como na medição — com o contador de tokens do modelo —
     # senão o cache de vetores não casa.
@@ -103,6 +115,7 @@ def carregar_buscador(
     if not config.is_file():
         raise ErroDeIndice(f"índice ausente em {pasta_indice} — rode `python -m rag.indice construir`")
     configuracao = Configuracao.model_validate_json(config.read_text(encoding="utf-8"))
+    _exigir_corpus_completo(configuracao)
     linhas = (pasta_indice / ARQUIVO_TRECHOS.name).read_text(encoding="utf-8").splitlines()
     trechos = [TrechoIndexado.model_validate_json(linha) for linha in linhas if linha.strip()]
     posicao = {t.id: i for i, t in enumerate(trechos)}
@@ -141,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
     except ErroDeIndice as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1
-    print(f"Índice construído: {configuracao.nome} → {PASTA_CHROMA}")
+    print(f"Índice construído: {configuracao.nome} -> {PASTA_CHROMA}")
     return 0
 
 
