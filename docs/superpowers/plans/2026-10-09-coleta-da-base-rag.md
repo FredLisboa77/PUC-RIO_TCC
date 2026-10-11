@@ -21,7 +21,7 @@
 - Tudo o que é coletado ou extraído fica em `rag/store/` (já no `.gitignore`). **Nenhum HTML do Learn entra no Git**, nem como fixture de teste: fixtures são HTML sintético escrito à mão.
 - Gravação de arquivo sempre atômica (`.tmp` + `replace`); a linha do registro só é escrita depois do arquivo.
 - Pedido do Fred: **salvar cada etapa importante** — commit e push a cada tarefa; números medidos no `progress-log.md` assim que existirem.
-- Commits terminam com `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Branch: `fase2-regras-de-dax` (o PR #1 recebe os commits).
+- Commits terminam com `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Branch: `fase2-coleta-rag`, criada da `main` após o merge do PR #1 (11/10/2026).
 
 ## Review Focus
 

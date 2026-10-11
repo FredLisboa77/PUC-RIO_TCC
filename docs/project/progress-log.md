@@ -959,3 +959,70 @@ orientador (menu Share); combinar o segundo anotador do ground truth até a sema
 **Próximo passo:** o Fred dá o aval ao plano da coleta (recomendação: execução nativa,
 como no G-8) e a execução começa pela Task 1. Cada task termina em commit e push; a
 execução real (Task 6) começa por um ensaio de 20 páginas.
+
+---
+
+## 11/10/2026 — PR #1 mergeado; coleta segue em branch nova
+
+**Feito:** `gh` 2.102.0 instalado e autenticado; PR #1 (grupo 2 de DAX, P1–P7 medidos e
+catálogo de fontes) mergeado na `main` por merge commit (`f56498d`), sem conflitos nem
+checks pendentes. A escolha do merge commit preserva os hashes citados no progress-log e
+nas specs. A branch `fase2-regras-de-dax` fica no remoto como registro.
+
+**Decisão do Fred:** a coleta da RAG segue na branch `fase2-coleta-rag`, criada da `main`
+atualizada, com push autorizado; cada etapa vira um PR menor.
+
+**Validação:** 299 testes passando na `main` pós-merge.
+
+**Próximo passo:** o Fred dá o aval ao plano da coleta e a execução começa pela Task 1.
+
+---
+
+## 11/10/2026 — Fase 3 — coleta e extração
+
+Código da coleta e da extração pronto (Tasks 1–5 do plano, 346 testes passando):
+`python -m rag.coleta` e `python -m rag.extracao`.
+
+**Ensaio (20 páginas, `--limite 20`):** 20 coletadas, 0 erros, 33,8 s (previsto ≈ 32 s);
+extração 20 de 20, 0 erros, `related-content` excluída em 5 páginas, 1 título real
+diferente do de navegação (`aggregation-functions-dax`: "Aggregation functions" contra
+"Aggregation functions overview" — esperado, não é erro). Conferido à mão
+`dax/abs-function-dax`: seções com âncora e caminho, código DAX intacto, metadados de
+versão presentes, sem "Feedback", "Additional resources" nem "In this article". Nada de
+`rag/store/` aparece no `git status`.
+
+**Coleta completa:** 1.420 de 1.420 páginas `ok` (1.400 nesta execução + 20 do
+ensaio), **0 erros**, nenhuma interrupção, 37,6 min com pausa de 1 s; 73 MB de HTML
+bruto em `rag/store/raw/paginas/`. Nenhuma página do catálogo sumiu ou foi
+redirecionada desde 09/10.
+
+**Extração completa:** 1.420 extraídas, **0 erros**, 13 MB de JSON em
+`rag/store/textos/`. Seções excluídas: `related-content` 543, `see-also` 76,
+`additional-resources` 1. Título real diferente do de navegação: 186 (130 do Power BI,
+31 de M, 24 de DAX, 1 do Fabric) — o catálogo usa o título curto do índice (ex.:
+"CONTAINSROW" contra "CONTAINSROW function"); a citação usará o H1.
+
+**Correção encontrada na execução real:** `guidance/white-paper-powerbi-security` traz
+uma seção "Additional resources" (só links) **dentro** do corpo, que o extrator deixava
+passar. A spec manda excluí-la; `additional-resources` entrou em `SECOES_EXCLUIDAS`, com
+teste que falhou antes, e o extrator passou à versão 2 (reextração em segundos, R-13).
+
+**Base contém o que as regras citam:** `tests/test_rag_store_real.py` — toda página do
+catálogo coletada e extraída na versão atual, e a frase-marca da passagem citada por
+**cada uma das 9 regras** encontrada no texto extraído da página âncora (11 testes,
+pulados sem `rag/store/`). Suíte: 358 testes passando.
+
+**Revisão final do branch (revisor independente):** veredito "com correções", todas
+feitas com teste que falhou antes. (1) Depois de um desligamento que cortasse a última
+linha do `coleta.jsonl`, a próxima linha se colava na cortada e o registro ficava
+ilegível para sempre — agora a linha cortada é descartada antes de anexar; um corte no
+meio de um caractere acentuado também é tolerado. (2) Páginas 404 ou redirecionadas
+contavam para as 5 falhas seguidas: com 5 páginas mortas em sequência, toda execução
+pararia no mesmo ponto — agora só conta o que parece queda (sem resposta ou 5xx).
+(3) Conexão cortada no meio da leitura escapava com traceback — agora vira erro
+registrado. Adiados como menores: a mensagem do 429/503 dizer quantas páginas faltam;
+a extração conferir o `sha256` e remover JSON órfão; resumo parcial no Ctrl+C.
+Suíte: **365 testes passando**.
+
+**Próximo passo:** conjunto de avaliação da recuperação (62 consultas com a seção
+âncora como gabarito, ADR-002) e, depois, chunking e embeddings.
