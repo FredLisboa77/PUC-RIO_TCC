@@ -1133,3 +1133,16 @@ perdida nos ~115 trechos partidos por tokens, modelo não registrado no `config.
 Suíte: **483 testes passando**.
 
 **Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7).
+
+---
+
+## 11/10/2026 — PRs #2, #3 e #4 mergeados
+
+Considerados revisados pelo Fred e mergeados na `main`, na ordem de dependência, por merge
+commit (preserva os hashes citados nos documentos): #2 coleta e extração (`28483ca`), #3
+conjunto de avaliação da recuperação (`9769f43`), #4 medição da recuperação e índice
+(`b27b999`). Suíte na `main` pós-merge: **483 testes passando**. As branches ficam no
+remoto como registro.
+
+**Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7),
+na branch `fase3-geracao-citacao`.
