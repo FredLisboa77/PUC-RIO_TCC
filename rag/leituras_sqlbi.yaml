@@ -1,0 +1,30 @@
+# Leituras complementares do SQLBI — só referência: nada é baixado nem indexado
+# (spec 2026-10-09, seção 5.3). Curadoria de 09/10/2026: artigos propostos por
+# busca, com link conferido (HTTP 200) e título lido da página, e a lista aprovada
+# pelo Fred. `verificado_em` registra a data dessa curadoria.
+# MOD-003, MOD-006 e MOD-007 ficam sem leitura: nenhum artigo encontrado as
+# aprofunda, e a correspondência não é forçada.
+- url: https://www.sqlbi.com/articles/divide-performance/
+  titulo: DIVIDE Performance
+  regras: [DAX-001]
+  verificado_em: '2026-10-09'
+- url: https://www.sqlbi.com/articles/automatic-time-intelligence-in-power-bi/
+  titulo: Automatic time intelligence in Power BI
+  regras: [MOD-001]
+  verificado_em: '2026-10-09'
+- url: https://www.sqlbi.com/articles/bidirectional-relationships-and-ambiguity-in-dax/
+  titulo: Bidirectional relationships and ambiguity in DAX
+  regras: [MOD-002]
+  verificado_em: '2026-10-09'
+- url: https://www.sqlbi.com/articles/mark-as-date-table/
+  titulo: Mark as Date table
+  regras: [MOD-005]
+  verificado_em: '2026-10-09'
+- url: https://www.sqlbi.com/articles/comparing-dax-calculated-columns-with-power-query-computed-columns/
+  titulo: Comparing DAX calculated columns with Power Query computed columns
+  regras: [PERF-001]
+  verificado_em: '2026-10-09'
+- url: https://www.sqlbi.com/articles/choosing-numeric-data-types-in-dax/
+  titulo: Choosing Numeric Data Types in DAX
+  regras: [PERF-003]
+  verificado_em: '2026-10-09'

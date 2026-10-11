@@ -192,7 +192,7 @@ Ollama 0.34.4 instalado via winget. Os dois candidatos da ADR-002 foram baixados
 Segundo bloco de código de produto, em TDD. **100 testes passando.**
 
 **O trabalho que mais rendeu não foi o código.** Antes de implementar, cada regra
-teve a âncora conferida no Microsoft Learn. Isso eliminou três das oito regras
+teve a âncora conferida no Microsoft Learn. Isso eliminou três das nove regras
 propostas e mudou uma quarta:
 
 - **PERF-004** (tabela calculada em DAX) caiu porque a página que a sustentaria
@@ -359,3 +359,603 @@ sentidos" sobre relacionamento inativo, que não filtra nada até
 
 - **Próximo passo:** as regras de DAX por padrão textual (grupo 2 do critério de
   detectabilidade), sobre o motor já provado.
+
+## 08/10/2026 — Fase 2, semana 4 — rendimento do grupo 2 no P8, verificado
+
+A spec do grupo 2 proibiu afirmar precisão a partir da sondagem que o
+dimensionou: aquela sondagem usava expressão regular, antes de o lexer
+existir, e é boa para desenhar regra, não para medir rendimento. Esta entrada
+é a remedição com o instrumento real — `core/dax.py` e o que ele alimenta —
+contra o P8, e o registro explícito de qual afirmação cada número sustenta.
+
+**DAX-001 — recontada com o lexer.** A regra devolve zero achados no P8. O
+controle — todo operador `/` nas 105 expressões em escopo, inclusive as de
+denominador constante que a regra deixa passar de propósito — também devolve
+zero: não há nenhuma barra no escopo, constante ou não. O zero é, portanto,
+**confirmado pelo lexer e pelo controle ao mesmo tempo**: não é só a regra
+que cala, é o próprio sinal que não existe no texto auditado.
+
+O arquivo tem, sim, quatro divisões reais — `INT(([MonthNo] + 2) / 3)`,
+repetida nas quatro tabelas de data automáticas, denominador constante,
+exatamente o caso que a documentação recomenda com o operador. Elas não
+entram na conta porque `tabelas_em_escopo` exclui essas tabelas antes de a
+varredura de DAX rodar — é exclusão de escopo, deliberada e já testada, não
+lacuna do lexer nem cegueira de `_e_constante`. Achado novo desta medição: a
+própria Microsoft segue, no template que o Power BI gera, a mesma regra que
+DAX-001 cobra do autor.
+
+**O que esta medição autoriza:** dizer que, no P8, DAX-001 não tem nenhuma
+divisão para marcar, nem dentro nem fora do seu critério de corte — zero
+verdadeiro, causa "ausência de defeito". **O que não autoriza:** dizer que a
+regra "é precisa". Precisão pede um corpus com divisão de denominador
+variável para testar se a regra marca quando deveria, e o P8 não tem esse
+caso — a verificação de precisão aguarda a Fase 5.
+
+**PERF-005 — a medição que a rejeitou, conferida à mão.** `usos_de_coluna`
+segue dando 36 pares (tabela, coluna) sem uso nos oito sítios. Cinco foram
+escolhidas de propósito e conferidas no `model.bim`, sítio por sítio:
+
+- `DimEmployee[EmployeeKey]` (chave substituta órfã) — só aparece na
+  definição da própria coluna e no esquema de Perguntas e Respostas
+  (`ConceptualProperty`); nenhum relacionamento, hierarquia, `sortByColumn`,
+  `variations` ou referência em DAX.
+- `DimCalendar[Trimestre]` (coluna de calendário) — é calculada a partir de
+  `DimCalendar[Nº do Trimestre]`, mas nada referencia `Trimestre` de volta; o
+  `sortByColumn` que a acompanha aponta para `Nº do Trimestre`, não para ela.
+- `DimStore[StoreName]`, `DimCustomer[Education]`, `DimCustomer[Occupation]`
+  (atributos reportáveis) — todas só aparecem na própria definição e no
+  Power Query de origem; nenhuma nos oito sítios.
+
+Nenhuma das cinco tinha uso que a resolução deixou de ver. Conferidas também
+três colunas que a resolução dá como usadas, para o erro oposto — marcar uso
+que não existe, que esconderia coluna genuinamente órfã: `DimStore[StoreKey]`
+(relacionamento com `FactOnlineSales` e DAX de medida), `DimCalendar[Nº do
+Trimestre]` (alvo do `sortByColumn` de `Trimestre` e DAX de coluna calculada)
+e `FactOnlineSales[UnitPrice]` (DAX de seis medidas de faturamento) — as três
+têm uso real no arquivo. **A medição não está contaminada em nenhuma das duas
+direções**, e a rejeição da PERF-005 (08/10/2026, pela cláusula (c) do
+terceiro teste do critério de detectabilidade) permanece sustentada pelo que
+ela mede.
+
+**O que esta medição não autoriza:** nada sobre a camada de relatório, que a
+ferramenta não lê — e é exatamente esse domínio inobservável que rejeitou a
+regra. A conferência mostra que a resolução lê corretamente os oito sítios
+que ela lê; não abriu um único visual, porque não pode. A estimativa de
+~24% de precisão registrada em `core/rules/referencias.py` segue **não
+reverificada** por esta tarefa, e só uma comparação contra ground truth na
+Fase 5 poderia confirmá-la ou derrubá-la.
+
+**Correção (fix round sobre a Tarefa 10, mesma data):** a frase acima estava
+errada, não apenas não reverificada — a diferença importa, e por isso o
+registro é uma correção, não uma troca silenciosa de número. O ~24% nunca
+teve derivação válida: das 33 colunas que a regra reportaria (36 sem uso
+estrutural, menos 3 geradas por agrupamento/análise), 5 são verdadeiro
+positivo defensável e 3 são falso positivo **confirmado** — a documentação
+recomenda mantê-las —, o que já dá 8/33 ≈ 24%. O erro foi tratar essas 3 como
+acerto da regra quando elas são exatamente o grupo que se sabe estar errado.
+As outras 25 (atributos reportáveis) são **desconhecidas** — dependem da
+camada de relatório, que a ferramenta não lê —, não neutras. A precisão
+correta, portanto, não é um número: é um intervalo, **~15% (5/33, se as 25
+estiverem em uso — o cenário mais provável) a ~91% (30/33, no outro
+extremo)**. Nenhuma comparação contra ground truth na Fase 5 vai estreitar
+esse intervalo pelo lado que importa, porque a largura dele não vem de falta
+de medição — vem da camada de relatório ser inobservável pelo MVP. Isso não
+enfraquece a rejeição da PERF-005; fortalece-a: a regra não foi recusada por
+ter precisão medida baixa, mas por sua precisão ser **indeterminável** dentro
+do que o MVP lê, que é a cláusula (c) do terceiro teste dita de outra forma.
+Esta correção propagou para `status.md`, `riscos.md`, `backlog.md` e o
+docstring de `core/rules/referencias.py` — todos os lugares que citavam
+~24% foram corrigidos juntos, para não deixar a monografia com uma fonte
+dizendo um número e outra dizendo outro.
+
+Achado lateral: dos oito sítios, dois nunca marcam nada neste corpus —
+`hierarquia`, porque as quatro hierarquias do modelo pertencem às tabelas de
+data automáticas, fora de escopo; e `dax de role`, porque o P8 não tem role
+nenhuma (`modelo.roles == []`). Não é defeito — é característica deste
+corpus, e fica registrado para que ninguém leia os 36 como se os oito sítios
+tivessem pesado igualmente. É o mesmo risco, em classe, que a entrada de
+08/10/2026 sobre a MOD-005 já registrou mais acima neste arquivo: uma
+propriedade especificada contra a documentação do TMSL, e exercida só por
+teste de unidade, pode não corresponder ao que a ferramenta de origem
+realmente escreve ou aciona. Aqui o risco é baixo porque os dois sítios são
+aditivos — um esquecido faria a PERF-005 marcar demais, nunca de menos — e a
+regra que dependeria deles nem existe mais.
+
+**DAX-002 (iteração desnecessária) — a âncora verificada antes de decidir.**
+A sondagem original contou 6 `SUMX`, 4 `RANKX` e 2 `MINX` em escopo; o lexer
+confirma as três contagens. As seis ocorrências de `SUMX` foram classificadas
+à mão: todas multiplicam `FactOnlineSales[SalesQuantity]` por
+`FactOnlineSales[UnitPrice]` linha a linha (uma delas soma um termo antes de
+multiplicar) — nenhuma é substituível por `SUM` sobre uma única coluna.
+**Seis em seis são iteração legítima; zero são candidatas a DAX-002.** Isso
+não sustenta nem rejeita a regra: só diz que o P8 não a exercitaria. DAX-002
+continua não implementada, agora por decisão informada por essa
+classificação, e não por falta de verificação.
+
+**Validação:** 189 testes passando (os 186 anteriores, mais os três que
+travam esta medição: o controle de DAX-001 sem nenhuma barra em escopo, a
+classificação das seis `SUMX`, e a conferência à mão das cinco colunas
+escolhidas e das três usadas).
+
+**Fechamento da etapa: documentos de projeto atualizados.** `backlog.md`,
+`riscos.md`, `status.md` e `README.md` passam a refletir o estado final do
+grupo 2, nesta mesma entrada — não numa segunda entrada da mesma data.
+
+- **O que foi entregue:** `backlog.md` ganhou o **D-1** (a contagem de
+  20–25 regras deixa de ser meta e passa a ser resultado, com a aritmética
+  que leva a ~18 no cenário otimista sem o grupo 3), a âncora da DAX-001
+  transcrita com data de acesso, a DAX-002 e a DAX-003 registradas como
+  candidatas (a primeira aguardando âncora, com o zero de seis `SUMX` contra
+  ela; a segunda adiada por zero ocorrência de `FILTER` no P8), e **F25** em
+  Trabalhos Futuros — recusar-se a declarar o grupo de DAX completo enquanto
+  houver lacuna aberta (D-7). `riscos.md` ganhou a terceira mitigação do
+  R-03 (o lexer, com a cobertura medida abaixo) e o prognóstico da seção 6 da
+  spec sobre o R-12. `status.md` foi reescrito com as 9 regras, os 189
+  testes, o uso da folga da semana 5, e R-12 como o risco mais urgente do
+  projeto — sem nenhuma afirmação de precisão alem das que esta entrada e a
+  anterior autorizam (DAX-001: zero confirmado, não "regra precisa"; PERF-005:
+  sua precisão **não pode ser estabelecida** com o que a ferramenta lê — ver a
+  correção abaixo —, não medida de uma regra que existe). `README.md` ganhou a
+  contagem de regras, de testes e a Fase 3 como em andamento.
+
+- **O terceiro teste, e de onde veio:** formulado nesta mesma etapa (seção 3
+  da spec de 08/10/2026), a partir da lição da MOD-005 (06/10) — ela passava
+  nas duas condições já em vigor (âncora citável, decidibilidade no TMSL) e
+  ainda marcaria a dimensão corretamente configurada. O terceiro teste exige
+  suficiência de evidência em três cláusulas — (a) todas as formas da
+  condição, (b) todos os sósias do sinal, (c) todos os sítios onde o sinal
+  pode morar — e afirmação por ausência exige as três completas. Na MOD-005
+  ele **corrigiu** a regra; na PERF-005, registrada mais acima nesta entrada,
+  foi o primeiro caso em que **rejeitou** uma regra inteira, antes do código,
+  mesmo sendo a de maior rendimento esperado da etapa.
+
+- **O número de cobertura do lexer**, medido contra o P8: **137 de 137**
+  expressões DAX (93 medidas, 35 colunas calculadas, 9 partições calculadas)
+  tokenizadas com **zero** token `DESCONHECIDO` — o número que substitui
+  "usamos expressões regulares" na monografia. A varredura que alimenta as
+  regras cobre **105 de 105** expressões em escopo de autor, com **0
+  lacunas** — as 32 expressões restantes (137 − 105) pertencem a tabelas
+  fora de escopo (automáticas, de cluster, de parâmetro hipotético), não a
+  falha do lexer.
+
+- **Pendências que seguem abertas:**
+  - A verificação empírica de se o Power BI Desktop grava
+    `roles[].tablePermissions[].filterExpression` no `model.bim` (D-9).
+    Menos urgente do que quando foi registrada, porque a PERF-005 — a regra
+    que dependia dela — foi recusada; mas o sítio já é lido por
+    `usos_de_coluna` e pode sustentar regra futura de RLS. Também vale para a
+    DAX-001, que já consome o sítio `role` em produção: sem o mesmo risco,
+    porque ela afirma por presença do operador `/`, e uma regra que afirma
+    por presença sobre uma propriedade que o Desktop talvez nunca escreva
+    simplesmente não encontra nada — o falso positivo destrutivo que motiva
+    a pendência é risco de afirmação por ausência, a classe a que a PERF-005
+    pertenceria.
+  - A conversão de P1–P7 para PBIP. Deixou de ser recomendação e passou a
+    **bloqueio** para a decisão da Fase 3: com a PERF-005 recusada e a
+    DAX-001 em zero, o grupo 2 não somou nenhum achado ao P8, e o gatilho de
+    ~40 achados em P1–P7 (semana 4) continua sem poder ser medido — ver
+    `riscos.md`, R-12.
+
+---
+
+## 09/10/2026 — Fase 2, semana 5 — endurecimento do grupo 2 após revisão de código
+
+Nenhuma regra nova, nenhum achado novo: esta etapa responde a uma revisão do
+código entregue em 08/10 e fecha as frestas que ela apontou. **195 testes
+passando** (os 189 anteriores, mais seis).
+
+**Um defeito real na DAX-001, achado pela revisão.** `_denominador` pulava
+sinal unário depois da barra, mas não pulava comentário. Em DAX formatado em
+várias linhas — `[Total] / // nota\n[Qtd]` — o operando mínimo depois do `/`
+era o próprio token `COMENTARIO`, que `_e_constante` lia como "sem referência
+nem identificador", logo constante, e a regra calava. O caso não é hipotético:
+**92 das 105 expressões de DAX do autor no P8 têm comentário `//`** (91 medidas
+e 1 coluna calculada). Corrigido, com teste. A contagem de achados no P8 não
+muda — DAX-001 segue em zero, agora por ausência de divisão marcável e não por
+um comentário que a cegava.
+
+**Correção de um número que estava errado no comentário do módulo.** O
+docstring de `core/rules/dax.py` afirmava "92 das **128** expressões". O
+denominador 128 não existe neste modelo: os denominadores medidos são **137**
+(todas as expressões do arquivo) e **105** (as em escopo de autor). O 92 está
+certo, o 128 não era nada. Remedido e corrigido para 105 nos dois sítios do
+módulo. Registro aqui porque o log é material da monografia e um número
+inventado num comentário de código é do mesmo tipo do que o projeto já
+rejeitou duas vezes em afirmação de precisão.
+
+**O parser deixa de depender de ausência de chave para sobreviver a nulo.**
+`ler_modelo` prometia nunca falhar por propriedade ausente ou desconhecida, mas
+`.get("name", "")` só cai no padrão com a chave **ausente**: um `model.bim`
+editado à mão ou gerado por outra ferramenta com `"name": null` tem a chave
+presente e valor nulo, e o `None` ia direto para um campo obrigatório do
+Pydantic. Todo escalar obrigatório passa a `or ""`, toda lista a `or []`, e
+`"model": null` deixa de levantar `AttributeError`. Acrescentada também uma
+guarda para JSON cujo nível superior não é objeto: `ValueError` com o caminho e
+o tipo encontrado, em vez de traceback cru numa ferramenta que acabou de dizer
+que conseguia ler o arquivo. Três testes.
+
+**Dois pontos onde o código estava certo e a documentação mentia.**
+
+- `_sitios` dizia "todo lugar **em escopo** onde há DAX". Os três laços de
+  tabela usam `tabelas_com_dax_do_autor`; o laço de role não filtra escopo
+  algum — e está certo assim, porque um autor escreve filtro de RLS sobre
+  qualquer tabela, inclusive uma gerada pela ferramenta, e o filtro continua
+  sendo DAX dele. A palavra descrevia mal o laço; o comportamento ficou.
+- `tabelas_em_escopo` não dizia que não é o escopo das regras que leem DAX. A
+  diferença é uma tabela: a que só carrega medidas fica fora de um e dentro do
+  outro — e no P8 ela carrega 92 das 105 expressões.
+
+**Medida de sítio passa a contar mesmo com expressão vazia.** `_sitios` pulava
+expressão vazia, o que quebrava o critério de aceite 2 (`expressoes + lacunas`
+fechar com o total de sítios). Expressão vazia tokeniza sem erro —
+`tokenizar("")` devolve lista vazia, nunca lacuna — então é sítio. Coluna e
+partição seguem entrando só quando de fato calculadas (`c.e_calculada`,
+`tipo_origem == "calculated"`): contar toda coluna inflaria a conta com
+ausência de DAX. Dois testes.
+
+**Três limites que a revisão expôs e que agora estão escritos onde doem.**
+Nenhum deles muda resultado hoje; todos mudariam o de quem reusar o código
+sem saber:
+
+- `usos_de_coluna` **descarta `varredura.lacunas` em silêncio**. Uma coluna
+  referenciada só dentro de expressão que o lexer não leu por completo entra
+  como sem uso, e quem lê o retorno não tem como saber que houve lacuna. No P8
+  as lacunas são zero, então o 36 não é afetado — mas `lacunas` é justamente o
+  sinal que esta etapa inventou para a ferramenta parar de afirmar ausência
+  sobre texto que não leu, e esta função é onde ele é jogado fora. Documentado
+  no docstring, com a instrução: regra futura que afirme "sem uso" tem de somar
+  `varrer_dax(modelo).lacunas` antes de confiar num conjunto vazio.
+- `chamadas` **descarta em silêncio chamada com parêntese sem fechar**, e isso
+  não vira lacuna: medido, `tokenizar("SUM(1")` não produz `DESCONHECIDO`,
+  porque `(` e `1` são tokens válidos por si só. Sem consumidor hoje; a DAX-002
+  dependeria desta função e precisa saber que "nenhuma chamada de X" não
+  distingue "X não existe" de "X existe, malformado".
+- **Dos oito sítios de uso de coluna, só três sustentam a contagem de 36 no
+  P8.** Medido por sítio — quantas colunas marca e quantas dependem só dele:
+  relacionamento 17/9, dax de medida 19/14, dax de coluna calculada 6/3, e os
+  outros cinco com sinal exclusivo **zero** (ordenação 2/0, variação 3/0,
+  partição calculada 1/0, hierarquia 0/0, role 0/0). Remover os cinco deixa a
+  contagem idêntica em 36. Os números que o docstring antes citava como prova
+  de que valia ler os oito — 10 `sortByColumn` e 16 níveis de hierarquia — são
+  insumo enganoso: só 2 dos 10 caem em tabela em escopo, e nenhum dos 16 níveis
+  caiu. **Não é motivo para reduzir a lista a três:** a enumeração de oito é o
+  inventário completo das formas como o TMSL registra uso, e estreitá-la para
+  "o que o P8 precisa" faria o próximo modelo fechar a conta por acidente. É
+  fato deste corpus, e está registrado como tal.
+
+**Validação:** 195 testes passando; 9 regras executadas sobre o P8 sem falha,
+15 achados, 0 lacunas; catálogo completo com as 9 âncoras.
+
+**Próximo passo:** converter P1–P7 para PBIP e rodar as 9 regras. Continua
+sendo **bloqueio** para a decisão da Fase 3, e não mudou com esta etapa: o
+gatilho de ~40 achados em P1–P7 (semana 4) segue sem poder ser medido, com o
+grupo 2 tendo somado zero achado ao P8 (R-12).
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — P1–P7 baixados; a conversão fica com o Fred
+
+Passo 1 do procedimento de conversão (`eval/dataset.md`) executado: os sete
+`.pbix` de P1–P7 estão em `data/pbix/`. Os passos 2–5 exigem a GUI do Power BI
+Desktop e não são automatizáveis — ver abaixo.
+
+**O que foi baixado, e conferido.** Os sete arquivos vieram de
+`raw.githubusercontent.com/microsoft/powerbi-desktop-samples/main`, nomeados
+`P<n>_<arquivo original>.pbix`, somando ~42,6 MB. Cada um conferido em duas
+coisas: assinatura ZIP (`50 4b 03 04`) e tamanho idêntico ao que a API do
+GitHub informa para o commit de `main`. A tabela completa, com o caminho de
+origem de cada um, está em `eval/dataset.md`.
+
+**R-14 (disco) não é mais restrição.** Foi o que bloqueou a semana 2 e custou o
+`.pbix` do P8. Hoje: D: com 1499 GB livres, C: com 103 GB. Os 42,6 MB de P1–P7
+são irrelevantes diante disso, e o projeto está em D:.
+
+**Uma armadilha de nome que quase trocaria os arquivos.** **Seis dos sete**
+nomes aparecem em mais de uma pasta do repositório, com conteúdos diferentes —
+só `Supply Chain Sample.pbix` é único. `Revenue Opportunities.pbix` é o caso
+extremo, em quatro pastas: **7.465.671 bytes** em `Sample Reports` contra
+**245.930** em `2026 Power BI Samples Revamp` (e ~247 KB em outras duas) —
+baixar pelo nome, e não pelo caminho, daria um projeto **30 vezes menor** com o
+mesmo `PBIP_ID`. A tabela dos 7 projetos em `eval/dataset.md` já fixava a pasta
+de cada um desde 22/09, e foi ela que decidiu; o registro fica porque a
+reprodutibilidade por terceiros é a razão de o dataset ser público (ADR-005).
+
+**Por que os passos 2–5 não podem ser automatizados — verificado, não suposto.**
+O modelo semântico de um `.pbix` vive numa única entrada `DataModel` do ZIP: um
+ABF comprimido, não um `model.bim`. Nenhuma leitura do `.pbix` produz o PBIP; só
+o Desktop o escreve. A camada de relatório, ao contrário, está em claro — P1–P5
+já trazem `Report/definition/pages/` (o formato PBIR novo) e P6–P7 o
+`Report/Layout` antigo —, o que é insumo para o F19 mas não para esta etapa.
+
+**O ajuste do passo 3 não é verificável por fora.** Power BI Desktop está
+instalado (Store, **2.158.1304.0**), mas o estado do preview "Store semantic
+model using TMDL format" não aparece no hive de registro virtualizado do app da
+Store. Então a conferência visual do passo 3 é obrigatória, não formalidade: a
+conversão para TMDL é irreversível (ADR-001), e o MVP lê `model.bim`, não TMDL.
+Um PBIP salvo com o preview ligado não é recuperável por software — só
+reabrindo o `.pbix` e salvando de novo.
+
+**Nada medido sobre P1–P7 nesta entrada.** O gatilho do R-12 (menos de ~40
+achados em P1–P7) continua sem poder ser medido, e o R-12 segue sendo o risco
+mais urgente do projeto. Esta entrada removeu o único obstáculo que era
+automatizável; o que resta é manual.
+
+**Próximo passo — para o Fred, na GUI.** Para cada um dos sete `.pbix` em
+`data/pbix/`:
+
+1. Conferir que **"Store semantic model using TMDL format" está DESLIGADO** em
+   *Arquivo > Opções e configurações > Opções > Recursos de visualização*. Uma
+   vez só, antes do primeiro; é ajuste global.
+2. Abrir o `.pbix` no Desktop.
+3. *Arquivo > Salvar como > Projeto do Power BI (.pbip)*, em
+   `data/pbip/P<n>_<nome>/`.
+4. Conferir que `<nome>.SemanticModel/` tem **`model.bim`** e **não** tem a
+   pasta `definition/`.
+
+Feito isso, rodar as 9 regras sobre os sete e medir o gatilho do R-12 é
+automático e imediato.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — P1–P7 convertidos e medidos; o gatilho do R-12 não disparou
+
+O Fred converteu os sete `.pbix` no Desktop. As 9 regras rodaram sobre P1–P7:
+**53 achados**, contra o gatilho de **menos de ~40** do R-12. O gatilho não
+disparou — mas a margem depende de uma regra, e isso vai registrado junto.
+
+**Conversão conferida, não suposta.** Os sete têm `model.bim`
+(`compatibilityLevel` **1606**) e **nenhum** tem a pasta `definition/`: o
+preview de TMDL estava mesmo desligado. As pastas extras que o Desktop escreveu
+(`TMDLScripts/`, `DAXQueries/`, `VerifiedAnswers/`) não tocam o modelo. Os PBIP
+foram salvos dentro de `data/pbix/`; movi cada um — `.pbip`, `.Report` e
+`.SemanticModel` juntos, o que preserva o caminho relativo do `.pbip` — para
+`data/pbip/P<n>_<nome>/`, como pede o procedimento.
+
+**Inventário (passo 6 do procedimento):**
+
+| PBIP | `version` | compat. | Tabelas | Medidas | Expressões DAX | Achados |
+|---|---|---|---|---|---|---|
+| P1 AdventureWorks Sales | 4.2 | 1606 | 10 | 20 | 24/24 | 10 |
+| P2 Corporate Spend | 4.2 | 1606 | 10 | 19 | 23/23 | 4 |
+| P3 Employee Hiring and History | 4.2 | 1606 | 9 | 25 | 32/32 | 8 |
+| P4 Competitive Marketing Analysis | 4.2 | 1606 | 9 | 22 | 33/33 | 6 |
+| P5 Store Sales | 4.2 | 1606 | 7 | 32 | 40/40 | 18 |
+| P6 Supply Chain Sample | 4.2 | 1606 | 7 | 4 | 6/6 | 7 |
+| P7 Revenue Opportunities | 4.2 | 1606 | 7 | 4 | 4/4 | **0** |
+| **P1–P7** | | | | | | **53** |
+
+9 de 9 regras executadas em todos, sem falha. O P8 continua em 15 — a
+referência não se moveu. Por regra, em P1–P7: PERF-001 **19**, PERF-003 **16**,
+MOD-003 7, DAX-001 6, MOD-006 3, MOD-001 1, MOD-007 1; MOD-002, MOD-005 e
+PERF-002 deram zero. A DAX-001, zero no P8, achou 6 no P5 — o grupo 2 rende
+fora do P8.
+
+**Primeiro defeito que o P8 não revelou.** O P2 deu uma lacuna de varredura:
+`Calculations[Amount]` = `TOTALYTD(SUM([Value]), 'Date'[Date])*.3`. O lexer não
+lia decimal sem zero à esquerda (`.3`), que é DAX válido, e a expressão ficou
+fora de toda regra de texto. Corrigido com teste primeiro
+(`test_decimal_sem_zero_a_esquerda`, visto falhar com `'3' != '.3'`): ponto
+seguido de dígito abre número — fora de número o ponto não tem papel na
+sintaxe. P2 passa a 23/23, a contagem de achados não muda (não há `/` na
+expressão). É exatamente o tipo de cegueira que a lacuna declarada existe para
+expor: apareceu na contagem, não em silêncio.
+
+**Os 53 se sustentam? Revisão das duas regras que somam 35.**
+
+- **PERF-001 (19): os 19 resistem à âncora.** A própria recomendação declara a
+  exceção — coluna que avalia medida ou usa funcionalidade só de DAX, como
+  pai-filho. Resolvendo as referências de cada expressão: **nenhuma** cita
+  medida; todas são `IF`, `YEAR`, `MONTH`, `FORMAT`, `MID`, concatenação e um
+  `RELATED`, tudo reproduzível no Power Query (o `RELATED`, por mesclagem).
+- **PERF-003 (16): é onde a margem mora.** A âncora diz que o resultado
+  inesperado é **raro** e depende da distribuição dos valores — que a
+  ferramenta não lê. Há casos visivelmente inofensivos: `Employee[BadHires]`
+  (P3) só devolve 0 ou 1, e soma de inteiros em `double` é exata. E há o caso
+  que a âncora descreve como o mais provável: `Sentiment[Score]` (P4), escore
+  de sentimento, com sinal. A regra afirma por presença (`double` + `sum`), sem
+  violar o terceiro teste, mas sua precisão é a mais dependente de dado do
+  conjunto.
+
+**A conta que importa:** sem a PERF-003, P1–P7 somam **37** — abaixo do
+gatilho. O R-12 passa, mas por uma margem que a avaliação da semana 8 (ground
+truth, R-03) pode desfazer se a PERF-003 tiver precisão baixa. Não é motivo
+para acionar o P9 agora — o gatilho foi definido sobre contagem, e a contagem
+o supera —, mas é motivo para o ground truth julgar a PERF-003 com atenção
+especial, e para a decisão sobre o P9 ser levada ao orientador com esta conta
+na mão, e não só com o 53.
+
+**O P7 com zero é plausível:** 4 medidas, 4 expressões, nenhuma coluna
+calculada. Fica como dado, não como suspeita — mas é o primeiro
+projeto do dataset onde a ferramenta não tem nada a dizer, e a monografia deve
+mostrá-lo assim.
+
+**Mudança na camada de relatório:** a entrada anterior registrava P6–P7 com o
+`Report/Layout` antigo. Salvos pelo Desktop 2.158, os sete saíram em **PBIR**
+(`Report/definition/`). Insumo para o F19, sem efeito no MVP.
+
+**Validação:** 196 testes passando (195 + o do lexer); 9 regras sobre os 8 PBIP
+sem falha; 267 de 267 expressões DAX de P1–P8 em escopo lidas sem lacuna.
+
+**Próximo passo:** levar a decisão do P9 ao orientador com as duas contas (53
+com a PERF-003, 37 sem ela) e, sem depender dela, iniciar a Fase 3 — G-8,
+`rag/sources.yaml` a partir dos `toc.json`.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — separadores de decimal e de lista: medido, o lexer está certo
+
+Pergunta do Fred: a ferramenta considera que, dependendo da língua do Power BI,
+a vírgula e o ponto trocam de papel (decimal × milhar/lista)? **Não precisa
+considerar — e agora isso é medido, não suposto.**
+
+**A fonte.** Marco Russo (SQLBI, 20/05/2020): *"Internally, DAX is not
+translated according to locale settings. The engine uses the period character
+(.) as a decimal separator and the comma (,) as a list separator. The PBIX file
+always uses this DAX syntax."* A opção *Configurações regionais > Separador DAX*
+muda só o que o editor exibe e aceita.
+
+**A medição.** Modelo de teste criado pelo Fred (`culture: pt-BR`; Windows
+pt-BR com `,` decimal, `.` milhar e `;` lista), opção trocada para os
+separadores da localidade e Desktop reiniciado:
+
+| Medida | Digitada no editor | Gravada no `model.bim` |
+|---|---|---|
+| `Teste2` | `10,5 * 2` | `10.5 * 2` |
+| `Teste3` | `DIVIDE(10,5; 2)` | `DIVIDE(10.5, 2)` |
+| `Teste` (criada antes, no modo padrão) | `10,5 *2` — erro de sintaxe | `10,5 *2`; reexibida no modo local como `10;5 *2` |
+
+A tradução acontece nos dois sentidos, só na interface. A terceira linha
+importa: uma fórmula inválida é gravada como foi digitada, e o texto gravado
+continua na notação padrão — a vírgula ali **é** separador de lista para o
+motor, tanto que o editor local a mostrou como `;`. O lexer lê `10,5 *2` como
+`10`, `,`, `5 * 2`, que é exatamente a leitura do motor. Não há leitura
+silenciosamente errada.
+
+**O que isso confirma no corpus.** Nenhum `;` nas 267 expressões de P1–P8;
+todos os decimais com ponto. Os oito modelos têm `culture: en-US` — inclusive
+o P8, montado pelo autor com formatos em `R$` —, então só o modelo de teste
+exercitou uma cultura pt-BR. Ele fica fora do dataset: a fonte dele é um Excel
+com caminho de usuário.
+
+**Onde a língua importa de verdade, e nenhuma regra examina hoje:**
+
+- **Conversão de texto em número em tempo de execução** — `VALUE("10,5")` em
+  DAX; `Number.FromText` e troca de tipo sem argumento de cultura em M. O
+  resultado depende da cultura de quem atualiza. Candidata do **grupo 4** (M),
+  sujeita à exigência de âncora.
+- **`formatString`** — lido pelo parser, sem regra. Também é gravado em notação
+  invariável (`#,0.00`) e só exibido conforme a cultura.
+- **Relatório final** — o trecho citado como evidência sai na notação gravada.
+  Um usuário com separadores locais vê `;` no editor e `,` no relatório; o
+  relatório deve dizer isso numa frase.
+
+**Próximo passo:** inalterado — decisão do P9 com o orientador e G-8.
+
+---
+
+## 09/10/2026 — Decisão: P9 não acionado
+
+O Fred decidiu usar os **53 achados** de P1–P7: o slot P9 não é acionado e o
+dataset de métricas fica P1–P7, como no ADR-005. O gatilho foi definido sobre
+contagem, e a contagem o supera. A dependência da PERF-003 (37 sem ela) segue
+declarada no `riscos.md` e no `status.md`, para o ground truth da semana 8
+julgar. Registro no log de alertas de escopo do `backlog.md`.
+
+**Próximo passo:** G-8 — `rag/sources.yaml` a partir dos `toc.json`.
+
+---
+
+## 09/10/2026 — Fase 3, semana 6 — G-8: catálogo de fontes da RAG
+
+`python -m rag.catalogo` gera `rag/sources.yaml` a partir de retratos datados dos
+`toc.json` do Learn (spec `docs/superpowers/specs/2026-10-09-catalogo-de-fontes-rag-design.md`,
+plano `docs/superpowers/plans/2026-10-09-catalogo-de-fontes-rag.md`).
+
+**Medido em 09/10/2026:** 1.426 entradas — **1.420 indexadas** (Learn) e **6 só
+referência** (SQLBI). Por origem: `toc:power-bi/guidance` 151, `toc:dax` 508,
+`toc:powerquery-m` 768, âncoras de regra 8 páginas, `curadoria:sqlbi` 6. Excluídos
+12 links (6 fora do Learn, 6 entradas de seção ou áreas não documentais). As 1.420
+páginas do Learn têm `url_pt_br`, todas conferidas no retrato pt-BR. Exatamente os
+números previstos na spec.
+
+**O gerador pegou um erro de verdade na primeira execução.** A âncora da
+**PERF-003** era `power-bi/connect-data/desktop-data-types`, e o `atualizar` falhou
+dizendo que ela não estava em nenhum retrato. Causa: a página **mudou de
+endereço** — o antigo responde 301 para `power-bi/transform-model/desktop-data-types`,
+que é onde o `toc.json` a lista. A passagem citada pela regra (*Accuracy of number
+type calculations*, "Rarely, calculations that sum...") foi conferida no endereço
+novo, e a `url_canonica` da regra foi corrigida. O erro de origem foi da spec, que
+situou a âncora em `connect-data` sem conferir o `toc.json` dessa seção. As 8 URLs
+de âncora respondem hoje 200, sem redirecionamento. É o tipo de falha que o desenho
+existe para tornar visível: sem o gerador, a regra continuaria citando um endereço
+velho, e a citação da RAG apontaria para um redirecionamento. Com a correção, a seção
+`power-bi/connect-data` segue retratada mas não fornece mais nenhuma âncora —
+mantida para não divergir da spec; removê-la é uma linha em `SECOES`.
+
+**Três correções que a verificação de boas práticas impôs ao desenho conversado:**
+- O `toc.json` bruto **não** vai para o Git — os termos de uso do Learn permitem uso
+  pessoal e não comercial, não republicar cópia literal. Versiona-se só a listagem
+  normalizada (caminho e título); o bruto fica em `rag/store/raw/tocs/`.
+- `licenca` descreve os termos de uso verificados, não CC BY 4.0, que não foi
+  comprovada para essas páginas.
+- O link relativo à raiz no `toc.json` (`/dax/...`) não traz o idioma; resolvido
+  sem prefixá-lo, tiraria do guidance as 9 páginas de boas práticas de DAX.
+
+**Decisões do Fred nesta etapa:** referências completas de DAX e M no corpus (de
+~60–120 para ~1.420 páginas); texto indexado em inglês com `url_pt_br` para o
+leitor; SQLBI só como leitura complementar, com 6 artigos curados (MOD-003,
+MOD-006 e MOD-007 sem artigo adequado).
+
+**Validação:** 289 testes passando; o teste de arquivo gerado foi visto falhar com
+uma edição à mão no `sources.yaml` e voltar a passar com `gerar`.
+
+**Próximo passo:** coleta das 1.420 páginas para `rag/store/`, com pausa entre
+requisições, retomável, registrando H1 e data de acesso.
+
+---
+
+## 09/10/2026 — Revisão do projeto contra a literatura
+
+A pedido do Fred, revisão de tudo o que foi feito (regras, avaliação, catálogo e a spec
+da coleta) contra a literatura de análise estática, avaliação de ferramentas, RAG e
+engenharia de software.
+
+**Alinhado com a literatura:** regras determinísticas como única fonte de achado e LLM
+só explicando com citação (atribuição: Bohnet et al., 2022; Gao et al., 2023); âncora
+verificada e terceiro teste contra falso positivo (Johnson et al., 2013; Sadowski et
+al., 2018); P8 para desenvolvimento e P1–P7 para teste; ADRs; TDD; coleta conforme
+`robots.txt` (RFC 9309) e termos de uso; trechos por seção com cabeçalho contextual.
+
+**Três pontos de risco, já respondidos nos documentos:**
+1. **Ground truth contaminado e com um só anotador** — os achados de P1–P7 foram vistos
+   antes do GT. Protocolo novo em `eval/dataset.md`: tag `regras-gt` antes da anotação,
+   segundo anotador às cegas em 2 dos 7 projetos com kappa de Cohen, anotação guiada
+   pelo modelo, ameaças à validade declaradas. R-04 sobe para probabilidade alta.
+2. **A recuperação não precisa adivinhar a âncora** — ADR-002 emendado: a seção âncora
+   da regra entra sempre no contexto. É a falha que o spike de 29/09 já tinha mostrado
+   (o 7B citou `model-date-tables` em vez de `auto-date-time`).
+3. **A avaliação da recuperação não tinha gabarito** — ADR-002 emendado: 62 consultas
+   (9 por regra, 53 por achado) com a seção âncora como gabarito, montadas antes de
+   escolher chunking e embeddings. Busca híbrida (BM25 + densa, RRF) fica como
+   alternativa a medir.
+
+**Melhorias de custo baixo:** registradas no `backlog.md` (CI, intervalos de Wilson,
+fidelidade das explicações, referência industrial de falso positivo, *datasheet* do
+dataset, testes por propriedades, recoleta com `ETag`).
+
+**Nada disso bloqueia a coleta:** a spec da coleta já guarda as âncoras de seção, que
+os pontos 2 e 3 usam.
+
+**Próximo passo:** plano de implementação da coleta e extração.
+
+---
+
+## 09/10/2026 — Fim da sessão — ponto de retomada
+
+**Estado:** árvore limpa, 299 testes passando, branch `fase2-regras-de-dax` sincronizada
+com o GitHub e em revisão no [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1)
+(ainda não mergeado).
+
+**Pronto e salvo nesta sessão:**
+- P1–P7 convertidos e medidos (53 achados; P9 não acionado).
+- Catálogo de fontes da RAG (G-8): `rag/sources.yaml` com 1.420 páginas do Learn e 6
+  leituras do SQLBI só como referência.
+- Revisão contra a literatura: protocolo do ground truth (`eval/dataset.md`, R-04) e
+  ADR-002 emendado (recuperação ancorada; conjunto de avaliação das âncoras).
+- Spec da coleta e extração **aprovada**:
+  `docs/superpowers/specs/2026-10-09-coleta-da-base-rag-design.md`.
+- Plano de implementação **escrito, aguardando o aval do Fred**:
+  `docs/superpowers/plans/2026-10-09-coleta-da-base-rag.md` (7 tasks).
+- Página do orientador atualizada:
+  <https://claude.ai/code/artifact/476dde6e-9da2-4871-8cfc-afc67784f0c0>.
+
+**Ambiente:** `beautifulsoup4==4.13.4` e `soupsieve==2.7` já estão instalados no
+`.venv`, mas ainda **não** estão no `requirements.txt` — entram na Task 1 do plano.
+
+**Pendências do Fred:** revisar e mergear o PR #1; compartilhar a página com o
+orientador (menu Share); combinar o segundo anotador do ground truth até a semana 7
+(R-04).
+
+**Próximo passo:** o Fred dá o aval ao plano da coleta (recomendação: execução nativa,
+como no G-8) e a execução começa pela Task 1. Cada task termina em commit e push; a
+execução real (Task 6) começa por um ensaio de 20 páginas.

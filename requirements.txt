@@ -1,3 +1,6 @@
 # Fase 2 - leitura do PBIP e regras
 pydantic==2.13.5
 pytest==9.1.1
+
+# Fase 3 - catalogo de fontes da RAG
+pyyaml==6.0.3

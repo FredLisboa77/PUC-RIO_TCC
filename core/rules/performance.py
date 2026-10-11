@@ -77,7 +77,7 @@ def coluna_calculada_em_dax(modelo: ModeloSemantico) -> Iterator[Achado]:
     titulo="Coluna de ponto flutuante somada",
     categoria="performance",
     severidade="baixa",
-    url_canonica="https://learn.microsoft.com/en-us/power-bi/connect-data/desktop-data-types",
+    url_canonica="https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-data-types",
     termos_consulta=[
         "decimal number floating point imprecision",
         "fixed decimal number data type",

@@ -1,0 +1,572 @@
+{
+  "secao": "power-bi/connect-data",
+  "idioma": "pt-br",
+  "url": "https://learn.microsoft.com/pt-br/power-bi/connect-data/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "Documentação de conexão de dados do Power BI"
+    },
+    {
+      "href": "service-get-data",
+      "titulo": "Fontes de dados no serviço do Power BI"
+    },
+    {
+      "href": "desktop-data-sources",
+      "titulo": "Fontes de dados no Power BI Desktop"
+    },
+    {
+      "href": "desktop-data-source-prerequisites",
+      "titulo": "Pré-requisitos da fonte de dados"
+    },
+    {
+      "href": "power-bi-data-sources",
+      "titulo": "Funcionalidades e limitações da fonte de dados"
+    },
+    {
+      "href": "desktop-quickstart-connect-to-data",
+      "titulo": "Início Rápido: Conectar-se a dados de Excel no Power BI Desktop"
+    },
+    {
+      "href": "desktop-connect-to-data",
+      "titulo": "Início Rápido: Conectar-se aos dados da Web no Power BI Desktop"
+    },
+    {
+      "href": "powerbi-azure-landing",
+      "titulo": "Power BI para usuários do Azure"
+    },
+    {
+      "href": "desktop-enter-data-directly-into-desktop",
+      "titulo": "Inserir dados diretamente no Power BI Desktop"
+    },
+    {
+      "href": "service-get-data-from-files",
+      "titulo": "Visão geral da obtenção de dados de arquivos"
+    },
+    {
+      "href": "desktop-import-excel-workbooks",
+      "titulo": "Importar pastas de trabalho do Excel para o Power BI Desktop"
+    },
+    {
+      "href": "service-excel-workbook-files",
+      "titulo": "Importar pastas de trabalho Excel para o serviço do Power BI"
+    },
+    {
+      "href": "service-publish-from-excel",
+      "titulo": "Publicar do Excel no Power BI"
+    },
+    {
+      "href": "reduce-the-size-of-an-excel-workbook",
+      "titulo": "Reduzir o tamanho de uma pasta de trabalho do Excel"
+    },
+    {
+      "href": "service-comma-separated-value-files",
+      "titulo": "Obter dados de arquivos .csv"
+    },
+    {
+      "href": "service-desktop-files",
+      "titulo": "Obter dados de arquivos do Power BI Desktop (.pbix)"
+    },
+    {
+      "href": "desktop-use-onedrive-business-links",
+      "titulo": "Obter dados de OneDrive para trabalho ou escola"
+    },
+    {
+      "href": "desktop-connect-to-web",
+      "titulo": "Conectar-se a páginas da Web no Power BI Desktop"
+    },
+    {
+      "href": "desktop-sharepoint-online-list",
+      "titulo": "Criar um relatório em uma lista do SharePoint"
+    },
+    {
+      "href": "create-dataset-sharepoint-online-list",
+      "titulo": "Criar um modelo semântico a partir de uma lista do SharePoint"
+    },
+    {
+      "href": "service-azure-and-power-bi",
+      "titulo": "visão geral Azure e Power BI"
+    },
+    {
+      "href": "service-azure-sql-database-with-direct-connect",
+      "titulo": "Obter dados de Banco de Dados SQL do Azure"
+    },
+    {
+      "href": "service-azure-sql-data-warehouse-with-direct-connect",
+      "titulo": "Obter dados de Azure Synapse Analytics"
+    },
+    {
+      "href": "desktop-connect-azure-cost-management",
+      "titulo": "Obter dados de Gerenciamento de Custos da Microsoft"
+    },
+    {
+      "href": "create-dataset-log-analytics",
+      "titulo": "Criar um modelo semântico do Log Analytics"
+    },
+    {
+      "href": "service-azure-egress-power-bi",
+      "titulo": "Evite cobranças de saída de dados do Azure"
+    },
+    {
+      "href": "desktop-analysis-services-tabular-data",
+      "titulo": "Dados tabulares do Analysis Services"
+    },
+    {
+      "href": "desktop-ssas-multidimensional",
+      "titulo": "Dados multidimensionais do Analysis Services"
+    },
+    {
+      "href": "desktop-connect-oracle-database",
+      "titulo": "Banco de dados Oracle"
+    },
+    {
+      "href": "service-connect-snowflake",
+      "titulo": "Snowflake"
+    },
+    {
+      "href": "desktop-sap-bw-connector",
+      "titulo": "SAP Business Warehouse"
+    },
+    {
+      "href": "desktop-directquery-sap-bw",
+      "titulo": "Considerações sobre o DirectQuery do SAP Business Warehouse"
+    },
+    {
+      "href": "desktop-directquery-sap-hana",
+      "titulo": "SAP HANA"
+    },
+    {
+      "href": "service-edit-sap-variables",
+      "titulo": "Editar variáveis do SAP"
+    },
+    {
+      "href": "desktop-report-lifecycle-datasets",
+      "titulo": "Conecte-se a modelos semânticos existentes com conexão ativa"
+    },
+    {
+      "href": "service-datasets-discover-across-workspaces",
+      "titulo": "Criar relatórios com base em modelos semânticos em outros workspaces"
+    },
+    {
+      "href": "service-connect-to-services",
+      "titulo": "Conectar-se a serviços com Power BI"
+    },
+    {
+      "href": "service-connect-to-salesforce",
+      "titulo": "Salesforce"
+    },
+    {
+      "href": "service-connect-to-smartsheet",
+      "titulo": "Smartsheet"
+    },
+    {
+      "href": "service-connect-to-zendesk",
+      "titulo": "Zendesk"
+    },
+    {
+      "href": "desktop-connect-linkedin-sales-navigator",
+      "titulo": "Navegador de Vendas do LinkedIn"
+    },
+    {
+      "href": "desktop-project-online-connect-to-data",
+      "titulo": "Projeto Online"
+    },
+    {
+      "href": "service-connect-to-project-online",
+      "titulo": "Project Web App"
+    },
+    {
+      "href": "service-connect-emissions-impact-dashboard-microsoft-365",
+      "titulo": "Painel do Impacto das Emissões para o Microsoft 365"
+    },
+    {
+      "href": "service-connect-to-emissions-impact-dashboard",
+      "titulo": "Painel de Impacto de Emissões da Azure"
+    },
+    {
+      "href": "azure-emissions-calculation-methodology",
+      "titulo": "Metodologia de cálculo de emissões do Azure"
+    },
+    {
+      "href": "service-connect-to-crisis-communication-presence-report",
+      "titulo": "Relatório de Disponibilidade de Comunicação de Crise"
+    },
+    {
+      "href": "service-connect-to-health-emergency-response",
+      "titulo": "Painel de resposta a emergências hospitalares"
+    },
+    {
+      "href": "service-connect-to-regional-emergency-response",
+      "titulo": "Dashboard de resposta a emergências regionais"
+    },
+    {
+      "href": "service-connect-to-power-bi-release-plan",
+      "titulo": "O relatório do Plano de Versão do Power BI"
+    },
+    {
+      "href": "service-connect-cloud-data-sources",
+      "titulo": "Conectar-se a fontes de dados de nuvem"
+    },
+    {
+      "href": "service-create-share-cloud-data-sources",
+      "titulo": "Criar e compartilhar fontes de dados na nuvem"
+    },
+    {
+      "href": "real-time-intelligence-sample",
+      "titulo": "Experimente um exemplo de inteligência em tempo real"
+    },
+    {
+      "href": "service-real-time-streaming",
+      "titulo": "Usar streaming em tempo real do Power BI (desativado)"
+    },
+    {
+      "href": "desktop-python-scripts",
+      "titulo": "Importar dados de scripts de Python"
+    },
+    {
+      "href": "desktop-r-scripts",
+      "titulo": "Importar dados de scripts R"
+    },
+    {
+      "href": "service-gateway-onprem",
+      "titulo": "Visão geral do gateway de dados local"
+    },
+    {
+      "href": "service-gateway-deployment-guidance",
+      "titulo": "Planejar a capacidade e o posicionamento do computador de gateway"
+    },
+    {
+      "href": "service-gateway-personal-mode",
+      "titulo": "Usar um gateway de dados local no modo pessoal"
+    },
+    {
+      "href": "service-gateway-data-sources",
+      "titulo": "Adicionar ou remover uma fonte de dados para o gateway"
+    },
+    {
+      "href": "service-gateway-enterprise-manage-scheduled-refresh",
+      "titulo": "Configurar a importação e a atualização agendada"
+    },
+    {
+      "href": "service-gateway-enterprise-manage-sql",
+      "titulo": "Fonte de dados de gateway do SQL Server"
+    },
+    {
+      "href": "service-gateway-enterprise-manage-ssas",
+      "titulo": "Fonte de dados do gateway do Analysis Services"
+    },
+    {
+      "href": "service-gateway-onprem-manage-oracle",
+      "titulo": "Fonte de dados do gateway Oracle"
+    },
+    {
+      "href": "service-gateway-enterprise-manage-sap",
+      "titulo": "Fonte de dados de gateway do SAP HANA"
+    },
+    {
+      "href": "service-gateway-custom-connectors",
+      "titulo": "Usar conectores personalizados"
+    },
+    {
+      "href": "service-gateway-mashup-on-premises-cloud",
+      "titulo": "Mesclar fontes de dados locais e em nuvem"
+    },
+    {
+      "href": "service-gateway-sso-overview",
+      "titulo": "Entender o SSO para gateways de dados locais"
+    },
+    {
+      "href": "service-gateway-active-directory-sso",
+      "titulo": "Configurar Active Directory SSO"
+    },
+    {
+      "href": "service-gateway-azure-active-directory-sso",
+      "titulo": "Configurar o SSO do Microsoft Entra"
+    },
+    {
+      "href": "service-gateway-sso-kerberos",
+      "titulo": "Configurar SSO baseado em Kerberos"
+    },
+    {
+      "href": "service-gateway-sso-kerberos-sap-bw-commoncryptolib",
+      "titulo": "Configurar o SSO do Kerberos do SAP BW com CommonCryptoLib"
+    },
+    {
+      "href": "service-gateway-sso-kerberos-sap-bw-gx64krb",
+      "titulo": "Configurar o SSO do Kerberos do SAP BW com gx64krb5"
+    },
+    {
+      "href": "service-gateway-sso-kerberos-sap-hana",
+      "titulo": "Configurar o SSO do Kerberos para SAP HANA"
+    },
+    {
+      "href": "service-gateway-sso-kerberos-teradata",
+      "titulo": "Configurar o SSO do Kerberos para Teradata"
+    },
+    {
+      "href": "service-gateway-sso-saml",
+      "titulo": "Usar SAML para SSO em fontes de dados no local"
+    },
+    {
+      "href": "service-gateway-sso-test-configuration",
+      "titulo": "Testar configuração de SSO"
+    },
+    {
+      "href": "service-gateway-onprem-indepth",
+      "titulo": "Gateway de dados local em detalhes"
+    },
+    {
+      "href": "service-gateway-power-bi-faq",
+      "titulo": "Perguntas frequentes sobre o gateway de dados instalado localmente"
+    },
+    {
+      "href": "service-gateway-onprem-tshoot",
+      "titulo": "Solucionar problemas de gateways de dados locais"
+    },
+    {
+      "href": "desktop-connector-extensibility",
+      "titulo": "Desenvolver conectores personalizados"
+    },
+    {
+      "href": "desktop-trusted-third-party-connectors",
+      "titulo": "Confiar em conectores personalizados ou de terceiros"
+    },
+    {
+      "href": "service-dataset-modes-understand",
+      "titulo": "Modos de modelo semântico"
+    },
+    {
+      "href": "service-live-connect-dq-datasets",
+      "titulo": "Compare conexões ao vivo e DirectQuery"
+    },
+    {
+      "href": "desktop-directquery-about",
+      "titulo": "Conheça o DirectQuery no Power BI"
+    },
+    {
+      "href": "desktop-use-directquery",
+      "titulo": "Usar o DirectQuery no Power BI Desktop"
+    },
+    {
+      "href": "desktop-assume-referential-integrity",
+      "titulo": "Aplicar a configuração Presumir integridade referencial"
+    },
+    {
+      "href": "desktop-dynamic-m-query-parameters",
+      "titulo": "Usar parâmetros de consulta M dinâmicos"
+    },
+    {
+      "href": "desktop-discourage-directquery-connections-to-dataset",
+      "titulo": "Impedir conexões do DirectQuery com modelos semânticos"
+    },
+    {
+      "href": "service-datasets-understand",
+      "titulo": "Modelos semânticos no serviço do Power BI"
+    },
+    {
+      "href": "service-semantic-model-settings-pane",
+      "titulo": "Gerenciar configurações de modelo semântico"
+    },
+    {
+      "href": "service-parameters",
+      "titulo": "Editar configurações de parâmetro no serviço do Power BI"
+    },
+    {
+      "href": "power-bi-query-caching",
+      "titulo": "Configurar o cache de consulta no Power BI Premium"
+    },
+    {
+      "href": "semantic-models-third-party",
+      "titulo": "Compatibilidade de terceiros com modelos semânticos"
+    },
+    {
+      "href": "service-datasets-rename",
+      "titulo": "Novo nome para os conjuntos de dados do Power BI"
+    },
+    {
+      "href": "desktop-enhanced-dataset-metadata",
+      "titulo": "Usar metadados de modelo semântico aprimorados"
+    },
+    {
+      "href": "service-datasets-across-workspaces",
+      "titulo": "Usar modelos semânticos em ambientes de trabalho"
+    },
+    {
+      "href": "service-dataset-description",
+      "titulo": "Fornecer uma descrição do modelo semântico"
+    },
+    {
+      "href": "service-datasets-share",
+      "titulo": "Compartilhar o acesso a um modelo semântico"
+    },
+    {
+      "href": "service-datasets-permissions",
+      "titulo": "Entender permissões de modelo semântico"
+    },
+    {
+      "href": "service-datasets-manage-access-permissions",
+      "titulo": "Gerenciar o acesso semântico ao modelo"
+    },
+    {
+      "href": "service-datasets-build-permissions",
+      "titulo": "Permissão de criação para modelos semânticos compartilhados"
+    },
+    {
+      "href": "service-datasets-copy-reports",
+      "titulo": "Copiar relatórios com base em modelos semânticos"
+    },
+    {
+      "href": "service-datasets-admin-across-workspaces",
+      "titulo": "Controlar o uso de modelos semânticos"
+    },
+    {
+      "href": "refresh-data",
+      "titulo": "Visão geral da atualização de dados"
+    },
+    {
+      "href": "service-gateway-sql-tutorial",
+      "titulo": "Tutorial: Atualizar dados SQL Server por meio de um gateway"
+    },
+    {
+      "href": "refresh-scheduled-refresh",
+      "titulo": "Configurar a atualização agendada"
+    },
+    {
+      "href": "refresh-include-in-report-refresh",
+      "titulo": "Gerenciar a atualização de consulta"
+    },
+    {
+      "href": "mobile-apps-dataset-refresh",
+      "titulo": "Usar Power BI aplicativos móveis para atualizar modelos semânticos"
+    },
+    {
+      "href": "data-pipeline-templates",
+      "titulo": "Usar pipelines de dados para atualizar modelos semânticos (versão prévia)"
+    },
+    {
+      "href": "asynchronous-refresh",
+      "titulo": "Usar atualização aprimorada com a API REST do Power BI"
+    },
+    {
+      "href": "refresh-summaries",
+      "titulo": "Usar o resumo da atualização no Power BI"
+    },
+    {
+      "href": "refresh-csv-file-onedrive",
+      "titulo": "Atualizar um modelo semântico de um arquivo CSV no OneDrive"
+    },
+    {
+      "href": "refresh-desktop-file-onedrive",
+      "titulo": "Atualizar um arquivo do Power BI Desktop no OneDrive ou no SharePoint"
+    },
+    {
+      "href": "refresh-desktop-file-local-drive",
+      "titulo": "Atualizar de um arquivo local do Power BI Desktop"
+    },
+    {
+      "href": "refresh-excel-file-onedrive",
+      "titulo": "Atualizar a partir de uma pasta de trabalho do Excel na nuvem"
+    },
+    {
+      "href": "refresh-excel-file-local-drive",
+      "titulo": "Atualizar de um arquivo local do Excel"
+    },
+    {
+      "href": "incremental-refresh-overview",
+      "titulo": "Atualização incremental e visão geral de dados em tempo real"
+    },
+    {
+      "href": "incremental-refresh-configure",
+      "titulo": "Configurar a atualização incremental e os dados em tempo real"
+    },
+    {
+      "href": "incremental-refresh-xmla",
+      "titulo": "Usar atualização incremental avançada e dados em tempo real com o endpoint XMLA"
+    },
+    {
+      "href": "desktop-error-launching-desktop",
+      "titulo": "Solucionar problemas de inicialização do Power BI Desktop"
+    },
+    {
+      "href": "desktop-troubleshooting-sign-in",
+      "titulo": "Solucionar problemas de entrada no Power BI Desktop"
+    },
+    {
+      "href": "desktop-access-database-errors",
+      "titulo": "Solucionar problemas de importação do Access e Excel XLS"
+    },
+    {
+      "href": "desktop-troubleshoot-odata",
+      "titulo": "Solucionar problemas de erros de entrada do OData"
+    },
+    {
+      "href": "desktop-directquery-troubleshoot",
+      "titulo": "Solucionar problemas de modelos do DirectQuery"
+    },
+    {
+      "href": "service-troubleshooting-nested-values",
+      "titulo": "Solucionar problemas de valores aninhados retornados como texto"
+    },
+    {
+      "href": "refresh-troubleshooting-refresh-scenarios",
+      "titulo": "Solucionar problemas de cenários de atualização"
+    },
+    {
+      "href": "incremental-refresh-troubleshoot",
+      "titulo": "Solucionar problemas de atualização incremental e dados em tempo real"
+    },
+    {
+      "href": "refresh-troubleshooting-tile-errors",
+      "titulo": "Solucionar erros de atualização de mosaico"
+    },
+    {
+      "href": "service-admin-troubleshoot-excel-workbook-data",
+      "titulo": "Solucionar problemas de erros de dados da pasta de trabalho do Excel"
+    },
+    {
+      "href": "service-admin-troubleshooting-scheduled-refresh-azure-sql-databases",
+      "titulo": "Solucionar problemas de atualização agendada para Banco de Dados SQL do Azure"
+    },
+    {
+      "href": "service-admin-troubleshoot-unsupported-data-source-for-refresh",
+      "titulo": "Solucionar problemas de uma fonte de dados de atualização sem suporte"
+    },
+    {
+      "href": "service-admin-troubleshooting-power-bi-personal-gateway",
+      "titulo": "Solucionar problemas do gateway no modo pessoal"
+    },
+    {
+      "href": "/contribute/",
+      "titulo": "Contribuir para os documentos do Fabric"
+    },
+    {
+      "href": "/answers/",
+      "titulo": "Perguntas e Respostas da Microsoft"
+    },
+    {
+      "href": "https://ideas.fabric.microsoft.com/",
+      "titulo": "Ideias de tecido"
+    },
+    {
+      "href": "https://feedback.azure.com/",
+      "titulo": "Comentários do Azure"
+    },
+    {
+      "href": "https://community.fabric.microsoft.com/",
+      "titulo": "Community"
+    },
+    {
+      "href": "https://azure.microsoft.com/updates/",
+      "titulo": "Atualizações de serviço"
+    },
+    {
+      "href": "https://azure.status.microsoft/",
+      "titulo": "Status do Azure"
+    },
+    {
+      "href": "/training/fabric/",
+      "titulo": "Treinamento do Microsoft Learn"
+    }
+  ]
+}

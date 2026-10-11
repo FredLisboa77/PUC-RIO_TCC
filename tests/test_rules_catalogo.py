@@ -15,9 +15,9 @@ from core.rules.runner import avaliar
 from core.rules.todas import REGISTRO
 
 
-def test_as_oito_regras_estao_registradas():
+def test_as_nove_regras_estao_registradas():
     assert REGISTRO.ids() == IDS_ESPERADOS
-    assert len(REGISTRO) == 8
+    assert len(REGISTRO) == 9
 
 
 def test_toda_regra_tem_ancora_utilizavel():
@@ -34,14 +34,18 @@ def test_modelo_vazio_nao_produz_achado_nem_falha():
 
     assert resultado.achados == []
     assert resultado.regras_com_falha == []
-    assert resultado.regras_executadas == 8
+    assert resultado.regras_executadas == 9
 
 
 def test_markdown_tem_uma_linha_por_regra():
     texto = como_markdown()
-    linhas = [l for l in texto.splitlines() if l.startswith("| MOD-") or l.startswith("| PERF-")]
+    linhas = [
+        l
+        for l in texto.splitlines()
+        if l.startswith(("| MOD-", "| PERF-", "| DAX-"))
+    ]
 
-    assert len(linhas) == 8
+    assert len(linhas) == 9
     assert "MOD-001" in texto
     assert "https://learn.microsoft.com" in texto
 

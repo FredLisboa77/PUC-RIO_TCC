@@ -1,0 +1,648 @@
+{
+  "secao": "power-bi/guidance",
+  "idioma": "en-us",
+  "url": "https://learn.microsoft.com/en-us/power-bi/guidance/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "Power BI guidance documentation"
+    },
+    {
+      "href": "power-bi-optimization",
+      "titulo": "Optimization guide for Power BI"
+    },
+    {
+      "href": "power-query-folding",
+      "titulo": "The importance of query folding"
+    },
+    {
+      "href": "power-query-referenced-queries",
+      "titulo": "Referencing Power Query queries"
+    },
+    {
+      "href": "power-query-background-refresh",
+      "titulo": "Disable Power Query background refresh"
+    },
+    {
+      "href": "../transform-model/dataflows/dataflows-introduction-self-service",
+      "titulo": "Best practices for dataflows"
+    },
+    {
+      "href": "star-schema",
+      "titulo": "What is a star schema?"
+    },
+    {
+      "href": "import-modeling-data-reduction",
+      "titulo": "Reduce data model size"
+    },
+    {
+      "href": "model-date-tables",
+      "titulo": "Design guidance for date tables"
+    },
+    {
+      "href": "auto-date-time",
+      "titulo": "Auto date/time guidance"
+    },
+    {
+      "href": "relationships-one-to-one",
+      "titulo": "One-to-one relationships"
+    },
+    {
+      "href": "relationships-many-to-many",
+      "titulo": "Many-to-many relationships"
+    },
+    {
+      "href": "relationships-active-inactive",
+      "titulo": "Active vs inactive relationships"
+    },
+    {
+      "href": "relationships-bidirectional-filtering",
+      "titulo": "Bi-directional relationships"
+    },
+    {
+      "href": "relationships-troubleshoot",
+      "titulo": "Relationship troubleshooting"
+    },
+    {
+      "href": "directquery-model-guidance",
+      "titulo": "DirectQuery model guidance"
+    },
+    {
+      "href": "composite-model-guidance",
+      "titulo": "Composite model guidance"
+    },
+    {
+      "href": "rls-guidance",
+      "titulo": "Row-level security (RLS) guidance"
+    },
+    {
+      "href": "powerbi-modeling-guidance-for-power-platform",
+      "titulo": "Power Platform modeling guidance"
+    },
+    {
+      "href": "migrate-azure-analysis-services-to-power-bi",
+      "titulo": "Migrate AAS models to Power BI Premium"
+    },
+    {
+      "href": "migrate-azure-analysis-services-to-power-bi-migration-scenarios",
+      "titulo": "Migrate AAS models to Power BI Premium scenarios"
+    },
+    {
+      "href": "/dax/best-practices/dax-error-functions",
+      "titulo": "Appropriate use of error functions"
+    },
+    {
+      "href": "/dax/best-practices/dax-avoid-converting-blank",
+      "titulo": "Avoid converting BLANKs to values"
+    },
+    {
+      "href": "/dax/best-practices/dax-avoid-avoid-filter-as-filter-argument",
+      "titulo": "Avoid using FILTER as a filter argument"
+    },
+    {
+      "href": "/dax/best-practices/dax-column-measure-references",
+      "titulo": "Column and measure references"
+    },
+    {
+      "href": "/dax/best-practices/dax-divide-function-operator",
+      "titulo": "DIVIDE function vs divide operator (/)"
+    },
+    {
+      "href": "/dax/best-practices/dax-countrows",
+      "titulo": "Use COUNTROWS instead of COUNT"
+    },
+    {
+      "href": "/dax/best-practices/dax-selectedvalue",
+      "titulo": "Use SELECTEDVALUE instead of VALUES"
+    },
+    {
+      "href": "/dax/best-practices/dax-variables",
+      "titulo": "Use variables to improve formulas"
+    },
+    {
+      "href": "/dax/dax-sample-model",
+      "titulo": "Sample model"
+    },
+    {
+      "href": "report-separate-from-model",
+      "titulo": "Separate reports from models"
+    },
+    {
+      "href": "report-page-tooltips",
+      "titulo": "Extend visuals with report page tooltips"
+    },
+    {
+      "href": "report-drillthrough",
+      "titulo": "Use report page drillthrough"
+    },
+    {
+      "href": "report-paginated-or-power-bi",
+      "titulo": "When to use paginated reports"
+    },
+    {
+      "href": "report-paginated-data-retrieval",
+      "titulo": "Data retrieval guidance"
+    },
+    {
+      "href": "report-paginated-performance-scalability-considerations",
+      "titulo": "Performance and scalability considerations"
+    },
+    {
+      "href": "report-paginated-image",
+      "titulo": "Image use guidance"
+    },
+    {
+      "href": "paginated-report-cascading-parameter",
+      "titulo": "Use cascading parameters"
+    },
+    {
+      "href": "report-paginated-blank-page",
+      "titulo": "Avoid blank pages when printing"
+    },
+    {
+      "href": "migrate-ssrs-reports-to-power-bi",
+      "titulo": "Migrate .rdl reports to Power BI"
+    },
+    {
+      "href": "publish-reporting-services-power-bi-service",
+      "titulo": "Publish .rdl files to Power BI"
+    },
+    {
+      "href": "retire-unused-reports-ssrs",
+      "titulo": "Retire unused .rdl files"
+    },
+    {
+      "href": "develop-scalable-multitenancy-apps-with-powerbi-embedding",
+      "titulo": "Develop scalable multitenancy applications"
+    },
+    {
+      "href": "multiple-language-translation",
+      "titulo": "Plan translation for reports"
+    },
+    {
+      "href": "multiple-language-locale",
+      "titulo": "Use locale values in reports"
+    },
+    {
+      "href": "multiple-language-best-practice",
+      "titulo": "Use best practices to localize reports"
+    },
+    {
+      "href": "translation-builder",
+      "titulo": "Create reports with Translations Builder"
+    },
+    {
+      "href": "translation-builder-add-language",
+      "titulo": "Add a language to a report"
+    },
+    {
+      "href": "translation-builder-localize-label",
+      "titulo": "Add a Localized Labels table"
+    },
+    {
+      "href": "translation-builder-machine-translation",
+      "titulo": "Generate machine translations"
+    },
+    {
+      "href": "multiple-language-page-navigation",
+      "titulo": "Multiple-language page navigation"
+    },
+    {
+      "href": "translation-workflow-human",
+      "titulo": "Enable workflows for human translation"
+    },
+    {
+      "href": "translation-sheet-export",
+      "titulo": "Export translation sheets"
+    },
+    {
+      "href": "translation-sheet-import",
+      "titulo": "Import translation sheets"
+    },
+    {
+      "href": "translation-manage-data-model-enterprise",
+      "titulo": "Manage enterprise-level translations"
+    },
+    {
+      "href": "data-translation",
+      "titulo": "Implement data translation"
+    },
+    {
+      "href": "data-translation-extend-schema",
+      "titulo": "Support data translations"
+    },
+    {
+      "href": "data-translation-implement-field",
+      "titulo": "Data translation with field parameters"
+    },
+    {
+      "href": "data-translation-add-language-table",
+      "titulo": "Add the languages table"
+    },
+    {
+      "href": "data-translation-synchronize-field",
+      "titulo": "Synchronize field parameters"
+    },
+    {
+      "href": "data-translation-calendar-table",
+      "titulo": "Data translation calendar table"
+    },
+    {
+      "href": "data-translation-load-report-bookmark",
+      "titulo": "Load multiple-language reports"
+    },
+    {
+      "href": "gateway-onprem-sizing",
+      "titulo": "On-premises data gateway sizing"
+    },
+    {
+      "href": "monitor-report-performance",
+      "titulo": "Monitor report performance"
+    },
+    {
+      "href": "report-performance-troubleshoot",
+      "titulo": "Troubleshoot report performance"
+    },
+    {
+      "href": "/fabric/cicd/best-practices-cicd",
+      "titulo": "Deployment pipelines best practices"
+    },
+    {
+      "href": "admin-activity-log",
+      "titulo": "Access the Power BI activity log"
+    },
+    {
+      "href": "powerbi-migration-overview",
+      "titulo": "Migration overview"
+    },
+    {
+      "href": "powerbi-migration-pre-migration-steps",
+      "titulo": "Prepare to migrate"
+    },
+    {
+      "href": "powerbi-migration-requirements",
+      "titulo": "Gather requirements"
+    },
+    {
+      "href": "powerbi-migration-planning",
+      "titulo": "Plan deployment"
+    },
+    {
+      "href": "powerbi-migration-proof-of-concept",
+      "titulo": "Conduct proof of concept"
+    },
+    {
+      "href": "powerbi-migration-create-validate-content",
+      "titulo": "Create content"
+    },
+    {
+      "href": "powerbi-migration-deploy-support-monitor",
+      "titulo": "Deploy to Power BI"
+    },
+    {
+      "href": "powerbi-migration-learn-from-customers",
+      "titulo": "Learn from customer Power BI migrations"
+    },
+    {
+      "href": "fabric-adoption-roadmap",
+      "titulo": "Introduction"
+    },
+    {
+      "href": "fabric-adoption-roadmap-maturity-levels",
+      "titulo": "Maturity levels"
+    },
+    {
+      "href": "fabric-adoption-roadmap-data-culture",
+      "titulo": "Data culture"
+    },
+    {
+      "href": "fabric-adoption-roadmap-executive-sponsorship",
+      "titulo": "Executive sponsorship"
+    },
+    {
+      "href": "fabric-adoption-roadmap-business-alignment",
+      "titulo": "Business alignment"
+    },
+    {
+      "href": "fabric-adoption-roadmap-content-ownership-and-management",
+      "titulo": "Content ownership"
+    },
+    {
+      "href": "fabric-adoption-roadmap-content-delivery-scope",
+      "titulo": "Content delivery scope"
+    },
+    {
+      "href": "fabric-adoption-roadmap-center-of-excellence",
+      "titulo": "Center of Excellence"
+    },
+    {
+      "href": "fabric-adoption-roadmap-governance",
+      "titulo": "Governance"
+    },
+    {
+      "href": "fabric-adoption-roadmap-mentoring-and-user-enablement",
+      "titulo": "Mentoring and user enablement"
+    },
+    {
+      "href": "fabric-adoption-roadmap-community-of-practice",
+      "titulo": "Community of practice"
+    },
+    {
+      "href": "fabric-adoption-roadmap-user-support",
+      "titulo": "User support"
+    },
+    {
+      "href": "fabric-adoption-roadmap-system-oversight",
+      "titulo": "System oversight"
+    },
+    {
+      "href": "fabric-adoption-roadmap-change-management",
+      "titulo": "Change management"
+    },
+    {
+      "href": "fabric-adoption-roadmap-conclusion",
+      "titulo": "Conclusion"
+    },
+    {
+      "href": "powerbi-implementation-planning-introduction",
+      "titulo": "Introduction"
+    },
+    {
+      "href": "powerbi-implementation-planning-bi-strategy-overview",
+      "titulo": "BI strategy overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-bi-strategy-bi-strategic-planning",
+      "titulo": "BI strategic planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-bi-strategy-bi-tactical-planning",
+      "titulo": "BI tactical planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-bi-strategy-bi-solution-planning",
+      "titulo": "BI solution planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-tenant-setup",
+      "titulo": "Tenant setup"
+    },
+    {
+      "href": "powerbi-implementation-planning-user-tools-devices",
+      "titulo": "User tools and devices"
+    },
+    {
+      "href": "powerbi-implementation-planning-subscriptions-licenses-trials",
+      "titulo": "Subscriptions, licenses, and trials"
+    },
+    {
+      "href": "powerbi-implementation-planning-tenant-administration",
+      "titulo": "Tenant administration"
+    },
+    {
+      "href": "powerbi-implementation-planning-workspaces-overview",
+      "titulo": "Workspaces overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-workspaces-tenant-level-planning",
+      "titulo": "Tenant-level planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-workspaces-workspace-level-planning",
+      "titulo": "Workspace-level planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-overview",
+      "titulo": "CLM overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-plan-design",
+      "titulo": "Plan and design content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-develop-manage",
+      "titulo": "Develop and manage content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-validate",
+      "titulo": "Validate content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-deploy",
+      "titulo": "Deploy content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-support-monitor",
+      "titulo": "Support and monitor content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-lifecycle-management-retire-archive",
+      "titulo": "Retire and archive content"
+    },
+    {
+      "href": "powerbi-implementation-planning-content-distribution-sharing",
+      "titulo": "Content distribution and sharing"
+    },
+    {
+      "href": "powerbi-implementation-planning-security-overview",
+      "titulo": "Security overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-security-tenant-level-planning",
+      "titulo": "Tenant-level planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-security-report-consumer-planning",
+      "titulo": "Report consumer planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-security-content-creator-planning",
+      "titulo": "Content creator planning"
+    },
+    {
+      "href": "powerbi-implementation-planning-info-protection-data-loss-prevention-overview",
+      "titulo": "Info protection and DLP overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-organization-level-info-protection",
+      "titulo": "Org-level info protection"
+    },
+    {
+      "href": "powerbi-implementation-planning-info-protection",
+      "titulo": "Info protection for Power BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-data-loss-prevention",
+      "titulo": "DLP for Power BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-defender-for-cloud-apps",
+      "titulo": "Defender for Cloud Apps for Power BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-info-protection-data-loss-prevention",
+      "titulo": "Auditing of info protection and DLP for Power BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-data-gateways",
+      "titulo": "Data gateways"
+    },
+    {
+      "href": "powerbi-implementation-planning-integration-with-other-services",
+      "titulo": "Integration with other services"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-monitoring-overview",
+      "titulo": "Auditing and monitoring overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-monitoring-report-level-auditing",
+      "titulo": "Report-level auditing"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-monitoring-data-level-auditing",
+      "titulo": "Data-level auditing"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-monitoring-tenant-level-auditing",
+      "titulo": "Tenant-level auditing"
+    },
+    {
+      "href": "powerbi-implementation-planning-auditing-monitoring-tenant-level-monitoring",
+      "titulo": "Tenant-level monitoring"
+    },
+    {
+      "href": "powerbi-implementation-planning-adoption-tracking",
+      "titulo": "Adoption tracking"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-overview",
+      "titulo": "Usage scenarios overview"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-personal-bi",
+      "titulo": "Personal BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-team-bi",
+      "titulo": "Team BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-departmental-bi",
+      "titulo": "Departmental BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-enterprise-bi",
+      "titulo": "Enterprise BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-managed-self-service-bi",
+      "titulo": "Managed self-service BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-customizable-managed-self-service-bi",
+      "titulo": "Customizable managed self-service BI"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-self-service-data-preparation",
+      "titulo": "Self-service data preparation"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-advanced-data-preparation",
+      "titulo": "Advanced data preparation"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-prototyping-and-sharing",
+      "titulo": "Prototyping and sharing"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-self-service-content-publishing",
+      "titulo": "Self-service content publishing"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-enterprise-content-publishing",
+      "titulo": "Enterprise content publishing"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-advanced-data-model-management",
+      "titulo": "Advanced data model management"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-self-service-real-time-analytics",
+      "titulo": "Self-service real-time analytics"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-embed-for-your-organization",
+      "titulo": "Embed for your organization"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-embed-for-your-customers",
+      "titulo": "Embed for your customers"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-on-premises-reporting",
+      "titulo": "On-premises reporting"
+    },
+    {
+      "href": "powerbi-implementation-planning-usage-scenario-diagrams",
+      "titulo": "Usage scenario diagrams"
+    },
+    {
+      "href": "center-of-excellence-microsoft-business-intelligence-transformation",
+      "titulo": "Microsoft's BI transformation"
+    },
+    {
+      "href": "center-of-excellence-establish",
+      "titulo": "How Microsoft established a COE"
+    },
+    {
+      "href": "center-of-excellence-business-intelligence-solution-architecture",
+      "titulo": "BI solution architecture in the COE"
+    },
+    {
+      "href": "whitepapers",
+      "titulo": "White papers overview"
+    },
+    {
+      "href": "white-paper-powerbi-security",
+      "titulo": "Power BI security white paper"
+    },
+    {
+      "href": "whitepaper-fabric-capacity-deployment",
+      "titulo": "Power BI Premium deployment"
+    },
+    {
+      "href": "/contribute/",
+      "titulo": "Contribute to Fabric docs"
+    },
+    {
+      "href": "/answers/",
+      "titulo": "Microsoft Q & A"
+    },
+    {
+      "href": "https://ideas.fabric.microsoft.com/",
+      "titulo": "Fabric ideas"
+    },
+    {
+      "href": "https://feedback.azure.com/",
+      "titulo": "Azure feedback"
+    },
+    {
+      "href": "https://community.fabric.microsoft.com/",
+      "titulo": "Community"
+    },
+    {
+      "href": "https://azure.microsoft.com/updates/",
+      "titulo": "Service updates"
+    },
+    {
+      "href": "https://azure.status.microsoft/",
+      "titulo": "Azure Status"
+    },
+    {
+      "href": "/training/fabric/",
+      "titulo": "Microsoft Learn training"
+    }
+  ]
+}

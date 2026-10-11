@@ -30,6 +30,10 @@ class Coluna(BaseModel):
     expressao: str | None = None
     """DAX da coluna calculada; `None` numa coluna comum."""
     oculta: bool = False
+    ordenar_por: str | None = None
+    """`sortByColumn`: a coluna que define a ordem desta. Conta como uso da
+    coluna apontada — esquecer isso faria a PERF-005 recomendar apagar a coluna
+    de ordenação, quebrando a ordem no relatório."""
     bruto: dict[str, Any] = Field(default_factory=dict, repr=False)
 
     @property
@@ -55,8 +59,39 @@ class Particao(BaseModel):
     """`source.type`: `m` numa partição de Power Query, `calculated` numa
     tabela calculada em DAX."""
     origem: str | None = None
-    """Expressão M da partição, quando a origem é do tipo `m`."""
+    """Expressão da partição: M quando `tipo_origem == "m"`, DAX quando
+    `tipo_origem == "calculated"`. O campo carrega as duas, e quem lê precisa
+    olhar `tipo_origem` antes — uma regra de DAX que varresse toda partição
+    leria as 10 expressões M do P8."""
     bruto: dict[str, Any] = Field(default_factory=dict, repr=False)
+
+
+class Nivel(BaseModel):
+    """Um nível de hierarquia. Referencia uma coluna da própria tabela."""
+
+    nome: str
+    tabela: str
+    coluna: str
+    ordem: int | None = None
+
+
+class Hierarquia(BaseModel):
+    nome: str
+    tabela: str
+    niveis: list[Nivel] = Field(default_factory=list)
+
+
+class PermissaoDeTabela(BaseModel):
+    tabela: str
+    expressao_filtro: str | None = None
+    """DAX da RLS. Referencia colunas, e por isso conta como uso de coluna."""
+
+
+class Role(BaseModel):
+    """Role de segurança em nível de linha."""
+
+    nome: str
+    permissoes: list[PermissaoDeTabela] = Field(default_factory=list)
 
 
 class Tabela(BaseModel):
@@ -67,6 +102,7 @@ class Tabela(BaseModel):
     colunas: list[Coluna] = Field(default_factory=list)
     medidas: list[Medida] = Field(default_factory=list)
     particoes: list[Particao] = Field(default_factory=list)
+    hierarquias: list[Hierarquia] = Field(default_factory=list)
     bruto: dict[str, Any] = Field(default_factory=dict, repr=False)
 
     @property
@@ -93,6 +129,7 @@ class ModeloSemantico(BaseModel):
     cultura: str | None = None
     tabelas: list[Tabela] = Field(default_factory=list)
     relacionamentos: list[Relacionamento] = Field(default_factory=list)
+    roles: list[Role] = Field(default_factory=list)
 
     @property
     def medidas(self) -> list[Medida]:

@@ -79,6 +79,7 @@ ESPERADO_P8 = {
     "MOD-007": 1,  # DimGeography → DimCustomer
     "PERF-001": 1,  # DimEmployee[Salário]
     "PERF-003": 1,  # Tabela de Regressão Linear[Previsao]
+    "DAX-001": 0,  # as 4 divisões reais são INT(.../3), denominador constante
 }
 
 
@@ -87,9 +88,9 @@ def resultado(modelo):
     return avaliar(modelo, registro=REGISTRO)
 
 
-def test_as_oito_regras_rodam_sem_falhar_no_pbip_real(resultado):
+def test_as_nove_regras_rodam_sem_falhar_no_pbip_real(resultado):
     assert resultado.regras_com_falha == []
-    assert resultado.regras_executadas == 8
+    assert resultado.regras_executadas == 9
 
 
 def test_as_contagens_por_regra_no_p8(resultado):
@@ -133,3 +134,215 @@ def test_a_saida_vem_ordenada_por_severidade(resultado):
     ordem = {"alta": 0, "media": 1, "baixa": 2}
 
     assert severidades == sorted(severidades, key=lambda s: ordem[s])
+
+
+def test_inventario_dos_sitios_estruturais(modelo):
+    """Os oito sítios que sustentariam a PERF-005, recusada em 08/10/2026.
+
+    A regra saiu, mas o inventário fica: é o que `usos_de_coluna` lê, e são os
+    números medidos no P8 que fundamentaram a recusa.
+    """
+    niveis = [n for t in modelo.tabelas for h in t.hierarquias for n in h.niveis]
+    ordenacoes = [c for t in modelo.tabelas for c in t.colunas if c.ordenar_por]
+
+    assert len(modelo.relacionamentos) == 11
+    assert sum(len(t.hierarquias) for t in modelo.tabelas) == 4
+    assert len(niveis) == 16
+    assert len(ordenacoes) == 10
+    assert modelo.roles == []
+
+
+def test_o_lexer_tokeniza_todo_o_dax_do_p8(modelo):
+    """Critério de aceite 1: zero token DESCONHECIDO nas expressões do P8.
+
+    Mede a cobertura do lexer contra um corpus real em vez de contra a
+    imaginação de quem o escreveu. É o número que a monografia cita no lugar de
+    "usamos expressões regulares".
+    """
+    from core.dax import tem_desconhecido, tokenizar
+
+    textos = []
+    for t in modelo.tabelas:
+        textos += [m.expressao for m in t.medidas]
+        textos += [c.expressao for c in t.colunas if c.expressao]
+        textos += [
+            p.origem for p in t.particoes if p.tipo_origem == "calculated" and p.origem
+        ]
+
+    assert len(textos) == 137
+    falhas = [x for x in textos if tem_desconhecido(tokenizar(x))]
+    assert falhas == []
+
+
+def test_a_varredura_cobre_o_dax_do_p8_sem_lacuna(modelo):
+    """105 expressões: as 137 do lexer, menos 28 das 4 tabelas de data
+    automática, menos 2 das 2 tabelas de cluster, menos 2 da tabela de
+    parâmetro hipotético (medida e partição) — medido em 08/10/2026.
+    """
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+
+    assert v.lacunas == []
+    assert len(v.expressoes) == v.total == 105
+    assert {e.sitio for e in v.expressoes} == {
+        "medida",
+        "coluna calculada",
+        "particao calculada",
+    }
+
+
+def test_dax001_tem_zero_confirmado_pelo_controle(modelo):
+    """O rendimento de DAX-001 é zero, e aqui é o controle que diz por quê.
+
+    Medido em 08/10/2026 (Tarefa 9). `operadores(..., "/")` sobre as 105
+    expressões em escopo não encontra nenhuma barra — não só a regra cala,
+    como não há nenhuma divisão, de denominador constante ou não, para a
+    regra ter deixado passar sem marcar. As 4 divisões reais do arquivo
+    (`INT(([MonthNo] + 2) / 3)`, denominador constante) ficam fora porque
+    pertencem às tabelas de data automáticas, excluídas do escopo por
+    `tabelas_em_escopo` — não por lacuna do lexer nem por cegueira de
+    `_e_constante`. Sem este controle, o zero da regra seria indistinguível
+    de falso negativo; com ele, é zero verdadeiro.
+    """
+    from core.dax import operadores
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+    barras = [t for e in v.expressoes for t in operadores(e.tokens, "/")]
+
+    assert barras == []
+
+
+def test_sumx_no_p8_sao_todas_iteracoes_legitimas(modelo):
+    """O denominador de qualquer afirmação futura de precisão sobre DAX-002.
+
+    Medido em 08/10/2026 (Tarefa 9): classificação manual das 6 ocorrências de
+    `SUMX` em escopo — a mesma contagem da sondagem com expressão regular que
+    motivou a DAX-002, agora confirmada pelo lexer. Todas as seis multiplicam
+    duas colunas distintas linha a linha
+    (`FactOnlineSales[SalesQuantity] * FactOnlineSales[UnitPrice]`, uma delas
+    com um termo adicional somado antes da multiplicação); nenhuma seria
+    substituível por `SUM` sobre uma única coluna. DAX-002 nunca foi
+    implementada porque esta verificação não tinha sido feita; feita agora, o
+    resultado — zero iteração desnecessária em seis — não sustenta nem rejeita
+    a regra. Só diz que este corpus não a exercitaria.
+    """
+    from core.dax import chamadas
+    from core.rules.expressoes import varrer_dax
+
+    v = varrer_dax(modelo)
+    ocorrencias = [args for e in v.expressoes for args in chamadas(e.tokens, "SUMX")]
+
+    assert len(ocorrencias) == 6
+    for args in ocorrencias:
+        expressao = " ".join(t.texto for t in args[1])
+        assert "SalesQuantity" in expressao
+        assert "UnitPrice" in expressao
+
+
+def test_os_usos_de_coluna_no_p8(modelo):
+    """Quantas colunas em escopo não têm nenhum uso.
+
+    Lista medida em 08/10/2026, pelos oito sítios de `usos_de_coluna`. Substitui
+    a estimativa de 5 do backlog.md, feita antes de `sortByColumn` e hierarquia
+    entrarem na conta. As três colunas `GeographyKey` (DimGeography, DimCustomer,
+    DimStore) aparecem sem uso porque o relacionamento DimGeography→DimCustomer
+    usa `CustomerKey`, não `GeographyKey` — o mesmo defeito que MOD-007 já aponta.
+    Se mudar, a causa precisa ser entendida antes de o número ser atualizado.
+
+    Este número não alimenta mais contagem de regra: a PERF-005, que o
+    consumiria, foi recusada em 08/10/2026 pela cláusula (c) do terceiro teste
+    do critério de detectabilidade — ela afirmaria ausência sobre a camada de
+    relatório (F19), que a ferramenta não lê (`backlog.md`, `riscos.md`,
+    `docs/superpowers/specs/2026-10-08-regras-de-dax-e-varredura-textual-design.md`).
+    O que este teste trava passa a ser a **evidência da rejeição**: das 36
+    colunas, 33 seriam achado da regra recusada, e só 5 são defensáveis (chaves
+    substitutas órfãs) — o resto são falsos positivos prováveis ou confirmados.
+    """
+    from core.rules.referencias import usos_de_coluna
+
+    usos = usos_de_coluna(modelo)
+    sem_uso = sorted(chave for chave, sitios in usos.items() if not sitios)
+
+    esperado = [
+        ("DimCalendar", "Data (clusters)"),
+        ("DimCalendar", "Data (clusters) 2"),
+        ("DimCalendar", "Mês"),
+        ("DimCalendar", "Semestre"),
+        ("DimCalendar", "Trimestre"),
+        ("DimCustomer", "Education"),
+        ("DimCustomer", "GeographyKey"),
+        ("DimCustomer", "Nome Completo"),
+        ("DimCustomer", "NumberCarsOwned"),
+        ("DimCustomer", "Occupation"),
+        ("DimCustomer", "TotalChildren"),
+        ("DimEmployee", "DepartmentName"),
+        ("DimEmployee", "EmployeeKey"),
+        ("DimEmployee", "Status"),
+        ("DimGeography", "CityName"),
+        ("DimGeography", "GeographyKey"),
+        ("DimGeography", "RegionCountryName"),
+        ("DimGeography", "StateProvinceName"),
+        ("DimProduct", "ClassName"),
+        ("DimProduct", "ProductDescription"),
+        ("DimProductCategory", "ProductCategoryName"),
+        ("DimProductSubcategory", "ProductSubcategoryName"),
+        ("DimPromotion", "Grupos"),
+        ("DimPromotion", "PromotionCategory"),
+        ("DimPromotion", "PromotionName"),
+        ("DimPromotion", "PromotionType"),
+        ("DimStore", "GeographyKey"),
+        ("DimStore", "StoreDescription"),
+        ("DimStore", "StoreName"),
+        ("DimStore", "StoreType"),
+        ("FactOnlineSales", "Faturamento"),
+        ("FactOnlineSales", "OnlineSalesKey"),
+        ("Tabela de Regressão Linear", "2008"),
+        ("Tabela de Regressão Linear", "2009"),
+        ("Tabela de Regressão Linear", "Cliente"),
+        ("Tabela de Regressão Linear", "Previsao"),
+    ]
+
+    assert len(sem_uso) == 36
+    assert sem_uso == esperado
+
+
+def test_a_conferencia_a_mao_das_36_colunas_sem_uso(modelo):
+    """A verificação da Tarefa 9 (08/10/2026): a metade que detecta contaminação.
+
+    O teste anterior trava o número; este trava o que foi conferido à mão no
+    `model.bim`, contra as cinco colunas escolhidas de propósito — uma chave
+    órfã, uma coluna de calendário e três atributos reportáveis — mais três
+    colunas que a resolução dá como usadas. Nenhuma das cinco tinha uso que a
+    resolução não viu (`grep` no `model.bim` pelos oito sítios confirma:
+    `DimEmployee[EmployeeKey]` só aparece na definição da própria coluna e no
+    esquema de Perguntas e Respostas, nunca em relacionamento, hierarquia,
+    `sortByColumn`, `variations` ou DAX; o mesmo para as outras quatro). E as
+    três usadas têm uso real: `DimStore[StoreKey]` no relacionamento com
+    `FactOnlineSales` e em DAX de medida, `DimCalendar[Nº do Trimestre]` como
+    alvo de `sortByColumn` de `Trimestre` e em DAX de coluna calculada,
+    `FactOnlineSales[UnitPrice]` em seis medidas de faturamento. A medição que
+    rejeitou a PERF-005 não está contaminada em nenhuma das duas direções.
+    """
+    from core.rules.referencias import usos_de_coluna
+
+    usos = usos_de_coluna(modelo)
+
+    escolhidas_sem_uso = [
+        ("DimEmployee", "EmployeeKey"),  # chave substituta órfã
+        ("DimCalendar", "Trimestre"),  # coluna de calendário
+        ("DimStore", "StoreName"),  # atributo reportável
+        ("DimCustomer", "Education"),  # atributo reportável
+        ("DimCustomer", "Occupation"),  # atributo reportável
+    ]
+    for chave in escolhidas_sem_uso:
+        assert usos[chave] == set(), chave
+
+    usadas = {
+        ("DimStore", "StoreKey"): {"relacionamento", "dax de medida"},
+        ("DimCalendar", "Nº do Trimestre"): {"ordenacao", "dax de coluna calculada"},
+        ("FactOnlineSales", "UnitPrice"): {"dax de medida"},
+    }
+    for chave, sitios_esperados in usadas.items():
+        assert usos[chave] == sitios_esperados, chave

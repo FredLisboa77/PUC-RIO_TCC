@@ -1,0 +1,360 @@
+{
+  "secao": "power-bi/transform-model",
+  "idioma": "en-us",
+  "url": "https://learn.microsoft.com/en-us/power-bi/transform-model/toc.json",
+  "baixado_em": "2026-10-09",
+  "itens": [
+    {
+      "href": "./",
+      "titulo": "Power BI data transformation, shaping, and modeling documentation"
+    },
+    {
+      "href": "desktop-query-overview",
+      "titulo": "What is Power Query Editor?"
+    },
+    {
+      "href": "desktop-data-types",
+      "titulo": "Data types in Power BI"
+    },
+    {
+      "href": "model-explorer",
+      "titulo": "Work with Model explorer"
+    },
+    {
+      "href": "desktop-modeling-view",
+      "titulo": "Work with Modeling view"
+    },
+    {
+      "href": "desktop-data-view",
+      "titulo": "Work with Table view"
+    },
+    {
+      "href": "desktop-tmdl-view",
+      "titulo": "Work with TMDL view"
+    },
+    {
+      "href": "dax-query-view",
+      "titulo": "Work with DAX query view"
+    },
+    {
+      "href": "desktop-common-query-tasks",
+      "titulo": "Perform common query tasks"
+    },
+    {
+      "href": "power-query-new-experience-limitations",
+      "titulo": "New Power Query experience known limitations and workarounds"
+    },
+    {
+      "href": "desktop-data-privacy-firewall-partitions",
+      "titulo": "Allow data privacy firewall partitions"
+    },
+    {
+      "href": "desktop-python-in-query-editor",
+      "titulo": "Use Python in Query Editor"
+    },
+    {
+      "href": "desktop-r-in-query-editor",
+      "titulo": "Use R in Query Editor"
+    },
+    {
+      "href": "desktop-combine-binaries",
+      "titulo": "Combine files (binaries)"
+    },
+    {
+      "href": "desktop-add-column-from-example",
+      "titulo": "Add a column from examples"
+    },
+    {
+      "href": "desktop-add-custom-column",
+      "titulo": "Add a custom column"
+    },
+    {
+      "href": "export-query-results",
+      "titulo": "Export query results (preview)"
+    },
+    {
+      "href": "desktop-shape-and-combine-data",
+      "titulo": "Shape and combine multiple data sources"
+    },
+    {
+      "href": "desktop-tutorial-analyzing-sales-data-from-excel-and-an-odata-feed",
+      "titulo": "Combine Excel and OData feed data"
+    },
+    {
+      "href": "desktop-tutorial-importing-and-analyzing-data-from-a-web-page",
+      "titulo": "Import and analyze webpage data"
+    },
+    {
+      "href": "dataflows/dataflows-introduction-self-service",
+      "titulo": "Introduction to dataflows (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-create",
+      "titulo": "Create a dataflow (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-configure-consume",
+      "titulo": "Configure and consume a dataflow (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-fabric-capacity-workload-configuration",
+      "titulo": "Configure Power BI Premium dataflow workloads (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-azure-data-lake-storage-integration",
+      "titulo": "Dataflows and Azure Data Lake Gen2 (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-fabric-capacity-features",
+      "titulo": "Premium features of dataflows (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-best-practices",
+      "titulo": "Dataflows best practices (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-understand-optimize-refresh",
+      "titulo": "Understand and optimize dataflow refresh (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-directquery",
+      "titulo": "Use DirectQuery with dataflows (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-features-limitations",
+      "titulo": "Dataflows considerations and limitations (legacy)"
+    },
+    {
+      "href": "dataflows/dataflows-streaming",
+      "titulo": "Streaming dataflows (retired)"
+    },
+    {
+      "href": "dataflows/dataflows-develop-solutions",
+      "titulo": "Develop dataflows solutions (legacy)"
+    },
+    {
+      "href": "desktop-connect-dataflows",
+      "titulo": "Connect to data created by Power Platform dataflows in Power BI Desktop (legacy)"
+    },
+    {
+      "href": "desktop-data-categorization",
+      "titulo": "Specify data categories in Power BI Desktop"
+    },
+    {
+      "href": "desktop-mobile-barcodes",
+      "titulo": "Tag barcode fields in Power BI for the mobile app"
+    },
+    {
+      "href": "desktop-mobile-geofiltering",
+      "titulo": "Set geographic filters in Power BI for the mobile app"
+    },
+    {
+      "href": "desktop-relationships-understand",
+      "titulo": "Understand model relationships"
+    },
+    {
+      "href": "desktop-create-and-manage-relationships",
+      "titulo": "Create and manage relationships"
+    },
+    {
+      "href": "desktop-relationship-view",
+      "titulo": "Work with Relationship view"
+    },
+    {
+      "href": "desktop-many-to-many-relationships",
+      "titulo": "Many-to-many relationships"
+    },
+    {
+      "href": "desktop-bidirectional-filtering",
+      "titulo": "Enable bidirectional cross-filtering"
+    },
+    {
+      "href": "desktop-tutorial-create-measures",
+      "titulo": "Create your own measures"
+    },
+    {
+      "href": "desktop-tutorial-create-calculated-columns",
+      "titulo": "Create calculated columns"
+    },
+    {
+      "href": "calculation-groups",
+      "titulo": "Create calculation groups"
+    },
+    {
+      "href": "desktop-quickstart-learn-dax-basics",
+      "titulo": "Learn DAX basics in Power BI Desktop"
+    },
+    {
+      "href": "desktop-calculations-options",
+      "titulo": "Use calculations options in Power BI Desktop"
+    },
+    {
+      "href": "desktop-measures",
+      "titulo": "Create measures for data analysis"
+    },
+    {
+      "href": "desktop-quick-measures",
+      "titulo": "Create quick measures for common calculations"
+    },
+    {
+      "href": "quick-measure-suggestions",
+      "titulo": "Quick measure suggestions"
+    },
+    {
+      "href": "desktop-calculated-columns",
+      "titulo": "Create calculated columns"
+    },
+    {
+      "href": "desktop-calculated-tables",
+      "titulo": "Create calculated tables"
+    },
+    {
+      "href": "desktop-what-if",
+      "titulo": "Create and use what-if parameters to visualize variables"
+    },
+    {
+      "href": "desktop-time-intelligence",
+      "titulo": "Implement time-based calculations in Power BI"
+    },
+    {
+      "href": "desktop-date-tables",
+      "titulo": "Set and use date tables"
+    },
+    {
+      "href": "desktop-auto-date-time",
+      "titulo": "Apply auto date/time"
+    },
+    {
+      "href": "desktop-visual-calculations-overview",
+      "titulo": "Visual calculations"
+    },
+    {
+      "href": "desktop-visual-calculations-create",
+      "titulo": "Create visual calculations"
+    },
+    {
+      "href": "desktop-user-defined-functions-overview",
+      "titulo": "Using DAX user-defined functions"
+    },
+    {
+      "href": "desktop-import-and-display-kpis",
+      "titulo": "Import and display KPIs"
+    },
+    {
+      "href": "desktop-analytics-pane",
+      "titulo": "Use the Analytics pane"
+    },
+    {
+      "href": "desktop-composite-models",
+      "titulo": "Composite models"
+    },
+    {
+      "href": "desktop-storage-mode",
+      "titulo": "Manage storage mode"
+    },
+    {
+      "href": "aggregations-advanced",
+      "titulo": "User-defined aggregations"
+    },
+    {
+      "href": "value-filter-behavior",
+      "titulo": "Work with value filter behavior (preview)"
+    },
+    {
+      "href": "desktop-default-member-multidimensional-models",
+      "titulo": "Work with multidimensional models in Power BI"
+    },
+    {
+      "href": "service-edit-data-models",
+      "titulo": "Edit data models in the Power BI service"
+    },
+    {
+      "href": "service-model-options",
+      "titulo": "Configure model options in the Power BI service"
+    },
+    {
+      "href": "service-semantic-model-version-history",
+      "titulo": "Use semantic model version history"
+    },
+    {
+      "href": "service-notebooks",
+      "titulo": "Use notebooks with your semantic model"
+    },
+    {
+      "href": "copilot-web-modeling",
+      "titulo": "Copilot in web modeling (preview)"
+    },
+    {
+      "href": "/dax/dax-copilot",
+      "titulo": "Use Copilot to write and explain DAX queries"
+    },
+    {
+      "href": "desktop-measure-copilot-descriptions",
+      "titulo": "Use Copilot to create measure descriptions"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-overview",
+      "titulo": "Use Azure Log Analytics in Power BI"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-configure",
+      "titulo": "Configuring Azure Log Analytics in Power BI"
+    },
+    {
+      "href": "log-analytics/desktop-log-analytics-faq",
+      "titulo": "Azure Log Analytics in Power BI - FAQ"
+    },
+    {
+      "href": "desktop-external-tools",
+      "titulo": "External tools in Power BI Desktop"
+    },
+    {
+      "href": "desktop-external-tools-register",
+      "titulo": "Register an external tool"
+    },
+    {
+      "href": "desktop-field-list",
+      "titulo": "Use the Field list in Power BI Desktop"
+    },
+    {
+      "href": "desktop-formula-editor",
+      "titulo": "Formula editor shortcuts"
+    },
+    {
+      "href": "desktop-evaluation-configuration",
+      "titulo": "Evaluation configuration for DAX queries"
+    },
+    {
+      "href": "/contribute/",
+      "titulo": "Contribute to Fabric docs"
+    },
+    {
+      "href": "/answers/",
+      "titulo": "Microsoft Q & A"
+    },
+    {
+      "href": "https://ideas.fabric.microsoft.com/",
+      "titulo": "Fabric ideas"
+    },
+    {
+      "href": "https://feedback.azure.com/",
+      "titulo": "Azure feedback"
+    },
+    {
+      "href": "https://community.fabric.microsoft.com/",
+      "titulo": "Community"
+    },
+    {
+      "href": "https://azure.microsoft.com/updates/",
+      "titulo": "Service updates"
+    },
+    {
+      "href": "https://azure.status.microsoft/",
+      "titulo": "Azure Status"
+    },
+    {
+      "href": "/training/fabric/",
+      "titulo": "Microsoft Learn training"
+    }
+  ]
+}

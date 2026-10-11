@@ -7,7 +7,7 @@
 
 ## 1. Objetivo e contexto
 
-A Fase 2 entregou o motor de regras e as oito regras estruturais — o **grupo 1** do critério de detectabilidade. Esta etapa entrega o **grupo 2**: regras cuja detecção depende de ler o texto das expressões DAX, mais a candidata **coluna sem uso**, que o `backlog.md` registra como "fronteira com o grupo 2" porque também depende dessa varredura.
+A Fase 2 entregou o motor de regras e as oito regras estruturais — o **grupo 1** do critério de detectabilidade. Esta etapa entrega o **grupo 2**: regras cuja detecção depende de ler o texto das expressões DAX. A candidata **coluna sem uso** (PERF-005) entrou no desenho inicial por essa mesma fronteira — ela também dependeria da varredura estrutural —, mas a medição que o desenho produziu a **rejeitou** antes do código (seção 5): a etapa entrega uma regra nova, a **DAX-001**, não duas.
 
 Nada no projeto sabe hoje sintaxe de DAX. A única coisa parecida é `_primeira_linha_util` em `escopo.py`, que ignora comentário `//` apenas na primeira linha de uma expressão. Esta etapa, portanto, introduz um **mecanismo de detecção novo**: até aqui toda regra lia uma propriedade explícita do TMSL; a partir daqui há regras que leem texto livre escrito pelo autor.
 
@@ -52,7 +52,7 @@ Antes de decidir qualquer coisa, o P8 foi medido. São **137 expressões DAX** (
 | D-7 | **A lacuna não interrompe a auditoria**; ela avisa | Recusar-se a declarar o grupo de DAX completo com lacuna aberta | Projeto acadêmico: avisar basta. O refinamento vai para Trabalhos Futuros |
 | D-8 | **DAX-003 (`FILTER` sobre tabela inteira) fica fora desta fase** | Implementar com as outras | Zero ocorrência no P8: sem teste de regressão real nem evidência para a monografia. Fica como candidata registrada, a decidir quando P1–P7 existirem |
 | D-9 | **A verificação empírica das roles precede o código** do ramo de RLS | Implementar pela especificação do TMSL com nota de verificação | É a mesma classe de risco que derrubou a MOD-005 — a propriedade existia na especificação e o Desktop não a escrevia —, e aqui o falso positivo é destrutivo |
-| D-10 | **PERF-005**, ID novo | Reusar PERF-002, descartada em 06/10 | Ressuscitar ID de regra descartada confundiria o registro e o histórico |
+| D-10 | **PERF-005**, ID novo | Reusar PERF-002, descartada em 06/10 | Ressuscitar ID de regra descartada confundiria o registro e o histórico. Decisão tomada antes da medição da seção 5 rejeitar a própria PERF-005; o ID fica reservado e não reutilizado |
 
 ## 3. O terceiro teste do critério de detectabilidade
 
@@ -85,8 +85,9 @@ Texto entra, tokens saem. Não conhece modelo, tabela nem regra.
 | `NUMERO` | Inteiro e decimal |
 | `REFERENCIA` | `Tabela[Coluna]`, `'Tabela com espaço'[Coluna]` (com `''` como apóstrofo literal), e `[Medida]` — este sem tabela, e é assim que medida se distingue de coluna |
 | `IDENTIFICADOR` | Nome de função ou nome de tabela nu |
-| `OPERADOR` | `/ * + - & = <> < > <= >= ^ || &&` e `IN` |
+| `OPERADOR` | Só símbolos: `/ * + - & = <> < > <= >= ^ || &&`. `IN`, sendo alfabético, é consumido pelo ramo de identificador e sai como `IDENTIFICADOR` — nenhuma regra desta fase precisa dele como operador, e uma lista de palavras reservadas seria complexidade sem consumidor |
 | `PARENTESE_ABRE` / `PARENTESE_FECHA` | Para profundidade e fronteira de argumento |
+| `CHAVE_ABRE` / `CHAVE_FECHA` | `{` e `}` — construtor de tabela do DAX, `x IN {"No Discount"}`. Acrescentado na Tarefa 1 porque o corpus real usa a sintaxe; tratado separado de parêntese porque o construtor de conjunto não aninha outro par |
 | `VIRGULA` | Separador de argumento |
 | `DESCONHECIDO` | Caractere que o lexer não reconhece. **Nunca levanta exceção** (D-4) |
 
@@ -127,7 +128,7 @@ Módulo próprio, e não dentro de `escopo.py`: aquele já tem 265 linhas e seu 
 
 ### 4.3 `core/rules/dax.py` — as regras
 
-Usam 4.1 e 4.2 e não reimplementam nenhum dos dois. A PERF-005 fica em `performance.py`, junto das suas, por categoria.
+Usam 4.1 e 4.2 e não reimplementam nenhum dos dois. A PERF-005 ficaria em `performance.py`, junto das suas, por categoria — mas a medição da seção 5 a rejeitou antes do código, e `performance.py` não muda nesta etapa.
 
 ### 4.4 `core/rules/runner.py` e `base.py` — o canal de aviso
 
@@ -154,9 +155,9 @@ Sítio não lido é prova de ausência que não existe. Mas "ler todos os sítio
 | `tables[].hierarchies[].levels[].column` | Referência estrutural a coluna | 16 |
 | `tables[].columns[].sortByColumn` | Referência estrutural a coluna | 10 |
 | `tables[].columns[].variations[]` | Referência estrutural a coluna | 3 |
-| `roles[].tablePermissions[].filterExpression` | Sítio de DAX; condição de existência da PERF-005 | 0 — **pendente de verificação empírica** (D-9) |
+| `roles[].tablePermissions[].filterExpression` | Sítio de DAX; seria condição de existência da PERF-005 | 0 — **pendente de verificação empírica** (D-9) |
 
-A role é lida, mas **não basta ser lida**: enquanto não se verificar que o Desktop grava o filtro (seção 10), a presença de qualquer role faz a PERF-005 abster-se por completo. Ler sem ter verificado o que a leitura significa seria a repetição exata do defeito da MOD-005.
+A role é lida, mas **não bastaria ser lida**: enquanto não se verificasse que o Desktop grava o filtro (seção 10), a presença de qualquer role faria a PERF-005 abster-se por completo. Ler sem ter verificado o que a leitura significa seria a repetição exata do defeito da MOD-005. **A PERF-005 foi recusada antes do código** (seção 5), por um motivo anterior e independente desta verificação — mas o sítio continua lido, porque é um dos oito que `usos_de_coluna` (`core/rules/referencias.py`, Tarefa 6) soma à sua varredura, e serve a uma regra futura cuja afirmação não dependa da camada de relatório.
 
 **Motivo de abstenção, não lidos nesta etapa** — nenhum existe no P8, logo nenhum pode ser verificado contra arquivo real:
 
@@ -166,20 +167,38 @@ A role é lida, mas **não basta ser lida**: enquanto não se verificar que o De
 | `tables[].calculationGroup.calculationItems[]` | Idem |
 | `tables[].measures[].detailRowsDefinition` | Idem |
 
-A PERF-005 **se cala por completo** quando qualquer um deles está presente no arquivo, declarando a limitação na `nota_de_verificacao`. É mais honesto que lê-los às cegas: a regra não afirma ausência a partir de varredura que ela sabe incompleta, e a cegueira fica visível em vez de embutida.
+Qualquer regra futura que dependesse destes três sítios para afirmar ausência precisaria se calar por completo quando um deles estivesse presente no arquivo, declarando a limitação na `nota_de_verificacao` — é mais honesto que lê-los às cegas. A PERF-005 teria essa obrigação; como foi recusada antes do código (seção 5), a obrigação não chegou a ser exercida, mas o princípio fica registrado para a próxima regra que leia estes sítios.
 
 Lê-los passa a item de Trabalhos Futuros, condicionado a um PBIP que os contenha — a mesma condição que a role tem hoje.
 
 ## 5. As regras, com o terceiro teste aplicado
 
-### PERF-005 — Coluna sem uso
+### PERF-005 — Coluna sem uso (candidata recusada antes do código)
 
-- **Âncora:** `guidance/import-modeling-data-reduction`, *Remove unnecessary columns* — já verificada e transcrita no `backlog.md` de 06/10. A página define os dois propósitos que justificam uma coluna, e ambos são verificáveis no `model.bim`.
-- **Afirma por:** **ausência**. É a regra mais exigente do conjunto.
-- **(a) Formas da condição** — uso de uma coluna é qualquer um de oito: chave de relacionamento; nível de hierarquia; `sortByColumn` de outra coluna; alvo de `variations`; referência em DAX de medida; de coluna calculada; de partição calculada; e expressão de filtro de role.
+- **Âncora:** `guidance/import-modeling-data-reduction`, *Remove unnecessary columns* — já verificada e transcrita no `backlog.md` de 06/10. A página justifica uma coluna por servir a **um de dois propósitos**: o relatório, ou a estrutura do modelo.
+- **Afirmaria por:** **ausência**. Era a regra mais exigente do conjunto — e a que o terceiro teste rejeitou.
+- **(a) Formas da condição** — uso de uma coluna é qualquer um de oito: chave de relacionamento; nível de hierarquia; alvo de `sortByColumn` de outra coluna; coluna que declara `variations` (aqui "alvo" não serve: no arquivo real as três `variations` apontam para uma *hierarquia* numa tabela de data automática, nunca para uma coluna — o vínculo marca a coluna **dona** do `variations`, não um alvo seu, porque apagá-la é o que quebra a variação); referência em DAX de medida; de coluna calculada; de partição calculada; e expressão de filtro de role.
 - **(b) Sósias** — nome de coluna dentro de string ou de comentário; e coluna homônima em outra tabela, de modo que referência não qualificada exige resolução por tabela.
-- **(c) Sítios** — os oito acima. No P8: 11 relacionamentos, 16 níveis, 10 `sortByColumn`, 3 `variations`, 137 expressões, 0 roles.
-- **Rendimento no P8:** o `backlog.md` estima 5 (chaves substitutas órfãs). **Essa estimativa não será travada em teste sem antes ser reverificada**, porque foi feita sem considerar `sortByColumn` nem hierarquia (seção 7).
+- **(c) Sítios — e o motivo da rejeição.** Dos dois propósitos que a âncora reconhece, a regra só conseguiria observar um: a estrutura do modelo, lida nos oito sítios acima (11 relacionamentos, 16 níveis, 10 `sortByColumn`, 3 `variations`, 137 expressões, 0 roles, no P8). O relatório — o outro propósito — é a camada `.Report`, que é o **F19**, Trabalhos Futuros; a ferramenta não a lê. A regra afirmaria ausência sobre um domínio que não enxerga, o que viola a cláusula (c) do terceiro teste (seção 3): *todos os sítios onde o sinal pode morar*.
+
+**Medição, feita antes do código** (`core/rules/referencias.py`, Tarefa 6, 08/10/2026). `usos_de_coluna` achou **36** colunas sem uso em nenhum dos oito sítios no P8, contra a estimativa de 5 do `backlog.md` — feita antes de `sortByColumn` e hierarquia entrarem na conta. A regra reportaria **33** (três saem por `coluna_gerada_por_analise`):
+
+| Quantas | O que são | Veredito |
+|---|---|---|
+| 5 | Chaves substitutas órfãs: `FactOnlineSales[OnlineSalesKey]`, `DimEmployee[EmployeeKey]`, e três `GeographyKey` | Defensáveis — chave substituta não tem propósito de relatório por natureza |
+| 3 | Colunas de calendário: `DimCalendar[Mês]`, `[Trimestre]`, `[Semestre]` | **Falso positivo** — a documentação recomenda acrescentá-las, e a PERF-001 já as exclui por isso |
+| 25 | Atributos reportáveis: `StoreName`, `PromotionName`, `ProductCategoryName`, `Education`, `Occupation`… | **Provável falso positivo** — quase certamente em uso em visuais, que a ferramenta não lê |
+
+Precisão **indeterminável** dentro do que a ferramenta lê: dos 33 achados (36
+menos 3 geradas por agrupamento/análise), 5 são verdadeiro positivo e 3 são
+falso positivo confirmado, mas os outros 25 dependem da camada de relatório,
+que o MVP não lê — a precisão varia entre ~15% (5/33, se os 25 estiverem em
+uso, o cenário mais provável) e ~91% (30/33, no outro extremo), contra o
+gatilho de 0,7 do R-03. Um único número (a estimativa inicial de ~24%, que
+tratava as 3 colunas de calendário — o único grupo confirmado como erro —
+como acerto) não tem derivação válida e foi corrigida nesta revisão.
+
+**Veredito: recusada, não implementada.** A regra nunca chegou a ser escrita — a medição contra o P8, feita antes do código, já mostrava que ela violaria a cláusula (c). É o primeiro caso em que o terceiro teste rejeita uma regra, não apenas a corrige (`backlog.md`). A resolução de uso (`core/rules/referencias.py`) e seus testes **permanecem**: são a evidência reproduzível da medição, e servem a uma regra futura cuja afirmação não dependa da camada de relatório — candidata registrada no `backlog.md` como "chave substituta órfã sem uso" (forma estreita, com duas perguntas abertas).
 
 ### DAX-001 — Divisão com `/` onde o denominador pode ser zero ou BLANK
 
@@ -219,6 +238,8 @@ Lê-los passa a item de Trabalhos Futuros, condicionado a um PBIP que os contenh
 
 A hipótese tem fundamento: o autor do P8 usa `DIVIDE` 11 vezes, não usa `FILTER` nenhuma, e seus defeitos conhecidos são **estruturais** — tempo automático ligado, bidirecionais, floco de neve. O grupo 1 era onde eles estavam.
 
+**Verificação (08/10/2026) — a hipótese se confirmou por um caminho que ela não previa.** A PERF-005 não achou "entre 0 e 5": a medição deu 33, com precisão **indeterminável** dentro do que o MVP lê — entre ~15% e ~91%, dependendo de quanto dos 25 atributos reportáveis está de fato em uso (seção 5). O número não é baixo nem alto — é a contagem de uma regra que a cláusula (c) do terceiro teste rejeitou antes de ela chegar a existir em código, justamente porque a ferramenta não consegue fixar essa precisão. O resultado que a hipótese antecipava (o grupo 2 soma pouco ao P8) se confirma, mas a causa não é ausência de defeito nem contagem pequena: é regra descartada por falta de evidência suficiente.
+
 ### Zero tem duas causas, e elas não se distinguem sem verificação
 
 | Causa do zero | O que significa | O que sustenta na monografia |
@@ -235,14 +256,16 @@ Executado **depois** de o lexer e as regras existirem, e antes de a seção de r
 | Regra | Como verificar que o zero é verdadeiro |
 |---|---|
 | **DAX-001** | Tokenizar as 137 expressões em escopo com o **lexer**, não com regex, e contar tokens `OPERADOR` de valor `/`. Zero medido pelo lexer é zero verdadeiro. Se houver algum, a sondagem estava errada e o rendimento muda |
-| **PERF-005** | Verificar coluna por coluna, nos oito sítios, as candidatas que a regra aponta **e** uma amostra das que ela não aponta — a segunda metade é o que detecta cegueira. Travar a contagem só depois (ver seção 7) |
+| **PERF-005** | **Executado.** Verificada coluna por coluna, nos oito sítios (`core/rules/referencias.py`, Tarefa 6): 36 sem uso, das quais 33 seriam achado da regra, 5 defensáveis e ~28 falsas positivas (3 confirmadas, 25 prováveis — desconhecidas, na verdade, porque dependem da camada de relatório). Precisão **indeterminável** dentro do que o MVP lê (entre ~15% e ~91%), abaixo do gatilho de 0,7 no cenário mais provável — a regra foi **recusada antes do código** (seção 5) e não chegou a ser travada em teste de contagem, porque não existe |
 | **DAX-002** | Inspecionar manualmente as 6 ocorrências de `SUMX` e classificar cada uma: iteração desnecessária, ou iteração legítima sobre expressão de várias colunas. O denominador da precisão é essa classificação, não a contagem de `SUMX` |
 
-Enquanto esse procedimento não rodar, a afirmação de precisão **não entra** na monografia nem no `status.md`. O que se registra é o número medido, com a causa do zero identificada caso a caso.
+Enquanto o procedimento de DAX-002 não rodar, a afirmação de precisão dessa regra **não entra** na monografia nem no `status.md`. Para PERF-005 o procedimento já rodou, e a afirmação de precisão que ele sustenta é precisamente o motivo da rejeição (seção 5) — não a contagem de um achado.
 
 ### Consequência que não depende da verificação
 
 **Para o R-12 o prognóstico piora de todo jeito.** Qualquer que seja a causa do zero, o grupo 2 não traz achados em volume no P8; e se nem num modelo reconhecidamente problemático ele rende, o gatilho de ~40 achados em P1–P7 fica mais distante e o slot **P9** fica mais provável. Reforça converter P1–P7 logo, como já recomendava o `status.md`.
+
+Com a PERF-005 recusada, isso deixou de ser prognóstico: a etapa soma ao P8 apenas o que a DAX-001 render, **medido como zero** (seção 5, DAX-001). O `riscos.md` registra a consequência em 08/10/2026 — P9 passa de provável a quase certo, e converter P1–P7 deixa de ser recomendação e passa a bloqueio para a decisão da Fase 3.
 
 ## 7. Testes
 
@@ -262,7 +285,7 @@ Teste que falha primeiro, como nas oito regras existentes.
 
 **Regressão que importa:** os **15 achados atuais não podem mudar**. Nem a extensão do parser nem as regras novas têm o direito de mexer em MOD-\* ou PERF-001/003. Os 101 testes atuais continuam passando.
 
-**Ressalva de método sobre a contagem da PERF-005:** antes de escrever o teste, verificar coluna por coluna, nos oito sítios, que ela é de fato não usada. A contagem travada deve ser o **resultado** da verificação, não a expectativa que a motivou. Foi exatamente assim que a MOD-005 errou.
+**Ressalva de método sobre a contagem da PERF-005, seguida até o fim:** antes de escrever o teste da regra, verificar coluna por coluna, nos oito sítios, que ela é de fato não usada. A contagem travada deveria ser o **resultado** da verificação, não a expectativa que a motivou — foi exatamente assim que a MOD-005 errou. A verificação (`core/rules/referencias.py`, Tarefa 6) rodou antes do teste da regra, e o resultado foi a rejeição da própria PERF-005 (seção 5): não há teste de contagem para travar, porque não há regra.
 
 ## 8. Arquivos
 
@@ -271,7 +294,8 @@ Teste que falha primeiro, como nas oito regras existentes.
 | `core/dax.py` | **novo** — lexer, ~150–250 linhas |
 | `core/rules/expressoes.py` | **novo** — varredura e lacunas |
 | `core/rules/dax.py` | **novo** — DAX-001 e, se a âncora verificar, DAX-002 |
-| `core/rules/performance.py` | PERF-005 |
+| `core/rules/performance.py` | sem mudança — PERF-005 recusada antes do código (seção 5) |
+| `core/rules/referencias.py` | **novo** — `usos_de_coluna`, a resolução de uso que mediu e rejeitou a PERF-005; fica como evidência e para regra futura (Tarefa 6) |
 | `core/rules/runner.py` | `lacunas_de_expressao` e `cobertura_de_expressoes` |
 | `core/rules/todas.py` | importar `dax` |
 | `core/parser_bim.py`, `core/model.py` | roles, hierarquias, `sortByColumn` e os sítios de DAX da seção 4.5 |
@@ -297,7 +321,7 @@ Teste que falha primeiro, como nas oito regras existentes.
 
 **Ação (Fred, antes do ramo de RLS):** criar uma role com filtro num PBIP no Desktop, salvar e comparar o `model.bim`. Mesma verificação feita em 06/10 para a tabela de data.
 
-Até lá, a implementação segue por todo o resto: lexer, varredura, DAX-001, e a PERF-005 nos sete sítios que não dependem de role.
+Até lá, a implementação segue por todo o resto: lexer, varredura, DAX-001, e `usos_de_coluna` (`core/rules/referencias.py`) nos sete sítios que não dependem de role — a resolução que sustentaria a PERF-005 nos sete sítios e que, na verificação, já a rejeitou pela cláusula (c) antes mesmo de a role entrar na conta (seção 5).
 
 ## 11. Critérios de aceite
 
@@ -306,7 +330,7 @@ Até lá, a implementação segue por todo o resto: lexer, varredura, DAX-001, e
 3. Expressão não tokenizada por completo não chega a nenhuma regra, e aparece em `lacunas_de_expressao` com sítio, objeto, posição e trecho.
 4. Cada regra nova tem âncora citável, verificada e transcrita **antes** do código, e a enumeração (a)/(b)/(c) escrita.
 5. Cada regra nova tem teste positivo e negativo, e contagem travada no P8.
-6. A contagem da PERF-005 no P8 é resultado de verificação sítio por sítio, não de estimativa — incluindo a amostra de colunas que a regra **não** aponta, que é o que detecta cegueira.
+6. A contagem de colunas sem uso no P8 (`usos_de_coluna`) é resultado de verificação sítio por sítio, não de estimativa — e essa verificação é o que rejeitou a PERF-005 pela cláusula (c) do terceiro teste, antes de a regra existir em código (seção 5).
 7. Todo zero no P8 tem a causa identificada pelo procedimento da seção 6 — ausência de defeito ou cegueira da regra. Nenhuma afirmação de precisão é escrita antes disso.
 8. Os 15 achados atuais não mudaram, e os 101 testes atuais continuam passando.
 9. `python -m core.rules.catalogo` imprime as regras novas com as URLs do Learn.
