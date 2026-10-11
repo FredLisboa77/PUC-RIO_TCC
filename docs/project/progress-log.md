@@ -975,3 +975,18 @@ atualizada, com push autorizado; cada etapa vira um PR menor.
 **Validação:** 299 testes passando na `main` pós-merge.
 
 **Próximo passo:** o Fred dá o aval ao plano da coleta e a execução começa pela Task 1.
+
+---
+
+## 11/10/2026 — Fase 3 — coleta e extração
+
+Código da coleta e da extração pronto (Tasks 1–5 do plano, 346 testes passando):
+`python -m rag.coleta` e `python -m rag.extracao`.
+
+**Ensaio (20 páginas, `--limite 20`):** 20 coletadas, 0 erros, 33,8 s (previsto ≈ 32 s);
+extração 20 de 20, 0 erros, `related-content` excluída em 5 páginas, 1 título real
+diferente do de navegação (`aggregation-functions-dax`: "Aggregation functions" contra
+"Aggregation functions overview" — esperado, não é erro). Conferido à mão
+`dax/abs-function-dax`: seções com âncora e caminho, código DAX intacto, metadados de
+versão presentes, sem "Feedback", "Additional resources" nem "In this article". Nada de
+`rag/store/` aparece no `git status`.
