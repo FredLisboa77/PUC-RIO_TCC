@@ -55,3 +55,16 @@ def test_nenhum_trecho_passa_de_512_tokens(variantes_do_modelo, embedder, varian
 @pytest.mark.parametrize("variante", ["secao-sem", "secao-com", "janela-sem", "janela-com"])
 def test_oraculo_com_o_contador_do_modelo(variantes_do_modelo, variante):
     assert verificar_oraculo(variantes_do_modelo[variante], ler_conjunto(ARQUIVO_CONSULTAS)) == []
+
+
+def test_o_indice_chroma_reproduz_a_metrica_da_medicao(embedder):
+    from rag.avaliacao import avaliar
+    from rag.indice import ARQUIVO_CONFIG, carregar_buscador, resultado_mais_recente
+    from rag.medicao import PASTA_RESULTADOS, ler_resultado
+
+    if not ARQUIVO_CONFIG.is_file():
+        pytest.skip("índice não construído — rode `python -m rag.indice construir`")
+    resultados, decisao = ler_resultado(resultado_mais_recente(PASTA_RESULTADOS))
+    medido = next(r for r in resultados if r.configuracao == decisao.vencedora)
+    relatorio = avaliar(carregar_buscador(embedder), ler_conjunto(ARQUIVO_CONSULTAS))
+    assert relatorio.macro.acerto[5] == pytest.approx(medido.macro.acerto[5])
