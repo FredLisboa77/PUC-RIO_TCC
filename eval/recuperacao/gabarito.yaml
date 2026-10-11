@@ -1,0 +1,22 @@
+# Frases-marca: um trecho curto (até ~10 palavras) da passagem que cada regra cita,
+# transcrito das specs de regras. Escrito à mão. Citação acadêmica com fonte
+# (Lei 9.610/98, art. 46), não republicação da página.
+# A página e a seção âncora são deduzidas por `python -m rag.avaliacao gerar`.
+- id_regra: DAX-001
+  frase_marca: use the DIVIDE function whenever the denominator is an expression
+- id_regra: MOD-001
+  frase_marca: disable the global Auto date/time option
+- id_regra: MOD-002
+  frase_marca: minimize the use of bi-directional relationships
+- id_regra: MOD-003
+  frase_marca: the right number of tables with the right relationships
+- id_regra: MOD-005
+  frase_marca: mark your date table as a date table
+- id_regra: MOD-006
+  frase_marca: the benefits of a single model table outweigh the benefits
+- id_regra: MOD-007
+  frase_marca: avoid creating one-to-one model relationships
+- id_regra: PERF-001
+  frase_marca: preference creating custom columns in Power Query
+- id_regra: PERF-003
+  frase_marca: calculations that sum the values of a column of Decimal number

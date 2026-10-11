@@ -7,34 +7,19 @@ Pulados quando `rag/store/` não existe — o conteúdo do Learn não é version
 import pytest
 import yaml
 
+from rag.avaliacao import ARQUIVO_GABARITO, ler_frases_marca
 from rag.catalogo import ARQUIVO_FONTES, ancoras_do_registro
 from rag.coleta import ARQUIVO_REGISTRO, ler_registro
 from rag.extracao import PASTA_TEXTOS, VERSAO_EXTRATOR, PaginaExtraida, caminho_do_texto
+from rag.texto import normalizar
 from rag.urls import caminho_sem_idioma, normalizar_url
 
 pytestmark = pytest.mark.skipif(
     not ARQUIVO_REGISTRO.is_file(), reason="rag/store/ não existe (conteúdo do Learn não é versionado)"
 )
 
-FRASES_MARCA = {
-    "DAX-001": "use the DIVIDE function whenever the denominator is an expression",
-    "MOD-001": "disable the global Auto date/time option",
-    "MOD-002": "minimize the use of bi-directional relationships",
-    "MOD-003": "the right number of tables with the right relationships",
-    "MOD-005": "mark your date table as a date table",
-    "MOD-006": "the benefits of a single model table outweigh the benefits",
-    "MOD-007": "avoid creating one-to-one model relationships",
-    "PERF-001": "preference creating custom columns in Power Query",
-    "PERF-003": "calculations that sum the values of a column of Decimal number",
-}
-"""Uma frase curta (até ~10 palavras) de cada passagem transcrita nas specs de
-regras — citação acadêmica com fonte, não republicação da página."""
-
-
-def _normalizar(texto: str) -> str:
-    for de, para in {"’": "'", "‘": "'", "“": '"', "”": '"', " ": " "}.items():
-        texto = texto.replace(de, para)
-    return " ".join(texto.lower().split())
+FRASES_MARCA = {f.id_regra: f.frase_marca for f in ler_frases_marca(ARQUIVO_GABARITO)}
+"""As frases-marca vivem em `eval/recuperacao/gabarito.yaml`."""
 
 
 def _pagina(id_fonte: str) -> PaginaExtraida:
@@ -62,5 +47,5 @@ def test_toda_regra_tem_frase_marca():
 def test_a_passagem_citada_pela_regra_esta_no_texto_extraido(id_regra):
     url = ancoras_do_registro()[id_regra]
     pagina = _pagina("learn:" + caminho_sem_idioma(normalizar_url(url)))
-    texto = _normalizar(" ".join(b.texto for s in pagina.secoes for b in s.blocos))
-    assert _normalizar(FRASES_MARCA[id_regra]) in texto
+    texto = normalizar(" ".join(b.texto for s in pagina.secoes for b in s.blocos))
+    assert normalizar(FRASES_MARCA[id_regra]) in texto
