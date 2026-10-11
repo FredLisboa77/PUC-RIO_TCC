@@ -1,13 +1,23 @@
 """Extração do texto estruturado. HTML sintético, escrito à mão imitando a
 estrutura medida no Learn; nenhuma página real entra no repositório."""
 
+import hashlib
+from datetime import UTC, datetime
+
 import pytest
 
+from rag import extracao as modulo_extracao
+from rag.coleta import RegistroColeta, anexar_registro, caminho_da_pagina
 from rag.extracao import (
     VERSAO_EXTRATOR,
     Bloco,
     ErroDeExtracao,
+    PaginaExtraida,
+    caminho_do_texto,
     extrair,
+    extrair_tudo,
+    main,
+    resumo_extracao,
 )
 
 URL = "https://learn.microsoft.com/en-us/dax/calculate-function-dax"
@@ -117,3 +127,86 @@ def test_pagina_sem_texto_e_erro_nomeado():
 
 def test_mesma_entrada_mesma_saida():
     assert extrair(pagina(CORPO), "x:y", URL) == extrair(pagina(CORPO), "x:y", URL)
+
+
+AGORA = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
+
+
+def _coletada(tmp_path, id_fonte, html, **meta):
+    arquivo = caminho_da_pagina(tmp_path / "paginas", id_fonte)
+    arquivo.parent.mkdir(parents=True, exist_ok=True)
+    arquivo.write_text(html, encoding="utf-8")
+    anexar_registro(
+        tmp_path / "coleta.jsonl",
+        RegistroColeta(
+            id=id_fonte,
+            url=URL,
+            situacao="ok",
+            acessado_em=AGORA,
+            tamanho=len(html),
+            sha256=hashlib.sha256(html.encode()).hexdigest(),
+            **meta,
+        ),
+    )
+
+
+def _extrair_tudo(tmp_path, titulos=None):
+    return extrair_tudo(
+        arquivo_registro=tmp_path / "coleta.jsonl",
+        pasta_paginas=tmp_path / "paginas",
+        pasta_textos=tmp_path / "textos",
+        titulos_do_catalogo=titulos or {},
+    )
+
+
+def test_extrai_toda_pagina_ok_com_metadados(tmp_path):
+    _coletada(tmp_path, "learn:dax/calculate-function-dax", pagina(CORPO), updated_at="2026-08-04T22:03:00Z")
+    resumo = _extrair_tudo(tmp_path, {"learn:dax/calculate-function-dax": "CALCULATE"})
+    assert resumo.extraidas == 1 and resumo.erros == [] and resumo.titulos_diferentes == 0
+    destino = caminho_do_texto(tmp_path / "textos", "learn:dax/calculate-function-dax")
+    assert destino.suffix == ".json"
+    salvo = PaginaExtraida.model_validate_json(destino.read_text(encoding="utf-8"))
+    assert salvo.metadados["updated_at"] == "2026-08-04T22:03:00Z"
+    assert salvo.metadados["acessado_em"] == AGORA.isoformat()
+    assert resumo.excluidas["related-content"] == 1
+
+
+def test_erro_de_uma_pagina_nao_para_as_outras(tmp_path):
+    _coletada(tmp_path, "learn:dax/sem-h1", "<html><body><main id='main'><p>x</p></main></body></html>")
+    _coletada(tmp_path, "learn:dax/boa", pagina(CORPO))
+    resumo = _extrair_tudo(tmp_path)
+    assert resumo.extraidas == 1
+    assert len(resumo.erros) == 1 and "learn:dax/sem-h1" in resumo.erros[0]
+
+
+def test_html_apagado_depois_da_coleta_vira_erro_nomeado(tmp_path):
+    _coletada(tmp_path, "learn:dax/a", pagina(CORPO))
+    caminho_da_pagina(tmp_path / "paginas", "learn:dax/a").unlink()
+    resumo = _extrair_tudo(tmp_path)
+    assert resumo.extraidas == 0
+    assert "rag.coleta" in resumo.erros[0]
+
+
+def test_titulo_diferente_do_catalogo_e_contado_nao_e_erro(tmp_path):
+    _coletada(tmp_path, "learn:dax/a", pagina(CORPO))
+    resumo = _extrair_tudo(tmp_path, {"learn:dax/a": "Introduction"})
+    assert resumo.extraidas == 1 and resumo.titulos_diferentes == 1
+
+
+def test_sem_nada_coletado_falha_indicando_a_coleta(tmp_path):
+    with pytest.raises(ErroDeExtracao, match="rag.coleta"):
+        _extrair_tudo(tmp_path)
+
+
+def test_resumo_da_extracao(tmp_path):
+    _coletada(tmp_path, "learn:dax/a", pagina(CORPO))
+    texto = resumo_extracao(_extrair_tudo(tmp_path))
+    assert "Extraídas: 1" in texto
+    assert "related-content: 1" in texto
+
+
+def test_main_sem_coleta_sai_com_erro(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(modulo_extracao, "ARQUIVO_REGISTRO", tmp_path / "nao-existe.jsonl")
+    monkeypatch.setattr(modulo_extracao, "ARQUIVO_FONTES", tmp_path / "nao-existe.yaml")
+    assert main([]) == 1
+    assert "rag.coleta" in capsys.readouterr().err

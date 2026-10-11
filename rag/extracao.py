@@ -7,10 +7,25 @@ segundos (R-13). Desenho: `docs/superpowers/specs/
 2026-10-09-coleta-da-base-rag-design.md`, seção 3.
 """
 
+import argparse
+import sys
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Literal
 
+import yaml
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
+
+from rag.catalogo import ARQUIVO_FONTES
+from rag.coleta import (
+    ARQUIVO_REGISTRO,
+    PASTA_PAGINAS,
+    PASTA_STORE,
+    caminho_da_pagina,
+    ler_registro,
+)
 
 VERSAO_EXTRATOR = 1
 
@@ -159,3 +174,117 @@ def extrair(html: str, id_fonte: str, url: str) -> PaginaExtraida:
         secoes=com_texto,
         secoes_excluidas=excluidas,
     )
+
+
+PASTA_TEXTOS = PASTA_STORE / "textos"
+
+
+def caminho_do_texto(pasta: Path, id_fonte: str) -> Path:
+    return caminho_da_pagina(pasta, id_fonte).with_suffix(".json")
+
+
+@dataclass
+class ResumoExtracao:
+    extraidas: int = 0
+    erros: list[str] = field(default_factory=list)
+    excluidas: Counter = field(default_factory=Counter)
+    titulos_diferentes: int = 0
+
+
+def _gravar_texto(caminho: Path, texto: str) -> None:
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    temporario = caminho.with_name(caminho.name + ".tmp")
+    temporario.write_text(texto, encoding="utf-8", newline="\n")
+    temporario.replace(caminho)
+
+
+def extrair_tudo(
+    *,
+    arquivo_registro: Path,
+    pasta_paginas: Path,
+    pasta_textos: Path,
+    titulos_do_catalogo: dict[str, str],
+) -> ResumoExtracao:
+    """Extrai toda página cuja última linha no registro é `ok`. Erro de uma
+    página entra no resumo e não interrompe as outras."""
+    coletadas = sorted(
+        (r for r in ler_registro(arquivo_registro).values() if r.situacao == "ok"),
+        key=lambda r: r.id,
+    )
+    if not coletadas:
+        raise ErroDeExtracao("nenhuma página coletada — rode `python -m rag.coleta` antes")
+
+    resumo = ResumoExtracao()
+    for registro in coletadas:
+        html = caminho_da_pagina(pasta_paginas, registro.id)
+        if not html.is_file():
+            resumo.erros.append(
+                f"{registro.id}: HTML ausente — rode `python -m rag.coleta` para baixar de novo"
+            )
+            continue
+        try:
+            pagina = extrair(html.read_text(encoding="utf-8", errors="replace"), registro.id, registro.url)
+        except ErroDeExtracao as erro:
+            resumo.erros.append(str(erro))
+            continue
+        pagina = pagina.model_copy(
+            update={
+                "metadados": {
+                    "acessado_em": registro.acessado_em.isoformat(),
+                    "updated_at": registro.updated_at,
+                    "ms_date": registro.ms_date,
+                    "git_commit_id": registro.git_commit_id,
+                    "document_id": registro.document_id,
+                }
+            }
+        )
+        _gravar_texto(caminho_do_texto(pasta_textos, registro.id), pagina.model_dump_json(indent=2) + "\n")
+        resumo.extraidas += 1
+        resumo.excluidas.update(pagina.secoes_excluidas)
+        titulo_catalogo = titulos_do_catalogo.get(registro.id)
+        if titulo_catalogo is not None and titulo_catalogo != pagina.titulo:
+            resumo.titulos_diferentes += 1
+    return resumo
+
+
+def resumo_extracao(resumo: ResumoExtracao) -> str:
+    return "\n".join(
+        [
+            f"Extraídas: {resumo.extraidas}",
+            f"Erros: {len(resumo.erros)}",
+            *(f"  {e}" for e in resumo.erros),
+            "Seções excluídas por âncora:",
+            *(f"  {ancora}: {n}" for ancora, n in sorted(resumo.excluidas.items())),
+            f"Título real diferente do título de navegação do catálogo: {resumo.titulos_diferentes}",
+        ]
+    )
+
+
+def _titulos_do_catalogo(caminho: Path) -> dict[str, str]:
+    if not caminho.is_file():
+        return {}
+    dados = yaml.safe_load(caminho.read_text(encoding="utf-8")) or []
+    return {f["id"]: f["titulo"] for f in dados}
+
+
+def main(argv: list[str] | None = None) -> int:
+    argparse.ArgumentParser(
+        prog="python -m rag.extracao",
+        description="Extrai o texto estruturado das páginas coletadas em rag/store/.",
+    ).parse_args(argv)
+    try:
+        resumo = extrair_tudo(
+            arquivo_registro=ARQUIVO_REGISTRO,
+            pasta_paginas=PASTA_PAGINAS,
+            pasta_textos=PASTA_TEXTOS,
+            titulos_do_catalogo=_titulos_do_catalogo(ARQUIVO_FONTES),
+        )
+    except ErroDeExtracao as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    print(resumo_extracao(resumo))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
