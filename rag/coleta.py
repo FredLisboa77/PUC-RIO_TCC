@@ -7,8 +7,13 @@
 `docs/superpowers/specs/2026-10-09-coleta-da-base-rag-design.md`.
 """
 
+import argparse
 import hashlib
-from datetime import datetime
+import sys
+import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -16,7 +21,8 @@ import yaml
 from bs4 import BeautifulSoup
 from pydantic import BaseModel, ValidationError
 
-from rag.catalogo import RAIZ
+from rag import tocs
+from rag.catalogo import ARQUIVO_FONTES, RAIZ
 
 PASTA_STORE = RAIZ / "store"
 PASTA_PAGINAS = PASTA_STORE / "raw" / "paginas"
@@ -125,3 +131,128 @@ def anexar_registro(caminho: Path, registro: RegistroColeta) -> None:
     caminho.parent.mkdir(parents=True, exist_ok=True)
     with open(caminho, "a", encoding="utf-8", newline="\n") as arquivo:
         arquivo.write(registro.model_dump_json() + "\n")
+
+
+@dataclass
+class ResumoColeta:
+    coletadas: list[str] = field(default_factory=list)
+    ja_existentes: int = 0
+    erros: list[RegistroColeta] = field(default_factory=list)
+    interrompida: str | None = None
+    total_ok: int = 0
+    total: int = 0
+
+
+def _gravar_atomico(caminho: Path, conteudo: bytes) -> None:
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    temporario = caminho.with_name(caminho.name + ".tmp")
+    temporario.write_bytes(conteudo)
+    temporario.replace(caminho)
+
+
+def coletar(
+    paginas: list[PaginaAColetar],
+    *,
+    buscar: Callable[[str], bytes],
+    dormir: Callable[[float], None],
+    agora: Callable[[], datetime],
+    pasta_paginas: Path,
+    arquivo_registro: Path,
+    pausa: float = PAUSA_PADRAO_S,
+    limite: int | None = None,
+) -> ResumoColeta:
+    """Baixa as páginas pendentes, uma por vez, com pausa entre requisições.
+
+    O arquivo é gravado antes da linha do registro: uma interrupção em qualquer
+    ponto deixa, no pior caso, um arquivo sem linha `ok`, que a próxima execução
+    baixa de novo.
+    """
+    anteriores = ler_registro(arquivo_registro)
+    pendentes = [p for p in paginas if not ja_coletada(anteriores.get(p.id), pasta_paginas)]
+    resumo = ResumoColeta(ja_existentes=len(paginas) - len(pendentes), total=len(paginas))
+    if limite is not None:
+        pendentes = pendentes[:limite]
+
+    falhas_seguidas = 0
+    for indice, pagina in enumerate(pendentes):
+        if indice > 0:
+            dormir(pausa)
+        try:
+            conteudo = buscar(pagina.url)
+        except tocs.ErroDeRetrato as erro:
+            registro = RegistroColeta(
+                id=pagina.id, url=pagina.url, situacao="erro", acessado_em=agora(), motivo=str(erro)
+            )
+            anexar_registro(arquivo_registro, registro)
+            resumo.erros.append(registro)
+            falhas_seguidas += 1
+            if erro.status in STATUS_PARAR:
+                resumo.interrompida = (
+                    f"o servidor pediu para parar (HTTP {erro.status}) em {pagina.url}"
+                )
+                break
+            if falhas_seguidas >= FALHAS_SEGUIDAS_MAX:
+                resumo.interrompida = f"{FALHAS_SEGUIDAS_MAX} falhas seguidas; a última: {erro}"
+                break
+            continue
+
+        falhas_seguidas = 0
+        _gravar_atomico(caminho_da_pagina(pasta_paginas, pagina.id), conteudo)
+        registro = RegistroColeta(
+            id=pagina.id,
+            url=pagina.url,
+            situacao="ok",
+            acessado_em=agora(),
+            tamanho=len(conteudo),
+            sha256=hashlib.sha256(conteudo).hexdigest(),
+            **metadados_da_pagina(conteudo.decode("utf-8", errors="replace")),
+        )
+        anexar_registro(arquivo_registro, registro)
+        resumo.coletadas.append(pagina.id)
+
+    finais = ler_registro(arquivo_registro)
+    resumo.total_ok = sum(1 for p in paginas if ja_coletada(finais.get(p.id), pasta_paginas))
+    return resumo
+
+
+def resumo_coleta(resumo: ResumoColeta) -> str:
+    linhas = [
+        f"Coletadas nesta execução: {len(resumo.coletadas)}",
+        f"Já existentes: {resumo.ja_existentes}",
+        f"Erros nesta execução: {len(resumo.erros)}",
+        *(f"  {r.id}: {r.motivo}" for r in resumo.erros),
+        f"Total ok: {resumo.total_ok} de {resumo.total}",
+    ]
+    if resumo.interrompida:
+        linhas.append(f"INTERROMPIDA: {resumo.interrompida} — rode de novo para retomar")
+    return "\n".join(linhas)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m rag.coleta",
+        description="Baixa as páginas do catálogo (indexar: true) para rag/store/.",
+    )
+    parser.add_argument("--limite", type=int, default=None, help="coleta só as N primeiras pendentes")
+    parser.add_argument("--pausa", type=float, default=PAUSA_PADRAO_S, help="segundos entre requisições")
+    args = parser.parse_args(argv)
+    try:
+        resumo = coletar(
+            paginas_do_catalogo(ARQUIVO_FONTES),
+            buscar=tocs.buscar_padrao,
+            dormir=time.sleep,
+            agora=lambda: datetime.now(UTC),
+            pasta_paginas=PASTA_PAGINAS,
+            arquivo_registro=ARQUIVO_REGISTRO,
+            pausa=args.pausa,
+            limite=args.limite,
+        )
+    except ErroDeColeta as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    print(resumo_coleta(resumo))
+    return 1 if resumo.interrompida else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

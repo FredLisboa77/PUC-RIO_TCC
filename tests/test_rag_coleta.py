@@ -19,8 +19,13 @@ from rag.coleta import (
     ja_coletada,
     ler_registro,
     metadados_da_pagina,
+    coletar,
+    main,
     paginas_do_catalogo,
+    resumo_coleta,
 )
+from rag.tocs import ErroDeRetrato
+from rag import coleta as modulo_coleta
 
 AGORA = datetime(2026, 10, 9, 12, 0, tzinfo=UTC)
 
@@ -133,3 +138,148 @@ def test_ja_coletada_exige_ok_arquivo_e_mesmo_sha256(tmp_path):
     assert not ja_coletada(erro, tmp_path)
     arquivo.unlink()
     assert not ja_coletada(_ok("learn:dax/a", sha), tmp_path)
+def _paginas(n):
+    return [
+        PaginaAColetar(id=f"learn:dax/p{i}", url=f"https://learn.microsoft.com/en-us/dax/p{i}")
+        for i in range(n)
+    ]
+
+
+class Simulador:
+    """Buscador, pausa e relógio falsos, com o que foi pedido registrado."""
+
+    def __init__(self, falhas=None):
+        self.falhas = falhas or {}
+        self.pedidos = []
+        self.pausas = []
+
+    def buscar(self, url):
+        self.pedidos.append(url)
+        if url in self.falhas:
+            raise self.falhas[url]
+        return HTML_COM_META.replace("<h1 id=\"x\">X</h1>", f"<h1>{url}</h1>").encode()
+
+    def dormir(self, segundos):
+        self.pausas.append(segundos)
+
+    def agora(self):
+        return AGORA
+
+
+def _coletar(sim, paginas, tmp_path, **extra):
+    return coletar(
+        paginas,
+        buscar=sim.buscar,
+        dormir=sim.dormir,
+        agora=sim.agora,
+        pasta_paginas=tmp_path / "paginas",
+        arquivo_registro=tmp_path / "coleta.jsonl",
+        **extra,
+    )
+
+
+def test_coleta_grava_html_e_registro_com_metadados(tmp_path):
+    sim = Simulador()
+    resumo = _coletar(sim, _paginas(2), tmp_path)
+    assert resumo.coletadas == ["learn:dax/p0", "learn:dax/p1"]
+    assert resumo.total_ok == resumo.total == 2
+    registro = ler_registro(tmp_path / "coleta.jsonl")["learn:dax/p0"]
+    arquivo = caminho_da_pagina(tmp_path / "paginas", "learn:dax/p0")
+    assert registro.situacao == "ok"
+    assert registro.sha256 == hashlib.sha256(arquivo.read_bytes()).hexdigest()
+    assert registro.tamanho == len(arquivo.read_bytes())
+    assert registro.updated_at == "2026-08-04T22:03:00Z"
+    assert registro.acessado_em == AGORA
+
+
+def test_pausa_entre_requisicoes_e_nao_antes_da_primeira(tmp_path):
+    sim = Simulador()
+    _coletar(sim, _paginas(3), tmp_path, pausa=1.0)
+    assert sim.pausas == [1.0, 1.0]
+
+
+def test_retomada_pula_o_que_ja_esta_ok(tmp_path):
+    _coletar(Simulador(), _paginas(2), tmp_path)
+    sim = Simulador()
+    resumo = _coletar(sim, _paginas(3), tmp_path)
+    assert sim.pedidos == ["https://learn.microsoft.com/en-us/dax/p2"]
+    assert resumo.ja_existentes == 2
+    assert resumo.total_ok == 3
+
+
+def test_arquivo_apagado_ou_alterado_e_baixado_de_novo(tmp_path):
+    _coletar(Simulador(), _paginas(2), tmp_path)
+    caminho_da_pagina(tmp_path / "paginas", "learn:dax/p0").unlink()
+    caminho_da_pagina(tmp_path / "paginas", "learn:dax/p1").write_bytes(b"mexido")
+    sim = Simulador()
+    _coletar(sim, _paginas(2), tmp_path)
+    assert len(sim.pedidos) == 2
+
+
+def test_erro_comum_registra_e_segue(tmp_path):
+    url = "https://learn.microsoft.com/en-us/dax/p0"
+    sim = Simulador({url: ErroDeRetrato(f"{url}: HTTP 404", status=404)})
+    resumo = _coletar(sim, _paginas(3), tmp_path)
+    assert resumo.coletadas == ["learn:dax/p1", "learn:dax/p2"]
+    assert [e.id for e in resumo.erros] == ["learn:dax/p0"]
+    assert resumo.interrompida is None
+    assert ler_registro(tmp_path / "coleta.jsonl")["learn:dax/p0"].motivo.endswith("HTTP 404")
+
+
+@pytest.mark.parametrize("status", [429, 503])
+def test_servidor_pedindo_para_parar_interrompe_na_hora(tmp_path, status):
+    url = "https://learn.microsoft.com/en-us/dax/p1"
+    sim = Simulador({url: ErroDeRetrato(f"{url}: HTTP {status}", status=status)})
+    resumo = _coletar(sim, _paginas(4), tmp_path)
+    assert len(sim.pedidos) == 2
+    assert resumo.interrompida and str(status) in resumo.interrompida
+
+
+def test_cinco_falhas_seguidas_interrompem(tmp_path):
+    paginas = _paginas(8)
+    sim = Simulador({p.url: ErroDeRetrato(f"{p.url}: sem rota") for p in paginas})
+    resumo = _coletar(sim, paginas, tmp_path)
+    assert len(sim.pedidos) == 5
+    assert "5 falhas seguidas" in resumo.interrompida
+
+
+def test_sucesso_zera_a_contagem_de_falhas_seguidas(tmp_path):
+    paginas = _paginas(10)
+    falhas = {p.url: ErroDeRetrato(f"{p.url}: sem rota") for i, p in enumerate(paginas) if i != 4}
+    resumo = _coletar(Simulador(falhas), paginas, tmp_path)
+    assert resumo.interrompida is not None
+    assert resumo.coletadas == ["learn:dax/p4"]
+    assert len(resumo.erros) == 9
+
+
+def test_limite_coleta_so_as_primeiras_pendentes(tmp_path):
+    sim = Simulador()
+    resumo = _coletar(sim, _paginas(5), tmp_path, limite=2)
+    assert len(sim.pedidos) == 2
+    assert resumo.total_ok == 2 and resumo.total == 5
+
+
+def test_resumo_lista_erros_e_interrupcao(tmp_path):
+    url = "https://learn.microsoft.com/en-us/dax/p0"
+    sim = Simulador({url: ErroDeRetrato(f"{url}: HTTP 404", status=404)})
+    texto = resumo_coleta(_coletar(sim, _paginas(2), tmp_path))
+    assert "Coletadas nesta execução: 1" in texto
+    assert "Total ok: 1 de 2" in texto
+    assert "learn:dax/p0" in texto
+
+
+def test_main_sem_catalogo_sai_com_erro(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(modulo_coleta, "ARQUIVO_FONTES", tmp_path / "nao-existe.yaml")
+    assert main([]) == 1
+    assert "rag.catalogo" in capsys.readouterr().err
+
+
+def test_pagina_que_nao_decodifica_como_utf8_nao_derruba_a_coleta(tmp_path):
+    class SimuladorLatin1(Simulador):
+        def buscar(self, url):
+            self.pedidos.append(url)
+            return b"<html><head></head><body><h1>Caf\xe9</h1></body></html>"
+
+    resumo = _coletar(SimuladorLatin1(), _paginas(1), tmp_path)
+    assert resumo.coletadas == ["learn:dax/p0"]
+    assert ler_registro(tmp_path / "coleta.jsonl")["learn:dax/p0"].updated_at is None
