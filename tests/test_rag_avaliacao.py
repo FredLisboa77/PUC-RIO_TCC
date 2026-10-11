@@ -8,6 +8,8 @@ import pytest
 
 from core.rules.todas import REGISTRO
 from core.rules.base import Achado, Evidencia
+from core.rules.runner import FalhaDeRegra, ResultadoRegras
+from rag import avaliacao as modulo_avaliacao
 from rag.avaliacao import (
     ARQUIVO_GABARITO,
     K_MAX,
@@ -17,6 +19,7 @@ from rag.avaliacao import (
     FraseMarca,
     Gabarito,
     Trecho,
+    achados_dos_projetos,
     avaliar,
     como_yaml,
     deduzir_secao,
@@ -25,6 +28,9 @@ from rag.avaliacao import (
     id_da_pagina,
     ler_conjunto,
     ler_frases_marca,
+    ler_pagina_extraida,
+    main,
+    resumo_conjunto,
 )
 from rag.consulta import montar_consulta
 from rag.extracao import VERSAO_EXTRATOR, Bloco, PaginaExtraida, Secao
@@ -287,3 +293,56 @@ def test_relatorio_formatado():
     assert "P1/R1/1: primeiro acerto na posição 3" in texto
     assert "REGRA/R2: não apareceu" in texto
     assert "Precision@K" in texto
+
+
+def _projetos(tmp_path, codigos):
+    for codigo in codigos:
+        (tmp_path / f"{codigo}_Projeto {codigo}").mkdir()
+    return tmp_path
+
+
+def test_achados_dos_projetos_roda_os_sete_em_ordem(tmp_path):
+    vistos = []
+
+    def auditar(caminho):
+        vistos.append(caminho.name)
+        return ResultadoRegras(achados=[_achado("MOD-003", caminho.name)], regras_executadas=9)
+
+    achados = achados_dos_projetos(_projetos(tmp_path, [f"P{i}" for i in range(1, 9)]), auditar)
+    assert list(achados) == ["P1", "P2", "P3", "P4", "P5", "P6", "P7"]
+    assert vistos == [f"P{i}_Projeto P{i}" for i in range(1, 8)]
+
+
+def test_projeto_ausente_falha_nomeando_o_projeto(tmp_path):
+    with pytest.raises(ErroDeAvaliacao, match="P4"):
+        achados_dos_projetos(_projetos(tmp_path, ["P1", "P2", "P3"]), lambda c: ResultadoRegras())
+
+
+def test_regra_com_falha_num_projeto_para_o_gerador(tmp_path):
+    def auditar(caminho):
+        return ResultadoRegras(regras_com_falha=[FalhaDeRegra(id_regra="DAX-001", erro="boom")])
+
+    with pytest.raises(ErroDeAvaliacao, match="P1.*DAX-001"):
+        achados_dos_projetos(_projetos(tmp_path, [f"P{i}" for i in range(1, 8)]), auditar)
+
+
+def test_pagina_extraida_ausente_indica_coleta_e_extracao(tmp_path):
+    with pytest.raises(ErroDeAvaliacao, match="rag.coleta.*rag.extracao"):
+        ler_pagina_extraida(STAR, tmp_path)
+
+
+def test_resumo_conta_consultas_por_tipo_e_por_regra():
+    texto = resumo_conjunto(_gerar({"P1": [_achado("MOD-006", "Product")]}))
+    assert "Consultas: 3 (2 por regra, 1 por achado)" in texto
+    assert "MOD-006 -> learn:power-bi/guidance/star-schema#snowflake-dimensions" in texto
+    assert "MOD-006: 2 consulta(s)" in texto
+
+
+def test_main_sem_dados_sai_com_erro(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(modulo_avaliacao, "PASTA_PBIP", tmp_path / "nao-existe")
+    assert main(["gerar"]) == 1
+    assert "P1" in capsys.readouterr().err
+
+
+def test_resumo_imprime_no_console_padrao_do_windows():
+    resumo_conjunto(_gerar({"P1": [_achado("MOD-006", "Product")]})).encode("cp1252")

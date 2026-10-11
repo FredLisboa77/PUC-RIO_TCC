@@ -1,0 +1,413 @@
+# Gerado por `python -m rag.avaliacao gerar` — não editar à mão.
+# Frases-marca: eval/recuperacao/gabarito.yaml. Desenho:
+# docs/superpowers/specs/2026-10-11-conjunto-de-avaliacao-da-recuperacao-design.md
+gabaritos:
+- id_regra: DAX-001
+  frase_marca: use the DIVIDE function whenever the denominator is an expression
+  id_pagina: learn:dax/best-practices/dax-divide-function-operator
+  ancora: recommendations
+- id_regra: MOD-001
+  frase_marca: disable the global Auto date/time option
+  id_pagina: learn:power-bi/guidance/auto-date-time
+  ancora: recommendations
+- id_regra: MOD-002
+  frase_marca: minimize the use of bi-directional relationships
+  id_pagina: learn:power-bi/guidance/relationships-bidirectional-filtering
+  ancora: bi-directional-relationship-guidance
+- id_regra: MOD-003
+  frase_marca: the right number of tables with the right relationships
+  id_pagina: learn:power-bi/guidance/star-schema
+  ancora: star-schema-relevance-to-power-bi-semantic-models
+- id_regra: MOD-005
+  frase_marca: mark your date table as a date table
+  id_pagina: learn:power-bi/transform-model/desktop-date-tables
+  ancora: set-and-use-date-tables-in-power-bi-desktop
+- id_regra: MOD-006
+  frase_marca: the benefits of a single model table outweigh the benefits
+  id_pagina: learn:power-bi/guidance/star-schema
+  ancora: snowflake-dimensions
+- id_regra: MOD-007
+  frase_marca: avoid creating one-to-one model relationships
+  id_pagina: learn:power-bi/guidance/relationships-one-to-one
+  ancora: recommendations
+- id_regra: PERF-001
+  frase_marca: preference creating custom columns in Power Query
+  id_pagina: learn:power-bi/guidance/import-modeling-data-reduction
+  ancora: preference-for-custom-columns
+- id_regra: PERF-003
+  frase_marca: calculations that sum the values of a column of Decimal number
+  id_pagina: learn:power-bi/transform-model/desktop-data-types
+  ancora: accuracy-of-number-type-calculations
+consultas:
+- id: REGRA/DAX-001
+  tipo: regra
+  projeto: null
+  id_regra: DAX-001
+  objeto: null
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX
+- id: REGRA/MOD-001
+  tipo: regra
+  projeto: null
+  id_regra: MOD-001
+  objeto: null
+  texto: auto date/time; hidden auto date/time tables; disable auto date time; model size date columns
+- id: REGRA/MOD-002
+  tipo: regra
+  projeto: null
+  id_regra: MOD-002
+  objeto: null
+  texto: bi-directional relationship; filter both directions; CROSSFILTER function; relationship query performance
+- id: REGRA/MOD-003
+  tipo: regra
+  projeto: null
+  id_regra: MOD-003
+  objeto: null
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation
+- id: REGRA/MOD-005
+  tipo: regra
+  projeto: null
+  id_regra: MOD-005
+  objeto: null
+  texto: mark as date table; set and use date tables; date table validation unique contiguous; classic time intelligence functions
+- id: REGRA/MOD-006
+  tipo: regra
+  projeto: null
+  id_regra: MOD-006
+  objeto: null
+  texto: snowflake dimension; normalized dimension tables; denormalize into single table; relationship filter propagation chain
+- id: REGRA/MOD-007
+  tipo: regra
+  projeto: null
+  id_regra: MOD-007
+  objeto: null
+  texto: one-to-one relationship guidance; row data spans across tables; merge queries consolidate tables; degenerate dimension
+- id: REGRA/PERF-001
+  tipo: regra
+  projeto: null
+  id_regra: PERF-001
+  objeto: null
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size
+- id: REGRA/PERF-003
+  tipo: regra
+  projeto: null
+  id_regra: PERF-003
+  objeto: null
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results
+- id: P1/MOD-007/1
+  tipo: achado
+  projeto: P1
+  id_regra: MOD-007
+  objeto: Sales Order[SalesOrderLineKey] → Sales[SalesOrderLineKey]
+  texto: one-to-one relationship guidance; row data spans across tables; merge queries consolidate tables; degenerate dimension | relationship Sales Order[SalesOrderLineKey] → Sales[SalesOrderLineKey]
+- id: P1/PERF-001/1
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-001
+  objeto: Product[Sorting]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Product[Sorting]
+- id: P1/MOD-003/1
+  tipo: achado
+  projeto: P1
+  id_regra: MOD-003
+  objeto: Date Role
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Date Role
+- id: P1/MOD-003/2
+  tipo: achado
+  projeto: P1
+  id_regra: MOD-003
+  objeto: Time Intelligence
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Time Intelligence
+- id: P1/MOD-006/1
+  tipo: achado
+  projeto: P1
+  id_regra: MOD-006
+  objeto: Product
+  texto: snowflake dimension; normalized dimension tables; denormalize into single table; relationship filter propagation chain | table Product
+- id: P1/PERF-003/1
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-003
+  objeto: Sales[Extended Amount]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Extended Amount]
+- id: P1/PERF-003/2
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-003
+  objeto: Sales[Product Standard Cost]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Product Standard Cost]
+- id: P1/PERF-003/3
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-003
+  objeto: Sales[Sales Amount]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sales Amount]
+- id: P1/PERF-003/4
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-003
+  objeto: Sales[Total Product Cost]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Total Product Cost]
+- id: P1/PERF-003/5
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-003
+  objeto: Sales[Unit Price]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Unit Price]
+- id: P2/PERF-001/1
+  tipo: achado
+  projeto: P2
+  id_regra: PERF-001
+  objeto: Country Region[Country / Region]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Country Region[Country / Region]
+- id: P2/MOD-003/1
+  tipo: achado
+  projeto: P2
+  id_regra: MOD-003
+  objeto: Toggle for breakdown
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Toggle for breakdown
+- id: P2/MOD-003/2
+  tipo: achado
+  projeto: P2
+  id_regra: MOD-003
+  objeto: Toggle for variance to plan
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Toggle for variance to plan
+- id: P2/PERF-003/1
+  tipo: achado
+  projeto: P2
+  id_regra: PERF-003
+  objeto: Calculations[Value]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Calculations[Value]
+- id: P3/PERF-001/1
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Business unit[Region]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Business unit[Region]
+- id: P3/PERF-001/2
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Employee[AgeGroupID]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[AgeGroupID]
+- id: P3/PERF-001/3
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Employee[BadHires]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[BadHires]
+- id: P3/PERF-001/4
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Employee[TenureDays]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[TenureDays]
+- id: P3/PERF-001/5
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Employee[TenureMonths]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[TenureMonths]
+- id: P3/PERF-001/6
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
+  objeto: Employee[isNewHire]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[isNewHire]
+- id: P3/PERF-003/1
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-003
+  objeto: Employee[BadHires]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Employee[BadHires]
+- id: P3/PERF-003/2
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-003
+  objeto: Employee[TenureDays]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Employee[TenureDays]
+- id: P4/PERF-001/1
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Manufacturer[MfgisVanArsdel]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Manufacturer[MfgisVanArsdel]
+- id: P4/PERF-001/2
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Product[IsCompete]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Product[IsCompete]
+- id: P4/PERF-001/3
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Product[isVanArsdel]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Product[isVanArsdel]
+- id: P4/MOD-003/1
+  tipo: achado
+  projeto: P4
+  id_regra: MOD-003
+  objeto: Indicators
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Indicators
+- id: P4/MOD-006/1
+  tipo: achado
+  projeto: P4
+  id_regra: MOD-006
+  objeto: Product
+  texto: snowflake dimension; normalized dimension tables; denormalize into single table; relationship filter propagation chain | table Product
+- id: P4/PERF-003/1
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-003
+  objeto: Sentiment[Score]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sentiment[Score]
+- id: P5/DAX-001/1
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Avg $/Unit LY]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Avg $/Unit LY]
+- id: P5/DAX-001/2
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Avg $/Unit TY]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Avg $/Unit TY]
+- id: P5/DAX-001/3
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Gross Margin Last Year %]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Gross Margin Last Year %]
+- id: P5/DAX-001/4
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Gross Margin This Year %]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Gross Margin This Year %]
+- id: P5/DAX-001/5
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Sales Per Sq Ft]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Sales Per Sq Ft]
+- id: P5/DAX-001/6
+  tipo: achado
+  projeto: P5
+  id_regra: DAX-001
+  objeto: Sales[Total Sales Var %]
+  texto: DIVIDE function versus divide operator; divide by zero DAX blank; safe division DAX alternate result; division operator performance DAX | measure Sales[Total Sales Var %]
+- id: P5/PERF-001/1
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Sales[ReportingPeriodID]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Sales[ReportingPeriodID]
+- id: P5/PERF-001/2
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Store[City]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Store[City]
+- id: P5/PERF-001/3
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Store[Open Month No]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Store[Open Month No]
+- id: P5/PERF-001/4
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Store[Opening month]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Store[Opening month]
+- id: P5/PERF-001/5
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Store[Opening year]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Store[Opening year]
+- id: P5/PERF-001/6
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-001
+  objeto: Store[Store type]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Store[Store type]
+- id: P5/MOD-006/1
+  tipo: achado
+  projeto: P5
+  id_regra: MOD-006
+  objeto: Store
+  texto: snowflake dimension; normalized dimension tables; denormalize into single table; relationship filter propagation chain | table Store
+- id: P5/PERF-003/1
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-003
+  objeto: Sales[Sum_GrossMarginAmount]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sum_GrossMarginAmount]
+- id: P5/PERF-003/2
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-003
+  objeto: Sales[Sum_Markdown_Sales_Dollars]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sum_Markdown_Sales_Dollars]
+- id: P5/PERF-003/3
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-003
+  objeto: Sales[Sum_Markdown_Sales_Units]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sum_Markdown_Sales_Units]
+- id: P5/PERF-003/4
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-003
+  objeto: Sales[Sum_Regular_Sales_Dollars]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sum_Regular_Sales_Dollars]
+- id: P5/PERF-003/5
+  tipo: achado
+  projeto: P5
+  id_regra: PERF-003
+  objeto: Sales[Sum_Regular_Sales_Units]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Sales[Sum_Regular_Sales_Units]
+- id: P6/MOD-001/1
+  tipo: achado
+  projeto: P6
+  id_regra: MOD-001
+  objeto: DateTableTemplate_6de7953b-39de-41ab-b96b-cebbc3f3ccc1
+  texto: auto date/time; hidden auto date/time tables; disable auto date time; model size date columns | table DateTableTemplate_6de7953b-39de-41ab-b96b-cebbc3f3ccc1
+- id: P6/PERF-001/1
+  tipo: achado
+  projeto: P6
+  id_regra: PERF-001
+  objeto: Supply Analytics[Manufactured (%)]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Supply Analytics[Manufactured (%)]
+- id: P6/PERF-001/2
+  tipo: achado
+  projeto: P6
+  id_regra: PERF-001
+  objeto: Supply Analytics[Manufactured Goods]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Supply Analytics[Manufactured Goods]
+- id: P6/MOD-003/1
+  tipo: achado
+  projeto: P6
+  id_regra: MOD-003
+  objeto: Logo
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Logo
+- id: P6/MOD-003/2
+  tipo: achado
+  projeto: P6
+  id_regra: MOD-003
+  objeto: Supply Analytics
+  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Supply Analytics
+- id: P6/PERF-003/1
+  tipo: achado
+  projeto: P6
+  id_regra: PERF-003
+  objeto: Backorder Percentage[Backorder %]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Backorder Percentage[Backorder %]
+- id: P6/PERF-003/2
+  tipo: achado
+  projeto: P6
+  id_regra: PERF-003
+  objeto: Supply Analytics[Manufactured Goods %]
+  texto: decimal number floating point imprecision; fixed decimal number data type; accuracy of number type calculations; sum unexpected results | column Supply Analytics[Manufactured Goods %]

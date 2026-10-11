@@ -6,6 +6,8 @@ P1–P7, e as métricas. Desenho:
 `docs/superpowers/specs/2026-10-11-conjunto-de-avaliacao-da-recuperacao-design.md`.
 """
 
+import argparse
+import sys
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
@@ -14,10 +16,15 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel
 
+from core.ingest import abrir_pbip
+from core.parser_bim import ler_modelo
 from core.rules.base import Achado, RegraMeta
+from core.rules.runner import ResultadoRegras
+from core.rules.runner import avaliar as avaliar_regras
+from core.rules.todas import REGISTRO
 from rag.catalogo import RAIZ
 from rag.consulta import montar_consulta
-from rag.extracao import PaginaExtraida
+from rag.extracao import PASTA_TEXTOS, PaginaExtraida, caminho_do_texto
 from rag.texto import normalizar
 from rag.urls import caminho_sem_idioma, normalizar_url
 
@@ -25,6 +32,9 @@ RAIZ_REPO = RAIZ.parent
 PASTA_AVALIACAO = RAIZ_REPO / "eval" / "recuperacao"
 ARQUIVO_GABARITO = PASTA_AVALIACAO / "gabarito.yaml"
 ARQUIVO_CONSULTAS = PASTA_AVALIACAO / "consultas.yaml"
+PASTA_PBIP = RAIZ_REPO / "data" / "pbip"
+PROJETOS = ("P1", "P2", "P3", "P4", "P5", "P6", "P7")
+"""O dataset de métricas. O P8 é estudo de caso (ADR-005) e fica fora."""
 
 
 class ErroDeAvaliacao(Exception):
@@ -307,3 +317,81 @@ def formatar_relatorio(relatorio: RelatorioRecuperacao) -> str:
         )
         linhas.append(f"  {erro.id}: {onde} — primeiro devolvido: {erro.primeiro_devolvido or '(nada)'}")
     return "\n".join(linhas)
+
+
+def _auditar_padrao(caminho: Path) -> ResultadoRegras:
+    return avaliar_regras(ler_modelo(abrir_pbip(caminho).model_bim), REGISTRO)
+
+
+def achados_dos_projetos(
+    pasta: Path, auditar: Callable[[Path], ResultadoRegras] | None = None
+) -> dict[str, list[Achado]]:
+    """Roda as regras sobre P1–P7, na ordem. Uma regra com falha para tudo: gerar
+    menos consultas em silêncio mudaria a régua sem aviso."""
+    auditar = auditar or _auditar_padrao
+    saida: dict[str, list[Achado]] = {}
+    for codigo in PROJETOS:
+        candidatos = sorted(pasta.glob(f"{codigo}_*")) if pasta.is_dir() else []
+        if not candidatos:
+            raise ErroDeAvaliacao(f"{codigo} não encontrado em {pasta} (data/ não é versionado)")
+        resultado = auditar(candidatos[0])
+        if resultado.regras_com_falha:
+            falhas = ", ".join(f"{f.id_regra} ({f.erro})" for f in resultado.regras_com_falha)
+            raise ErroDeAvaliacao(f"{codigo}: regra(s) com falha: {falhas}")
+        saida[codigo] = resultado.achados
+    return saida
+
+
+def ler_pagina_extraida(id_pagina: str, pasta_textos: Path = PASTA_TEXTOS) -> PaginaExtraida:
+    caminho = caminho_do_texto(pasta_textos, id_pagina)
+    if not caminho.is_file():
+        raise ErroDeAvaliacao(
+            f"{id_pagina}: página não extraída — rode `python -m rag.coleta` e `python -m rag.extracao`"
+        )
+    return PaginaExtraida.model_validate_json(caminho.read_text(encoding="utf-8"))
+
+
+def gerar_do_repositorio() -> ConjuntoAvaliacao:
+    return gerar(
+        metas=REGISTRO.metas(),
+        frases=ler_frases_marca(ARQUIVO_GABARITO),
+        ler_pagina=ler_pagina_extraida,
+        achados_por_projeto=achados_dos_projetos(PASTA_PBIP),
+    )
+
+
+def resumo_conjunto(conjunto: ConjuntoAvaliacao) -> str:
+    por_regra = Counter(c.id_regra for c in conjunto.consultas)
+    n_regra = sum(c.tipo == "regra" for c in conjunto.consultas)
+    return "\n".join(
+        [
+            f"Gabaritos: {len(conjunto.gabaritos)}",
+            *(f"  {g.id_regra} -> {g.id_pagina}#{g.ancora}" for g in conjunto.gabaritos),
+            f"Consultas: {len(conjunto.consultas)} ({n_regra} por regra, "
+            f"{len(conjunto.consultas) - n_regra} por achado)",
+            *(f"  {regra}: {n} consulta(s)" for regra, n in sorted(por_regra.items())),
+        ]
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m rag.avaliacao",
+        description="Conjunto de avaliação da recuperação.",
+    )
+    sub = parser.add_subparsers(dest="comando", required=True)
+    sub.add_parser("gerar", help="deduz os gabaritos e gera eval/recuperacao/consultas.yaml")
+    parser.parse_args(argv)
+    try:
+        conjunto = gerar_do_repositorio()
+    except ErroDeAvaliacao as erro:
+        print(f"erro: {erro}", file=sys.stderr)
+        return 1
+    ARQUIVO_CONSULTAS.parent.mkdir(parents=True, exist_ok=True)
+    ARQUIVO_CONSULTAS.write_text(como_yaml(conjunto), encoding="utf-8", newline="\n")
+    print(resumo_conjunto(conjunto))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
