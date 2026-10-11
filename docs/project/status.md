@@ -17,7 +17,7 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **477 testes** automatizados passando. O maior risco técnico do
+Learn. São **483 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
@@ -74,7 +74,7 @@ regras de M, depois abrir mão do PDF (R-07).
 | Coleta e extração da base RAG (`python -m rag.coleta`, `python -m rag.extracao`) | **1.420 páginas** coletadas (0 erros, 37,6 min, 73 MB) e extraídas por seção, com âncora, caminho e blocos tipados (13 MB); a passagem citada por cada uma das 9 regras conferida no texto extraído (`tests/test_rag_store_real.py`) |
 | Conjunto de avaliação da recuperação (`python -m rag.avaliacao gerar`) | 9 gabaritos com a seção âncora deduzida da base, 62 consultas (9 por regra, 53 por achado de P1–P7) congeladas em `eval/recuperacao/consultas.yaml`; métricas acerto@K, Precision@K e MRR@10, com a macro por regra como número que decide |
 | Recuperação escolhida por medição (`python -m rag.medicao`, `python -m rag.indice construir`) | 24 combinações medidas com a régua; vence, pela regra fixada antes, **seção + BM25 sobre o corpus completo** (macro acerto@5 = 1,000); índice construído e conferido contra a medição. Efeito teto e decisão por uma consulta declarados (emenda de 11/10 da ADR-002) |
-| Suíte de testes | **477 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Suíte de testes | **483 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -311,7 +311,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 477 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 483 testes (os que leem o PBIP real são pulados sem data/)
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 python -m rag.catalogo            # regenera o catálogo de fontes offline; não deve gerar diff
 ```

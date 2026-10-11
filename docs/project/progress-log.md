@@ -1121,6 +1121,15 @@ alternativa a reavaliar estão na emenda de 11/10 da ADR-002.
 58 MB). O teste confirma que o buscador carregado do índice reproduz a macro acerto@5
 medida. Com a vencedora BM25, a consulta não passa pelo Chroma.
 
-Suíte: **477 testes passando**.
+**Revisão final da branch (revisor independente):** sem achado crítico. Corrigidos com
+teste que falhou antes: o índice ignorava em silêncio a escolha de corpus (agora recusa
+qualquer corpus que não seja o completo) e o resumo do comando quebrava no console do
+Windows. O caminho denso e o híbrido do `carregar_buscador`, que o resultado BM25 não
+exercitava, ganharam teste contra um Chroma sintético. Seis menores adiados (no ledger
+da execução): espaço L2 em vez de cosseno na coleção, índice inconsistente se `construir`
+cair no meio, teste de gêmeos fraco, oráculo por página e não por seção, quebra de linha
+perdida nos ~115 trechos partidos por tokens, modelo não registrado no `config.json`.
+
+Suíte: **483 testes passando**.
 
 **Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7).
