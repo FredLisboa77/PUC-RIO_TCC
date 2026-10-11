@@ -1011,3 +1011,18 @@ teste que falhou antes, e o extrator passou à versão 2 (reextração em segund
 catálogo coletada e extraída na versão atual, e a frase-marca da passagem citada por
 **cada uma das 9 regras** encontrada no texto extraído da página âncora (11 testes,
 pulados sem `rag/store/`). Suíte: 358 testes passando.
+
+**Revisão final do branch (revisor independente):** veredito "com correções", todas
+feitas com teste que falhou antes. (1) Depois de um desligamento que cortasse a última
+linha do `coleta.jsonl`, a próxima linha se colava na cortada e o registro ficava
+ilegível para sempre — agora a linha cortada é descartada antes de anexar; um corte no
+meio de um caractere acentuado também é tolerado. (2) Páginas 404 ou redirecionadas
+contavam para as 5 falhas seguidas: com 5 páginas mortas em sequência, toda execução
+pararia no mesmo ponto — agora só conta o que parece queda (sem resposta ou 5xx).
+(3) Conexão cortada no meio da leitura escapava com traceback — agora vira erro
+registrado. Adiados como menores: a mensagem do 429/503 dizer quantas páginas faltam;
+a extração conferir o `sha256` e remover JSON órfão; resumo parcial no Ctrl+C.
+Suíte: **365 testes passando**.
+
+**Próximo passo:** conjunto de avaliação da recuperação (62 consultas com a seção
+âncora como gabarito, ADR-002) e, depois, chunking e embeddings.
