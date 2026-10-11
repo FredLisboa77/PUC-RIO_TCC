@@ -142,10 +142,10 @@ def test_pedacos_de_secao_partida_mantem_ancora_e_ids_seguem_na_pagina():
 
 
 def test_cabecalho_entra_so_no_texto_indexado():
-    pagina = _pagina([("s", "Título › Sec", ["corpo"])])
+    pagina = _pagina([("s", "Sec", ["corpo"])])
     (trecho,) = trechos_por_secao(pagina, cabecalho=True)
     assert trecho.texto == "corpo"
-    assert trecho.texto_indexado == "Título › Título › Sec\ncorpo"
+    assert trecho.texto_indexado == "Título › Sec\ncorpo"
 
 
 def test_cabecalho_da_secao_de_nivel_1_nao_repete_o_titulo():
@@ -1254,7 +1254,7 @@ def formatar_tabela(resultados: list[ResultadoConfiguracao], decisao: Decisao) -
 - [ ] **Step 3: Verificar**
 
 Run: `.\.venv\Scripts\python.exe -m pytest tests/test_rag_medicao.py -q`
-Expected: 13 passam.
+Expected: 12 passam.
 Run: `.\.venv\Scripts\python.exe -m pytest -q`
 Expected: todos passam.
 
@@ -1387,9 +1387,10 @@ from rag.chunking import ids_do_corpus_guidance, montar_trechos
 from rag.coleta import paginas_do_catalogo
 from rag.embeddings import MODELO, PASTA_EMBEDDINGS, EmbedderBge, ErroDeEmbeddings, vetores_com_cache
 from rag.extracao import VERSAO_EXTRATOR, PaginaExtraida
+import yaml
 ```
 
-(`ConjuntoAvaliacao`, `Metricas`, `ResultadoConsulta`, `avaliar` continuam no import de `rag.avaliacao`; juntar os dois num só.) E no fim do arquivo:
+(Mover o `import yaml` para o grupo de terceiros, junto de `numpy`. `ConjuntoAvaliacao`, `Metricas`, `ResultadoConsulta`, `avaliar` continuam no import de `rag.avaliacao`; juntar os dois num só.) E no fim do arquivo:
 
 ```python
 PASTA_RESULTADOS = RAIZ_REPO / "eval" / "results"
@@ -1462,7 +1463,7 @@ def main(argv: list[str] | None = None) -> int:
             v: vetores_com_cache(embedder, [t.texto_indexado for t in lista], pasta=PASTA_EMBEDDINGS, nome=v)
             for v, lista in trechos.items()
         }
-        fontes = __import__("yaml").safe_load(ARQUIVO_FONTES.read_text(encoding="utf-8"))
+        fontes = yaml.safe_load(ARQUIVO_FONTES.read_text(encoding="utf-8"))
         resultados = medir(
             conjunto,
             trechos=trechos,
@@ -1484,8 +1485,6 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     sys.exit(main())
 ```
-
-Trocar o `__import__("yaml")` por um `import yaml` no topo do arquivo, junto dos outros imports — está escrito assim aqui só para deixar explícito de onde vem.
 
 - [ ] **Step 3: Verificar**
 
@@ -1618,10 +1617,8 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
-
 from rag.avaliacao import Buscador, Trecho
-from rag.busca import K_FUSAO, IndiceBm25, fundir_rrf
+from rag.busca import K_FUSAO, IndiceBm25, fundir_rrf, ranquear
 from rag.chunking import TrechoIndexado, montar_trechos
 from rag.coleta import PASTA_STORE
 from rag.embeddings import PASTA_EMBEDDINGS, Embedder, EmbedderBge, ler_cache
@@ -1676,8 +1673,10 @@ def construir(
     temporario.replace(pasta_indice / ARQUIVO_TRECHOS.name)
 
     cliente = _cliente(pasta_chroma)
-    if COLECAO in [c.name for c in cliente.list_collections()]:
+    try:
         cliente.delete_collection(COLECAO)
+    except Exception:  # coleção ainda não existe: o tipo da exceção muda entre versões do Chroma
+        pass
     colecao = cliente.create_collection(COLECAO)
     for inicio in range(0, len(trechos), LOTE_CHROMA):
         lote = trechos[inicio : inicio + LOTE_CHROMA]
@@ -1714,13 +1713,12 @@ def carregar_buscador(
 
     def densa(consulta: str, k: int) -> list[int]:
         resposta = colecao.query(
-            query_embeddings=[embedder.vetor_consulta(consulta).tolist()], n_results=k, include=[]
+            query_embeddings=[embedder.vetor_consulta(consulta).tolist()], n_results=k, include=["distances"]
         )
         return [posicao[i] for i in resposta["ids"][0]]
 
     def por_bm25(consulta: str, k: int) -> list[int]:
-        pontos = bm25.pontuacoes(consulta)
-        return [int(i) for i in np.lexsort((np.arange(len(pontos)), -pontos))[:k]]
+        return ranquear(bm25.pontuacoes(consulta), None, k)
 
     def buscar(consulta: str, k: int) -> list[Trecho]:
         if configuracao.busca == "densa":
@@ -1751,8 +1749,6 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     sys.exit(main())
 ```
-
-O BM25 de `carregar_buscador` repete o desempate de `rag.busca.ranquear` (pontuação, depois posição); usar `ranquear(pontos, None, k)` diretamente em vez de reescrever o `lexsort` — está escrito por extenso aqui só para mostrar a equivalência.
 
 - [ ] **Step 3: Verificar os testes sem dados**
 
