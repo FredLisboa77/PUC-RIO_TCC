@@ -41,7 +41,16 @@ IDIOMAS: tuple[str, ...] = ("en-us", "pt-br")
 
 
 class ErroDeRetrato(Exception):
-    """Falha ao obter ou interpretar um `toc.json`."""
+    """Falha ao obter ou interpretar um `toc.json` ou uma página.
+
+    `status` é o código HTTP quando houve resposta. É o que deixa a coleta
+    distinguir página inexistente (404: registra e segue) de servidor pedindo
+    para parar (429/503: interrompe).
+    """
+
+    def __init__(self, mensagem: str, status: int | None = None) -> None:
+        super().__init__(mensagem)
+        self.status = status
 
 
 class ItemToc(BaseModel):
@@ -110,7 +119,7 @@ def buscar_padrao(url: str) -> bytes:
     try:
         with urllib.request.urlopen(pedido, timeout=TIMEOUT_S) as resposta:
             if resposta.status != 200:
-                raise ErroDeRetrato(f"{url}: HTTP {resposta.status}")
+                raise ErroDeRetrato(f"{url}: HTTP {resposta.status}", status=resposta.status)
             # `urlopen` segue 301/302 sozinho: sem esta checagem, um artigo removido
             # e redirecionado para a home passaria como "respondeu 200".
             final = resposta.geturl()
@@ -118,7 +127,7 @@ def buscar_padrao(url: str) -> bytes:
                 raise ErroDeRetrato(f"{url}: redirecionado para {final}")
             return resposta.read()
     except urllib.error.HTTPError as erro:
-        raise ErroDeRetrato(f"{url}: HTTP {erro.code}") from erro
+        raise ErroDeRetrato(f"{url}: HTTP {erro.code}", status=erro.code) from erro
     except (urllib.error.URLError, TimeoutError) as erro:
         raise ErroDeRetrato(f"{url}: {erro}") from erro
 

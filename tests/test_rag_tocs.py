@@ -256,3 +256,28 @@ def test_buscar_padrao_aceita_a_mesma_url_com_diferenca_so_de_barra(monkeypatch)
 def test_item_com_tipo_errado_vira_erro_que_nomeia_a_origem(item):
     with pytest.raises(ErroDeRetrato, match="origem.json"):
         achatar_toc({"items": [item]}, "origem.json")
+
+
+def test_erro_http_carrega_o_status(monkeypatch):
+    def urlopen_falso(pedido, timeout):
+        raise urllib.error.HTTPError(pedido.full_url, 429, "Too Many Requests", {}, None)
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen_falso)
+    with pytest.raises(ErroDeRetrato) as erro:
+        buscar_padrao("https://learn.microsoft.com/en-us/dax/abs-function-dax")
+    assert erro.value.status == 429
+
+
+def test_erro_de_rede_tem_status_vazio(monkeypatch):
+    def urlopen_falso(pedido, timeout):
+        raise urllib.error.URLError("sem rota")
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen_falso)
+    with pytest.raises(ErroDeRetrato) as erro:
+        buscar_padrao("https://learn.microsoft.com/en-us/dax/abs-function-dax")
+    assert erro.value.status is None
+
+
+def test_erro_de_retrato_sem_status_continua_valendo():
+    assert ErroDeRetrato("x").status is None
+    assert str(ErroDeRetrato("mensagem", status=404)) == "mensagem"
