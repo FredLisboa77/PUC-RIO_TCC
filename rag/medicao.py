@@ -31,7 +31,7 @@ from rag.avaliacao import (
 )
 from rag.busca import IndiceBm25, TipoBusca, criar_buscador
 from rag.catalogo import ARQUIVO_FONTES
-from rag.chunking import Estrategia, TrechoIndexado, ids_do_corpus_guidance, montar_trechos
+from rag.chunking import ContadorDeTokens, Estrategia, TrechoIndexado, ids_do_corpus_guidance, montar_trechos
 from rag.coleta import paginas_do_catalogo
 from rag.embeddings import MODELO, PASTA_EMBEDDINGS, Embedder, EmbedderBge, ErroDeEmbeddings, vetores_com_cache
 from rag.extracao import VERSAO_EXTRATOR, PaginaExtraida
@@ -208,9 +208,14 @@ def carregar_paginas() -> list[PaginaExtraida]:
     return [ler_pagina_extraida(p.id) for p in paginas_do_catalogo(ARQUIVO_FONTES)]
 
 
-def trechos_das_variantes(paginas: list[PaginaExtraida]) -> dict[str, list[TrechoIndexado]]:
+def trechos_das_variantes(
+    paginas: list[PaginaExtraida], *, contar_tokens: ContadorDeTokens | None = None
+) -> dict[str, list[TrechoIndexado]]:
+    """As 4 variantes. Com o contador do modelo, nenhum trecho passa de 512 tokens."""
     return {
-        f"{estrategia}-{'com' if cabecalho else 'sem'}": montar_trechos(paginas, estrategia, cabecalho)
+        f"{estrategia}-{'com' if cabecalho else 'sem'}": montar_trechos(
+            paginas, estrategia, cabecalho, contar_tokens=contar_tokens
+        )
         for estrategia in ("secao", "janela")
         for cabecalho in (False, True)
     }
@@ -259,12 +264,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         conjunto = ler_conjunto(ARQUIVO_CONSULTAS)
         paginas = carregar_paginas()
-        trechos = trechos_das_variantes(paginas)
+        embedder = EmbedderBge()
+        trechos = trechos_das_variantes(paginas, contar_tokens=embedder.contar_tokens)
         for variante, lista in trechos.items():
             falhas = verificar_oraculo(lista, conjunto)
             if falhas:
                 raise ErroDeMedicao(f"oráculo: {variante} parte a frase-marca de {', '.join(falhas)}")
-        embedder = EmbedderBge()
         vetores = {
             v: vetores_com_cache(embedder, [t.texto_indexado for t in lista], pasta=PASTA_EMBEDDINGS, nome=v)
             for v, lista in trechos.items()

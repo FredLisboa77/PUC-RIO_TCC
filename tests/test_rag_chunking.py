@@ -132,3 +132,40 @@ def test_corpus_guidance_inclui_guidance_e_ancoras_de_regra():
 def test_para_regua_leva_texto_puro():
     (trecho,) = trechos_por_secao(_pagina([("s", "Sec", ["corpo"])]), cabecalho=True)
     assert trecho.para_regua() == Trecho(texto="corpo", id_pagina="learn:x/p", ancora="s")
+
+
+def _dez_tokens_por_palavra(texto):
+    return 10 * len(texto.split())
+
+
+def test_trecho_acima_do_limite_de_tokens_e_partido_ao_meio():
+    pagina = _pagina([("s", "Sec", ["1 2 3 4 5 6 7 8"])])
+    trechos = trechos_por_secao(pagina, cabecalho=False, contar_tokens=_dez_tokens_por_palavra, limite_tokens=40)
+    assert [t.texto for t in trechos] == ["1 2 3 4", "5 6 7 8"]
+    assert [t.id for t in trechos] == ["learn:x/p#s/1", "learn:x/p#s/2"]
+
+
+def test_limite_de_tokens_conta_o_cabecalho():
+    pagina = _pagina([("s", "Sec", ["1 2"])])
+    trechos = trechos_por_secao(pagina, cabecalho=True, contar_tokens=_dez_tokens_por_palavra, limite_tokens=40)
+    assert [t.texto_indexado for t in trechos] == ["Título › Sec\n1", "Título › Sec\n2"]
+
+
+def test_janela_acima_do_limite_de_tokens_tambem_e_partida():
+    pagina = _pagina([("s", "Sec", [" ".join(f"w{i}" for i in range(8))])])
+    trechos = trechos_por_janela(
+        pagina, cabecalho=False, janela=8, passo=6, contar_tokens=_dez_tokens_por_palavra, limite_tokens=40
+    )
+    assert [t.texto for t in trechos] == ["w0 w1 w2 w3", "w4 w5 w6 w7"]
+
+
+def test_palavra_unica_acima_do_limite_fica_como_esta():
+    pagina = _pagina([("s", "Sec", ["gigante"])])
+    trechos = trechos_por_secao(pagina, cabecalho=False, contar_tokens=lambda t: 1000, limite_tokens=40)
+    assert [t.texto for t in trechos] == ["gigante"]
+
+
+def test_montar_trechos_repassa_o_contador():
+    pagina = _pagina([("s", "Sec", ["1 2 3 4 5 6 7 8"])])
+    trechos = montar_trechos([pagina], "secao", cabecalho=False, contar_tokens=_dez_tokens_por_palavra, limite_tokens=40)
+    assert len(trechos) == 2

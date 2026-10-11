@@ -40,6 +40,18 @@ def embedder():
     return modelo
 
 
-def test_nenhum_trecho_secao_passa_de_512_tokens(variantes, embedder):
-    maior = max(embedder.contar_tokens(t.texto_indexado) for t in variantes["secao-com"])
-    assert maior <= 512, f"maior trecho com {maior} tokens: reduzir LIMITE_SECAO"
+@pytest.fixture(scope="module")
+def variantes_do_modelo(embedder):
+    """As variantes como a medição as monta: com o contador de tokens do modelo."""
+    return trechos_das_variantes(carregar_paginas(), contar_tokens=embedder.contar_tokens)
+
+
+@pytest.mark.parametrize("variante", ["secao-sem", "secao-com", "janela-sem", "janela-com"])
+def test_nenhum_trecho_passa_de_512_tokens(variantes_do_modelo, embedder, variante):
+    maior = max(embedder.contar_tokens(t.texto_indexado) for t in variantes_do_modelo[variante])
+    assert maior <= 512, f"{variante}: maior trecho com {maior} tokens"
+
+
+@pytest.mark.parametrize("variante", ["secao-sem", "secao-com", "janela-sem", "janela-com"])
+def test_oraculo_com_o_contador_do_modelo(variantes_do_modelo, variante):
+    assert verificar_oraculo(variantes_do_modelo[variante], ler_conjunto(ARQUIVO_CONSULTAS)) == []
