@@ -155,10 +155,10 @@ só, sem medida de concordância (Fase 1, limitações declaradas). O protocolo 
   regras não viram (P9 ou Fase 5).
 - **Vereditos revistos depois da primeira medição:** 12 linhas, todas pela documentação, com
   o motivo e o julgamento original na própria justificativa (`progress-log.md`, 12/10/2026).
-- **Item 2 — segundo anotador: em aberto.** A spec do gabarito
-  (`docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`, §9) deixou o segundo
-  anotador e o kappa fora do escopo; este protocolo ainda os promete. Decisão pendente do
-  Fred.
+- **Item 2 — segundo anotador: não haverá (decisão do Fred, 12/10/2026).** O gabarito
+  fica com um anotador só, sem kappa; o viés de anotador único é **limitação declarada**
+  (§11.4 do planejamento), mitigada pela justificativa obrigatória em `viola` e
+  `indeterminado` e pela revisão dos julgamentos contra a documentação.
 - **Item 3 — anotação cega:** a planilha não mostrava o que a ferramenta marcou.
 - **Formato:** o formato abaixo foi substituído pelo da spec do gabarito —
   `id,projeto,id_regra,objeto,veredito,justificativa,referencia`.

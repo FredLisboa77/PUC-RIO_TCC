@@ -1600,3 +1600,23 @@ próximos passos atualizada.
 Suíte: **670 testes passando**.
 
 **Próximo passo:** merge do PR desta branch; subprojeto 2 (busca combinada).
+
+---
+
+## 12/10/2026 — PR #8 mergeado; decisões do Fred
+
+PR #8 (saneamento) mergeado na `main` (`fb65863`); suíte: 670 testes.
+
+**Decisões:**
+
+- **Segundo anotador: não haverá.** O gabarito de P1–P7 fica com um anotador só, sem
+  kappa; o viés de anotador único é limitação declarada (§11.4 do planejamento).
+  Registrado em `eval/dataset.md` e no R-04.
+- **Rubrica da Fase 5:** confirmado o item próprio **"recomendação tecnicamente
+  correta"**, separado dos três critérios automáticos (backlog).
+- **Verificar no Desktop se o `filterExpression` de RLS é gravado no `model.bim`:** segue
+  pendente.
+- **P9:** decisão em discussão com o orientador (46 achados confirmados; 30 sem a
+  PERF-003; gatilho de 40).
+
+**Próximo passo:** decisão sobre o P9; subprojeto 2 (busca combinada).
