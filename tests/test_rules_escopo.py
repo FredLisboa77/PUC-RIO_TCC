@@ -455,12 +455,11 @@ def test_calculation_group_nulo_nao_e_grupo_de_calculo(ler):
     assert grupo_de_calculo(ler(tabelas=[t]).tabelas[0]) is False
 
 
-def test_parametro_de_campo_fica_fora_de_escopo_e_o_dax_e_da_ferramenta(ler):
-    """Como os dois `Toggle…` do P2: as tuplas NAMEOF são escritas pelo Desktop."""
+def test_parametro_de_campo_fica_fora_de_escopo_de_tabela(ler):
+    """Como os dois `Toggle…` do P2: sem relacionamento por natureza."""
     t = ler(tabelas=[_parametro_de_campo("Toggle", METADADO_DE_CAMPO)]).tabelas[0]
     assert tabela_de_parametro_de_campo(t) is True
     assert fora_de_escopo(t) is True
-    assert dax_escrito_pela_ferramenta(t) is True
 
 
 def test_parametro_hipotetico_com_metadado_sem_kind_nao_e_parametro_de_campo(ler):
@@ -514,3 +513,13 @@ def test_tabela_calculada_em_dax_olha_o_tipo_da_particao(ler):
         ]
     )
     assert [tabela_calculada_em_dax(t) for t in modelo.tabelas] == [True, False, False]
+
+
+def test_medida_do_autor_em_parametro_de_campo_continua_no_escopo_de_dax(ler):
+    """O Desktop não escreve medida no parâmetro de campo (ao contrário do hipotético):
+    medida pendurada nele é do autor, e a auditoria de DAX não pode perdê-la."""
+    t = _parametro_de_campo("Toggle", METADADO_DE_CAMPO)
+    t["measures"] = [medida("Var %", "IF([Plano] <> 0, [Real] / [Plano])")]
+    modelo = ler(tabelas=[t])
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is False
+    assert [x.nome for x in tabelas_com_dax_do_autor(modelo)] == ["Toggle"]

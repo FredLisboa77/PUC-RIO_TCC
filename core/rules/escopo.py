@@ -115,8 +115,9 @@ def grupo_de_calculo(t: Tabela) -> bool:
 def tabela_de_parametro_de_campo(t: Tabela) -> bool:
     """Parâmetro de campo: uma coluna com `ParameterMetadata` de `kind` 2.
 
-    Não tem relacionamento por natureza, e a expressão da tabela (tuplas com
-    `NAMEOF`) é escrita pelo Desktop. A leitura tolera `extendedProperties`
+    Não tem relacionamento por natureza. A expressão da tabela (tuplas com
+    `NAMEOF`) é escrita pelo Desktop, mas a tabela continua no escopo de DAX: ver
+    `dax_escrito_pela_ferramenta`. A leitura tolera `extendedProperties`
     malformadas pelo mesmo motivo de `anotacoes`: o predicado roda dentro de
     `fora_de_escopo`, e uma exceção aqui derrubaria todas as regras.
     """
@@ -162,12 +163,15 @@ def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
     Distinção que `fora_de_escopo` não faz, porque até aqui toda regra era de
     nível de tabela. Aquele predicado junta duas naturezas de exclusão:
 
-    - **o DAX é da ferramenta** — tabela de data automática, tabela de cluster, a
-      tabela de parâmetro hipotético, cuja medida o Desktop escreve junto com
-      a tabela (`% Previsao = SELECTEDVALUE(...)`), e o parâmetro de campo, cujas
-      tuplas `NAMEOF` o Desktop escreve;
-    - **padrão legítimo do autor** — a tabela que só carrega medidas e o grupo de
-      cálculo, excluídos apenas por não terem relacionamento por natureza.
+    - **o DAX é da ferramenta** — tabela de data automática, tabela de cluster, e
+      a tabela de parâmetro hipotético, cuja medida o Desktop escreve junto com
+      a tabela (`% Previsao = SELECTEDVALUE(...)`);
+    - **padrão legítimo do autor** — a tabela que só carrega medidas, o grupo de
+      cálculo e o parâmetro de campo, excluídos apenas por não terem relacionamento
+      por natureza. O parâmetro de campo fica aqui, e não acima, porque o Desktop
+      não escreve medida nele: medida pendurada nele é do autor. As tuplas `NAMEOF`
+      da partição entram na varredura, o que também mantém as colunas que ele expõe
+      contadas como usadas.
 
     Só a primeira natureza vale para uma regra que lê texto DAX. No PBIP real a
     tabela de medidas carrega 93 das 105 expressões do modelo: tratá-la como
@@ -177,7 +181,6 @@ def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
         tabela_automatica_de_data(t)
         or tabela_gerada_por_analise(t)
         or tabela_de_parametro_hipotetico(t)
-        or tabela_de_parametro_de_campo(t)
     )
 
 

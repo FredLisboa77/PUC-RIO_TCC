@@ -49,10 +49,12 @@ do P8 também tem `ParameterMetadata`, mas sem `kind`, e já é excluído por `G
 tabela, não só para a MOD-003 — pela mesma razão que a tabela de medidas: não têm
 relacionamento por natureza nem papel no star schema.
 
-**Escopo das regras de DAX (`dax_escrito_pela_ferramenta`):** só o **parâmetro de campo**
-entra — as tuplas `NAMEOF` da tabela são escritas pelo Power BI Desktop. O **grupo de
-cálculo** fica de fora: o DAX dos itens de cálculo é do autor, e excluí-lo cegaria regras
-de DAX futuras. (A varredura atual não lê `calculationItems`; isso não muda aqui.)
+**Escopo das regras de DAX (`dax_escrito_pela_ferramenta`):** nenhum dos dois entra —
+os dois ficam no escopo de DAX. O DAX dos itens de cálculo é do autor; e o Desktop não
+escreve medida no parâmetro de campo, de modo que medida pendurada nele também é do autor.
+*(Revisto na revisão final de 12/10/2026: a versão anterior tirava o parâmetro de campo do
+escopo de DAX e esconderia essas medidas da DAX-001; as tuplas `NAMEOF` da partição não têm
+divisão e, varridas, mantêm as colunas expostas contadas como usadas.)*
 
 **Limitação declarada:** `Logo` (P6) e `Indicators` (P4) — tabelas digitadas à mão
 ("Inserir dados") para a apresentação — continuam como falsos positivos. Registro na

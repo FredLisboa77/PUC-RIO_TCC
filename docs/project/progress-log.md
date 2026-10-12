@@ -1531,6 +1531,21 @@ regras não viram.
 | R-12 | 46 (30 sem PERF-003) | 52 (36 sem PERF-003) |
 | Divergências | 12 | 4 |
 
+Parte do ganho de precisão da PERF-001 está em indeterminados: das 12 colunas que a regra
+passou a marcar, 6 eram FN e viraram VP, 2 eram VN e viraram FP e **4 eram indeterminados não
+marcados e viraram marcados**. Com eles contra a regra (piso), a precisão da PERF-001 é 0,77
+(era 0,95) e a total micro é 0,85.
+
+**Revisão final da branch (revisor independente):** nenhum crítico; números do log conferidos
+contra o JSON; matrizes das outras 7 regras idênticas entre a medição oficial e a
+pós-correção. Corrigido: o parâmetro de campo tinha saído do escopo de DAX, o que esconderia
+uma medida do autor pendurada nele (teste
+`test_medida_do_autor_em_parametro_de_campo_continua_no_escopo_de_dax`); agora fica no
+escopo de DAX, como antes desta branch. Adiados: `extendedProperties` escalar (ex.: `5`)
+levanta `TypeError` — o executor isola a falha por regra, e o mesmo buraco já existe em
+`anotacoes`; e o texto da PERF-001 cita CALENDAR/CALENDARAUTO enquanto o predicado aceita
+qualquer tabela calculada (escolha da spec, para cobrir `ADDCOLUMNS`).
+
 **As 4 divergências que restam:**
 
 - **MOD-003, `Logo` (P6) e `Indicators` (P4):** limitação declarada — tabelas digitadas à mão
@@ -1548,7 +1563,7 @@ porque deriva dos achados e o teste exige que esteja em dia. A medição da recu
 11/10 foi feita sobre o conjunto da tag e não foi refeita — o subprojeto 2 (busca combinada)
 vai medir de novo.
 
-Suíte: **652 testes passando**. P8 sem mudança.
+Suíte: **653 testes passando**. P8 sem mudança.
 
 **Próximo passo:** revisão final da branch; merge do PR #6 e do PR desta branch; depois o
 subprojeto 2 (busca combinada).
