@@ -244,3 +244,28 @@ amostra das respostas — o spike mostrou que os critérios automáticos não pe
 Interface (F12), relatório HTML/PDF (F13, F14), cache do LLM (F16), medição sobre
 P1–P7 (Fase 5), nova tentativa após descarte, troca para a busca híbrida (só se os
 trechos complementares se mostrarem fracos, emenda de 11/10 da ADR-002).
+
+## 13. Emenda de 11/10/2026 — revisão do PR #5
+
+A revisão do PR #5 mostrou que o orçamento de 1.800 palavras (§4) não garante caber no
+`num_ctx`: trechos de código chegam a ~3,4 tokens por palavra. Medido no Ollama 0.40:
+por padrão ele **corta o prompt em silêncio** e informa só o tamanho já cortado (7.231
+tokens viraram 2.050, e a instrução de sistema se perdeu). Decisões do Fred:
+
+- O cliente (§6) envia `truncate: false` e `shift: false`. Prompt que não cabe volta como
+  HTTP 400 e resposta que bate no limite volta com `done_reason: "length"`; os dois viram
+  `ContextoExcedido`.
+- Diante de `ContextoExcedido`, o enriquecimento **tira o último trecho complementar e
+  chama de novo** — exceção deliberada ao "sem nova tentativa" de §1, que vale para
+  resposta inválida, não para contexto que não coube. A âncora nunca sai. Se nem ela
+  couber, o achado é descartado com o motivo novo **`contexto_excedido`** (§7).
+- O achado registra `reducoes_de_contexto`, e o `contexto` gravado é o que o modelo leu.
+- Falhas de leitura da resposta (leitura interrompida, bytes inválidos, `content` nulo)
+  viram `erro_llm` naquele achado, e falha ao gravar o JSON sai com mensagem depois do
+  resumo, em vez de traceback.
+
+**Reprodutibilidade (§6):** temperatura 0 e `seed` fixa **não** tornam a saída idêntica no
+Ollama com GPU. Duas rodadas seguidas no P8 deram 13/15 citações e 9/15 textos iguais. Os
+totais se repetiram nas quatro rodadas feitas (15/15 gerados, 14/15 citando a âncora, 1
+divergência). A Fase 5 deve tratar a geração como estocástica e reportar a variação entre
+rodadas.

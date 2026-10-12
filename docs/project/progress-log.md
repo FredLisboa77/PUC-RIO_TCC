@@ -1232,3 +1232,46 @@ responde).
 **Próximo passo:** PR da `fase3-geracao-citacao` para revisão do Fred; depois, a revisão de
 meio de projeto da semana 8, com a reavaliação da busca híbrida para os trechos
 complementares fracos de PERF-001 e PERF-003.
+
+---
+
+## 11/10/2026 — Revisão do PR #5: duas correções do que registrei acima
+
+A revisão do PR #5 (com medições no Ollama real) desfez duas afirmações da entrada
+anterior.
+
+**1. O alerta de truncagem não funcionava.** O registro anterior diz "corrigido por
+medição": cada achado guardava `tokens_prompt` e o resumo alertava acima de 3.584 tokens.
+Medido: com o padrão do Ollama 0.40, um prompt de 7.231 tokens é **cortado em silêncio
+para 2.050**, a instrução de sistema se perde, e a contagem informada é a do prompt já
+cortado — o alerta nunca dispararia. Corrigido de fato (emenda da spec, §13): o cliente
+pede `truncate: false` e `shift: false`, e o Ollama passa a recusar (HTTP 400) ou parar no
+limite (`done_reason: "length"`). Nesses casos o enriquecimento tira o último trecho
+complementar e tenta de novo (decisão do Fred); sem caber nem a âncora, o achado sai com o
+motivo novo `contexto_excedido`. No P8 nenhum contexto precisou ser reduzido.
+
+**2. As rodadas não são idênticas.** O registro anterior diz que a segunda rodada deu
+"resultado idêntico, com as mesmas citações". Eu tinha comparado os totais e só as quatro
+primeiras citações. Comparando as 15: duas rodadas seguidas, com a mesma configuração,
+deram **13/15 citações e 9/15 textos iguais**. Temperatura 0 e semente fixa não bastam no
+Ollama com GPU. Os totais se repetiram nas quatro rodadas (15/15 gerados, 14/15 citando a
+âncora, 1 divergência de fidelidade; tempo médio de 7,9 a 8,2 s). Consequência para a Fase
+5: tratar a geração como estocástica e medir a variação entre rodadas.
+
+**Também corrigido:** leitura interrompida, bytes inválidos e `content` nulo na resposta do
+Ollama derrubavam a auditoria inteira — agora viram `erro_llm` naquele achado; e falha ao
+gravar o JSON (arquivo aberto em outro programa) saía com traceback depois dos minutos de
+geração — agora o resumo sai antes e a falha vira mensagem.
+
+**Descartado por medição:** a revisão supunha que o Ollama informa menos tokens quando
+reaproveita o cache de um prefixo comum. Três chamadas com o mesmo prefixo deram 772, 773
+e 773.
+
+**Menores da revisão, adiados:** citação repetida (`[1, 1]`) descarta a resposta — é regra
+da spec e não ocorreu no P8; a âncora é procurada de novo a cada achado, em milissegundos.
+Os demais já estavam listados acima.
+
+Suíte: **580 testes passando**.
+
+**Próximo passo:** merge do PR #5 pelo Fred; depois, a revisão de meio de projeto da
+semana 8.
