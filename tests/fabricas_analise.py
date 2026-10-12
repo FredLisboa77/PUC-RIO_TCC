@@ -6,6 +6,10 @@ teste chama com os parâmetros que quer variar.
 
 from core.analise.base import TrechoDeContexto
 from core.rules.base import Achado, Evidencia, RegraMeta
+from rag.avaliacao import Gabarito
+from rag.chunking import TrechoIndexado
+from rag.indice import BaseRag
+from rag.medicao import Configuracao
 
 RECOMENDACAO_PADRAO = (
     "Desative a opção global de data/hora automática e use uma tabela de datas própria."
@@ -59,3 +63,37 @@ def trecho_de_contexto(
 
 def contexto(n: int = 3) -> list[TrechoDeContexto]:
     return [trecho_de_contexto(i) for i in range(1, n + 1)]
+
+
+def trecho_indexado(id_pagina: str, texto: str, *, ancora: str = "s", parte: int = 1) -> TrechoIndexado:
+    return TrechoIndexado(
+        id=f"{id_pagina}#{ancora}/{parte}",
+        id_pagina=id_pagina,
+        url=f"https://learn.microsoft.com/{id_pagina.split(':', 1)[1]}",
+        titulo_pagina="T",
+        ancora=ancora,
+        caminho="Seção",
+        texto=texto,
+        texto_indexado=texto,
+    )
+
+
+def base_bm25(trechos: list[TrechoIndexado]) -> BaseRag:
+    return BaseRag(Configuracao(chunking="secao", cabecalho=False, busca="bm25", corpus="completo"), trechos)
+
+
+def gabarito(
+    id_regra: str = "MOD-001",
+    *,
+    id_pagina: str = "learn:auto",
+    ancora: str = "s",
+    frase_marca: str = "disable the auto date time option",
+) -> Gabarito:
+    return Gabarito(id_regra=id_regra, frase_marca=frase_marca, id_pagina=id_pagina, ancora=ancora)
+
+
+TRECHO_ANCORA = trecho_indexado("learn:auto", "You should disable the auto date time option in every model.")
+
+
+def base_padrao() -> BaseRag:
+    return base_bm25([TRECHO_ANCORA, trecho_indexado("learn:outra", "auto date time tables are hidden")])
