@@ -4,7 +4,8 @@ Princípio único: **auditar o que o autor escreveu.** O Power BI gera objetos p
 conta própria — tabelas de data automáticas, tabelas de mapeamento de cluster,
 colunas de agrupamento — e marcá-los como defeito do autor é falso positivo.
 Alguns padrões legítimos também precisam de exceção: a tabela que só carrega
-medidas e a tabela de parâmetro hipotético não têm relacionamento por natureza.
+medidas, a de parâmetro hipotético, o parâmetro de campo e o grupo de cálculo
+não têm relacionamento por natureza.
 
 Cada exclusão aqui é um predicado explícito em TMSL. Nenhuma é por nome de
 objeto: nome é convenção, annotation é fato.
@@ -21,6 +22,11 @@ FUNCAO_PARAMETRO_HIPOTETICO = "GENERATESERIES"
 FUNCAO_TABELA_DE_DATA = "CALENDAR"
 """Cobre `CALENDAR` e `CALENDARAUTO`, as duas funções que a documentação
 recomenda para gerar a tabela de data do modelo."""
+PROPRIEDADE_GRUPO_DE_CALCULO = "calculationGroup"
+METADADO_DE_PARAMETRO = "ParameterMetadata"
+TIPO_PARAMETRO_DE_CAMPO = 2
+"""O `kind` do `ParameterMetadata` que o Desktop grava no parâmetro de campo. O
+parâmetro hipotético também tem `ParameterMetadata`, mas sem `kind`."""
 
 
 def anotacoes(bruto: dict) -> dict[str, str]:
@@ -92,12 +98,47 @@ def tabela_gerada_por_analise(t: Tabela) -> bool:
     return ANOTACAO_ANALISE_GERADA in anotacoes(t.bruto)
 
 
+def tabela_calculada_em_dax(t: Tabela) -> bool:
+    """A tabela é gerada por expressão DAX (partição `calculated`)."""
+    return any(p.tipo_origem == "calculated" for p in t.particoes)
+
+
+def grupo_de_calculo(t: Tabela) -> bool:
+    """Grupo de cálculo: a tabela carrega a propriedade `calculationGroup`.
+
+    Não tem relacionamento por natureza — os itens de cálculo modificam medidas,
+    não filtram tabelas. O DAX dos itens é do autor.
+    """
+    return isinstance(t.bruto.get(PROPRIEDADE_GRUPO_DE_CALCULO), dict)
+
+
+def tabela_de_parametro_de_campo(t: Tabela) -> bool:
+    """Parâmetro de campo: uma coluna com `ParameterMetadata` de `kind` 2.
+
+    Não tem relacionamento por natureza. A expressão da tabela (tuplas com
+    `NAMEOF`) é escrita pelo Desktop, mas a tabela continua no escopo de DAX: ver
+    `dax_escrito_pela_ferramenta`. A leitura tolera `extendedProperties`
+    malformadas pelo mesmo motivo de `anotacoes`: o predicado roda dentro de
+    `fora_de_escopo`, e uma exceção aqui derrubaria todas as regras.
+    """
+    for c in t.colunas:
+        for propriedade in c.bruto.get("extendedProperties") or []:
+            if not isinstance(propriedade, dict) or propriedade.get("name") != METADADO_DE_PARAMETRO:
+                continue
+            valor = propriedade.get("value")
+            if isinstance(valor, dict) and valor.get("kind") == TIPO_PARAMETRO_DE_CAMPO:
+                return True
+    return False
+
+
 def fora_de_escopo(t: Tabela) -> bool:
     return (
         tabela_automatica_de_data(t)
         or tabela_apenas_de_medidas(t)
         or tabela_de_parametro_hipotetico(t)
         or tabela_gerada_por_analise(t)
+        or grupo_de_calculo(t)
+        or tabela_de_parametro_de_campo(t)
     )
 
 
@@ -125,8 +166,12 @@ def dax_escrito_pela_ferramenta(t: Tabela) -> bool:
     - **o DAX é da ferramenta** — tabela de data automática, tabela de cluster, e
       a tabela de parâmetro hipotético, cuja medida o Desktop escreve junto com
       a tabela (`% Previsao = SELECTEDVALUE(...)`);
-    - **padrão legítimo do autor** — a tabela que só carrega medidas, excluída
-      apenas por não ter relacionamento por natureza.
+    - **padrão legítimo do autor** — a tabela que só carrega medidas, o grupo de
+      cálculo e o parâmetro de campo, excluídos apenas por não terem relacionamento
+      por natureza. O parâmetro de campo fica aqui, e não acima, porque o Desktop
+      não escreve medida nele: medida pendurada nele é do autor. As tuplas `NAMEOF`
+      da partição entram na varredura, o que também mantém as colunas que ele expõe
+      contadas como usadas.
 
     Só a primeira natureza vale para uma regra que lê texto DAX. No PBIP real a
     tabela de medidas carrega 93 das 105 expressões do modelo: tratá-la como

@@ -4,6 +4,7 @@ Desenho: `docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`.
 """
 
 import argparse
+import re
 import sys
 from datetime import date
 
@@ -15,6 +16,9 @@ from rag.avaliacao import PASTA_PBIP, RAIZ_REPO, ErroDeAvaliacao, achados_dos_pr
 ARQUIVO_PLANILHA = RAIZ_REPO / "eval" / "gabarito" / "anotacao-P1-P7.xlsx"
 ARQUIVO_CSV = RAIZ_REPO / "eval" / "ground_truth.csv"
 PASTA_RESULTADOS = RAIZ_REPO / "eval" / "results"
+ROTULO_VALIDO = re.compile(r"[a-z0-9][a-z0-9-]*")
+"""Sufixo do arquivo de resultado: minúsculas, dígitos e hífen. Nada de separador
+de caminho — o rótulo vira parte de um nome de arquivo."""
 
 
 def _ascii(texto: str) -> str:
@@ -82,13 +86,17 @@ def _importar(parcial: bool) -> int:
     return 0
 
 
-def _medir() -> int:
+def _medir(rotulo: str | None = None) -> int:
+    if rotulo is not None and not ROTULO_VALIDO.fullmatch(rotulo):
+        print(_ascii(f"erro: rotulo invalido {rotulo!r} - use minusculas, digitos e hifen"), file=sys.stderr)
+        return 1
     if not ARQUIVO_CSV.is_file():
         print(f"erro: {ARQUIVO_CSV.name} ausente - rode `python -m gabarito importar`", file=sys.stderr)
         return 1
     resultado = medir(ler_csv(ARQUIVO_CSV), achados_dos_projetos(PASTA_PBIP))
     PASTA_RESULTADOS.mkdir(parents=True, exist_ok=True)
-    destino = PASTA_RESULTADOS / f"regras-{date.today().isoformat()}.json"
+    sufixo = f"-{rotulo}" if rotulo else ""
+    destino = PASTA_RESULTADOS / f"regras-{date.today().isoformat()}{sufixo}.json"
     destino.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     print(formatar(resultado))
     print(_ascii(f"Resultado em {destino}"))
@@ -101,14 +109,17 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("gerar", help="gera a planilha de anotacao cega")
     importar = sub.add_parser("importar", help="valida a planilha e grava eval/ground_truth.csv")
     importar.add_argument("--parcial", action="store_true", help="so mostra o progresso, aceita linhas em branco")
-    sub.add_parser("medir", help="precisao e recall por regra")
+    medir_ = sub.add_parser("medir", help="precisao e recall por regra")
+    medir_.add_argument(
+        "--rotulo", help="sufixo do arquivo de resultado, para nao sobrescrever a medicao do dia (ex.: pos-correcao)"
+    )
     args = parser.parse_args(argv)
     try:
         if args.comando == "gerar":
             return _gerar()
         if args.comando == "importar":
             return _importar(args.parcial)
-        return _medir()
+        return _medir(args.rotulo)
     except (ErroDeGabarito, ErroDeAvaliacao, OSError) as erro:
         # OSError cobre a planilha aberta no Excel (PermissionError) e arquivo ausente.
         print(_ascii(f"erro: {erro}"), file=sys.stderr)

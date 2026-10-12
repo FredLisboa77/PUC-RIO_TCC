@@ -1495,3 +1495,75 @@ apresentação, sem sinal estrutural seguro — decisão do Fred, opção A). Os
 (colunas de tabelas de data importadas pelo Power Query) também serão corrigidos.
 
 **Próximo passo:** PR da branch; etapa nova `fase3-correcao-regras` (spec, plano e execução).
+
+---
+
+## 12/10/2026 — Correção da MOD-003 e da PERF-001 (análise de erros)
+
+Branch `fase3-correcao-regras`, spec `docs/superpowers/specs/2026-10-12-correcao-mod003-perf001-design.md`,
+plano de 5 tarefas executado na sessão. **A medição abaixo foi motivada pelo conjunto de
+teste e não substitui o resultado oficial** (tag `regras-gt`, protocolo do R-04): entra na
+monografia como análise de erros; a validação das correções fica para um projeto que as
+regras não viram.
+
+**Correções (todas por sinal estrutural do TMSL, nenhuma por nome):**
+
+- **MOD-003:** `grupo_de_calculo` (propriedade `calculationGroup`) e
+  `tabela_de_parametro_de_campo` (`ParameterMetadata` com `kind: 2` — o `kind` separa do
+  parâmetro hipotético do P8) entram em `fora_de_escopo`. O parâmetro de campo também sai do
+  escopo das regras de DAX (tuplas `NAMEOF` escritas pelo Desktop); o grupo de cálculo não
+  (o DAX dos itens é do autor).
+- **PERF-001:** só pula a dimensão de data **calculada em DAX** (`tabela_calculada_em_dax`),
+  como dizem as páginas de tempo automático e de tabelas de data; a importada pelo Power
+  Query volta a ser auditada.
+- `python -m gabarito medir --rotulo`, para não sobrescrever o resultado oficial do mesmo
+  dia.
+
+**Oficial × pós-correção** (mesmo `eval/ground_truth.csv`):
+
+| | Oficial (`regras-gt`) | Pós-correção |
+|---|---|---|
+| MOD-003 | VP 1, FP 6 — precisão 0,14 | VP 1, FP 2 — precisão **0,33** |
+| PERF-001 | VP 18, FN 6 — precisão 1,00, recall 0,75 | VP 24, FP 2 — precisão **0,92**, recall **1,00** |
+| Total micro | precisão 0,88, recall 0,88 | precisão 0,93, recall 1,00 |
+| Macro | precisão 0,88, recall 0,96 | precisão 0,89, recall 1,00 |
+| R-03 | MOD-003 | MOD-003 |
+| R-12 | 46 (30 sem PERF-003) | 52 (36 sem PERF-003) |
+| Divergências | 12 | 4 |
+
+Parte do ganho de precisão da PERF-001 está em indeterminados: das 12 colunas que a regra
+passou a marcar, 6 eram FN e viraram VP, 2 eram VN e viraram FP e **4 eram indeterminados não
+marcados e viraram marcados**. Com eles contra a regra (piso), a precisão da PERF-001 é 0,77
+(era 0,95) e a total micro é 0,85.
+
+**Revisão final da branch (revisor independente):** nenhum crítico; números do log conferidos
+contra o JSON; matrizes das outras 7 regras idênticas entre a medição oficial e a
+pós-correção. Corrigido: o parâmetro de campo tinha saído do escopo de DAX, o que esconderia
+uma medida do autor pendurada nele (teste
+`test_medida_do_autor_em_parametro_de_campo_continua_no_escopo_de_dax`); agora fica no
+escopo de DAX, como antes desta branch. Adiados: `extendedProperties` escalar (ex.: `5`)
+levanta `TypeError` — o executor isola a falha por regra, e o mesmo buraco já existe em
+`anotacoes`; e o texto da PERF-001 cita CALENDAR/CALENDARAUTO enquanto o predicado aceita
+qualquer tabela calculada (escolha da spec, para cobrir `ADDCOLUMNS`).
+
+**As 4 divergências que restam:**
+
+- **MOD-003, `Logo` (P6) e `Indicators` (P4):** limitação declarada — tabelas digitadas à mão
+  para a apresentação, sem sinal estrutural que as separe de uma dimensão digitada e
+  esquecida (registrada na `nota_de_verificacao` da regra).
+- **PERF-001, `Date[Month increment number]` (P3) e `Date[MonthIndex]` (P4):** colunas de
+  tabela de data importada que dependem de agregação sobre o modelo (`MIN([Year])`;
+  `CALCULATE` com `DISTINCTCOUNT`, `ALL` e `EARLIER`). É a exceção que a própria
+  recomendação da regra já declara ("a fórmula avalia medidas ou exige funcionalidade que só
+  existe em DAX"); a regra não a detecta. **Não corrigido**, para não ajustar a regra ao
+  gabarito: fica como observação para a Fase 5.
+
+**Conjunto da recuperação regerado:** 62 → 70 consultas (−4 da MOD-003, +12 da PERF-001),
+porque deriva dos achados e o teste exige que esteja em dia. A medição da recuperação de
+11/10 foi feita sobre o conjunto da tag e não foi refeita — o subprojeto 2 (busca combinada)
+vai medir de novo.
+
+Suíte: **653 testes passando**. P8 sem mudança.
+
+**Próximo passo:** revisão final da branch; merge do PR #6 e do PR desta branch; depois o
+subprojeto 2 (busca combinada).

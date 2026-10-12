@@ -1,7 +1,7 @@
 """As regras de performance estática.
 
 PERF-001 tem a exclusão mais importante do conjunto: a documentação que a
-sustenta recomenda explicitamente colunas calculadas numa tabela de data em DAX.
+sustenta recomenda explicitamente colunas calculadas numa tabela de data **gerada em DAX** — e só nela.
 Seis dos sete achados que a regra produzia no P8 eram padrão recomendado.
 """
 
@@ -32,12 +32,14 @@ def test_perf001_marca_coluna_calculada_em_dax(ler):
     assert achados[0].evidencia.trecho == "[Base] * 1.1"
 
 
-def test_perf001_ignora_coluna_da_dimensao_de_data(ler):
-    """A página de tempo automático recomenda exatamente isto.
+def test_perf001_marca_coluna_de_dimensao_de_data_importada(ler):
+    """Corrigido em 12/10/2026, pelo gabarito de P1–P7.
 
-    "You can then add calculated columns to support the known time filtering and
-    grouping requirements." Marcar essas colunas seria produzir um achado que a
-    fonte citada refuta.
+    A exceção da documentação vale para a tabela de data **gerada em DAX**: "When
+    your data source already defines a date dimension table, use this table […].
+    Otherwise, you can generate date tables […] by using the DAX CALENDAR or
+    CALENDARAUTO functions. You can then add calculated columns" (auto-date-time).
+    Na dimensão importada pelo Power Query, a coluna derivada é caso de Power Query.
     """
     modelo = ler(
         tabelas=[
@@ -49,9 +51,34 @@ def test_perf001_ignora_coluna_da_dimensao_de_data(ler):
                     coluna("Ano", tipo="calculated", expressao="YEAR([Data])"),
                     coluna("Trimestre", tipo="calculated", expressao='"T" & QUARTER([Data])'),
                 ],
+                particoes=[particao(tipo="m", expressao='let Fonte = Excel.Workbook(File.Contents("d.xlsx")) in Fonte')],
             ),
         ],
         relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Data")],
+    )
+
+    assert [a.evidencia.objeto for a in coluna_calculada_em_dax(modelo)] == ["DimCalendar[Ano]", "DimCalendar[Trimestre]"]
+
+
+def test_perf001_ignora_coluna_da_dimensao_de_data_calculada_em_dax(ler):
+    """A página de tempo automático recomenda exatamente isto para a tabela gerada
+    em DAX — inclusive envolvida em ADDCOLUMNS: o critério é a partição ser
+    calculada, não a primeira função."""
+    modelo = ler(
+        tabelas=[
+            tabela("FactOnlineSales", colunas=[coluna("DateKey", tipo_dado="dateTime")]),
+            tabela(
+                "DimCalendar",
+                colunas=[
+                    coluna("Date", tipo_dado="dateTime"),
+                    coluna("Ano", tipo="calculated", expressao="YEAR([Date])"),
+                ],
+                particoes=[
+                    particao(tipo="calculated", expressao='ADDCOLUMNS(CALENDAR(DATE(2020,1,1), DATE(2024,12,31)), "Mes", MONTH([Date]))')
+                ],
+            ),
+        ],
+        relacionamentos=[relacionamento("FactOnlineSales", "DateKey", "DimCalendar", "Date")],
     )
 
     assert list(coluna_calculada_em_dax(modelo)) == []

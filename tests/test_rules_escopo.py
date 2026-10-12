@@ -4,18 +4,23 @@ Princípio: auditar o que o autor escreveu. Cada exclusão aqui evita um falso
 positivo concreto, observado no P8 — e nenhuma é por nome de objeto.
 """
 
+import pytest
+
 from core.rules.escopo import (
     anotacoes,
     coluna_gerada_por_analise,
     dax_escrito_pela_ferramenta,
     dimensao_de_data,
     fora_de_escopo,
+    grupo_de_calculo,
     lado_muitos,
     lado_um,
     nomes_em_escopo,
     relacionamentos_em_escopo,
     tabela_apenas_de_medidas,
     tabela_automatica_de_data,
+    tabela_calculada_em_dax,
+    tabela_de_parametro_de_campo,
     tabela_de_parametro_hipotetico,
     tabela_gerada_por_analise,
     tabela_por_nome,
@@ -410,3 +415,111 @@ def test_dax_do_autor_exclui_parametro_hipotetico(ler):
 
     assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is True
     assert tabelas_com_dax_do_autor(modelo) == []
+
+
+def _grupo_de_calculo(nome: str, valor=None) -> dict:
+    t = tabela(nome, colunas=[coluna(nome)])
+    t["calculationGroup"] = valor if valor is not None else {
+        "calculationItems": [
+            {"name": "YTD", "expression": "CALCULATE(SELECTEDMEASURE(), DATESYTD('Date'[Date]))"}
+        ]
+    }
+    return t
+
+
+def _parametro_de_campo(nome: str, propriedades) -> dict:
+    campos = coluna("Parameter Fields", tipo="calculatedTableColumn")
+    campos["extendedProperties"] = propriedades
+    return tabela(
+        nome,
+        colunas=[coluna(nome, tipo="calculatedTableColumn"), campos],
+        particoes=[particao(tipo="calculated", expressao="{ (\"Area\", NAMEOF('Area'[Area]), 0) }")],
+    )
+
+
+METADADO_DE_CAMPO = [{"name": "ParameterMetadata", "type": "json", "value": {"kind": 2, "version": 3}}]
+
+
+def test_grupo_de_calculo_fica_fora_de_escopo_mas_o_dax_e_do_autor(ler):
+    """Como `Date Role` e `Time Intelligence` do P1: sem relacionamento por natureza,
+    mas o DAX dos itens de cálculo é escrito pelo autor."""
+    t = ler(tabelas=[_grupo_de_calculo("Time Intelligence")]).tabelas[0]
+    assert grupo_de_calculo(t) is True
+    assert fora_de_escopo(t) is True
+    assert dax_escrito_pela_ferramenta(t) is False
+
+
+def test_calculation_group_nulo_nao_e_grupo_de_calculo(ler):
+    t = tabela("Editada", colunas=[coluna("A")])
+    t["calculationGroup"] = None
+    assert grupo_de_calculo(ler(tabelas=[t]).tabelas[0]) is False
+
+
+def test_parametro_de_campo_fica_fora_de_escopo_de_tabela(ler):
+    """Como os dois `Toggle…` do P2: sem relacionamento por natureza."""
+    t = ler(tabelas=[_parametro_de_campo("Toggle", METADADO_DE_CAMPO)]).tabelas[0]
+    assert tabela_de_parametro_de_campo(t) is True
+    assert fora_de_escopo(t) is True
+
+
+def test_parametro_hipotetico_com_metadado_sem_kind_nao_e_parametro_de_campo(ler):
+    """O `Parâmetro` do P8 tem ParameterMetadata `{"version": 0}`: é parâmetro
+    hipotético, já excluído pelo GENERATESERIES."""
+    coluna_parametro = coluna("Parâmetro", tipo="calculatedTableColumn", tipo_dado="double")
+    coluna_parametro["extendedProperties"] = [{"name": "ParameterMetadata", "type": "json", "value": {"version": 0}}]
+    t = ler(
+        tabelas=[
+            tabela(
+                "Parâmetro",
+                colunas=[coluna_parametro],
+                particoes=[particao(tipo="calculated", expressao="GENERATESERIES(0, 1, 0.05)")],
+            )
+        ]
+    ).tabelas[0]
+    assert tabela_de_parametro_de_campo(t) is False
+    assert fora_de_escopo(t) is True
+    assert dax_escrito_pela_ferramenta(t) is True
+
+
+@pytest.mark.parametrize(
+    "propriedades",
+    [
+        None,
+        [],
+        ["ParameterMetadata"],
+        [{"name": "ParameterMetadata", "value": "kind=2"}],
+        [{"name": "ParameterMetadata", "value": {"kind": 1}}],
+        [{"name": "Outra", "value": {"kind": 2}}],
+    ],
+)
+def test_extended_properties_malformadas_ou_de_outro_tipo_nao_sao_parametro_de_campo(ler, propriedades):
+    t = ler(tabelas=[_parametro_de_campo("Tabela", propriedades)]).tabelas[0]
+    assert tabela_de_parametro_de_campo(t) is False
+
+
+def test_tabela_comum_nao_e_grupo_nem_parametro(ler):
+    t = ler(tabelas=[tabela("DimProduto", colunas=[coluna("Nome")])]).tabelas[0]
+    assert grupo_de_calculo(t) is False
+    assert tabela_de_parametro_de_campo(t) is False
+    assert fora_de_escopo(t) is False
+
+
+def test_tabela_calculada_em_dax_olha_o_tipo_da_particao(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Calculada", particoes=[particao(tipo="calculated", expressao="CALENDARAUTO()")]),
+            tabela("Importada", particoes=[particao(tipo="m")]),
+            tabela("SemParticao"),
+        ]
+    )
+    assert [tabela_calculada_em_dax(t) for t in modelo.tabelas] == [True, False, False]
+
+
+def test_medida_do_autor_em_parametro_de_campo_continua_no_escopo_de_dax(ler):
+    """O Desktop não escreve medida no parâmetro de campo (ao contrário do hipotético):
+    medida pendurada nele é do autor, e a auditoria de DAX não pode perdê-la."""
+    t = _parametro_de_campo("Toggle", METADADO_DE_CAMPO)
+    t["measures"] = [medida("Var %", "IF([Plano] <> 0, [Real] / [Plano])")]
+    modelo = ler(tabelas=[t])
+    assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is False
+    assert [x.nome for x in tabelas_com_dax_do_autor(modelo)] == ["Toggle"]

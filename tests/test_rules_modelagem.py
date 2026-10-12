@@ -500,3 +500,20 @@ def test_mod005_marca_dimensao_de_data_com_chave_inteira(ler):
     achados = list(dimensao_de_data_nao_marcada(modelo))
 
     assert [a.evidencia.objeto for a in achados] == ["DimCalendar"]
+
+
+def test_mod003_ignora_grupo_de_calculo_e_parametro_de_campo_mas_marca_tabela_comum(ler):
+    """Os 4 falsos positivos estruturais do gabarito (P1 e P2); a tabela comum isolada
+    continua sendo achado."""
+    grupo = tabela("Time Intelligence", colunas=[coluna("Time Intelligence")])
+    grupo["calculationGroup"] = {"calculationItems": [{"name": "YTD", "expression": "SELECTEDMEASURE()"}]}
+    campos = coluna("Parameter Fields", tipo="calculatedTableColumn")
+    campos["extendedProperties"] = [{"name": "ParameterMetadata", "type": "json", "value": {"kind": 2, "version": 3}}]
+    parametro = tabela(
+        "Toggle for breakdown",
+        colunas=[coluna("Breakdown by", tipo="calculatedTableColumn"), campos],
+        particoes=[particao(tipo="calculated", expressao="{ (\"Area\", NAMEOF('Area'[Area]), 0) }")],
+    )
+    modelo = ler(tabelas=[grupo, parametro, tabela("Supply Analytics", colunas=[coluna("Valor", tipo_dado="double")])])
+
+    assert [a.evidencia.objeto for a in tabela_sem_relacionamento(modelo)] == ["Supply Analytics"]

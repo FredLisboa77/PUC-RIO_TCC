@@ -160,7 +160,12 @@ def relacionamento_bidirecional(modelo: ModeloSemantico) -> Iterator[Achado]:
     ),
     nota_de_verificacao=(
         "Âncora geral, não artigo dedicado — é a mais fraca do conjunto. Daí a "
-        "severidade baixa. Reavaliar na Fase 3, com o trecho recuperado em mãos."
+        "severidade baixa. Reavaliar na Fase 3, com o trecho recuperado em mãos. "
+        "Pelo gabarito de P1–P7 (12/10/2026), grupo de cálculo e parâmetro de campo "
+        "passaram a ficar fora de escopo. Limitação declarada: tabela digitada à mão "
+        "só para a apresentação (um logotipo, uma legenda de ícones) continua sendo "
+        "marcada — nenhum sinal estrutural a separa de uma dimensão digitada e "
+        "esquecida sem relacionamento."
     ),
 )
 def tabela_sem_relacionamento(modelo: ModeloSemantico) -> Iterator[Achado]:
