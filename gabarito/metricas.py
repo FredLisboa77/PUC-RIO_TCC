@@ -72,6 +72,7 @@ class ResultadoMedicao(BaseModel):
     por_projeto: dict[str, Medida]
     total_micro: Medida
     macro: dict[str, float | None]
+    macro_por_categoria: dict[str, dict[str, float | None]]
     r03: list[str]
     r12: dict[str, int]
     divergencias: list[Divergencia]
@@ -111,9 +112,17 @@ def medir(gabarito: list[LinhaGabarito], achados: dict[str, list[Achado]]) -> Re
     medidas = {id_regra: _medida(m) for id_regra, m in sorted(por_regra.items())}
     total = sum(por_regra.values(), Matriz())
 
-    def _macro(qual: str) -> float | None:
-        valores = [m.taxas[qual]["principal"] for m in medidas.values() if m.taxas[qual]["principal"] is not None]
+    def _macro(qual: str, regras: list[str] | None = None) -> float | None:
+        valores = [
+            m.taxas[qual]["principal"]
+            for id_regra, m in medidas.items()
+            if (regras is None or id_regra in regras) and m.taxas[qual]["principal"] is not None
+        ]
         return mean(valores) if valores else None
+
+    regras_da_categoria: dict[str, list[str]] = {}
+    for id_regra in medidas:
+        regras_da_categoria.setdefault(REGISTRO.meta(id_regra).categoria, []).append(id_regra)
 
     return ResultadoMedicao(
         por_regra=medidas,
@@ -121,6 +130,10 @@ def medir(gabarito: list[LinhaGabarito], achados: dict[str, list[Achado]]) -> Re
         por_projeto={p: _medida(m) for p, m in sorted(por_projeto.items())},
         total_micro=_medida(total),
         macro={"precisao": _macro("precisao"), "recall": _macro("recall")},
+        macro_por_categoria={
+            c: {"precisao": _macro("precisao", regras), "recall": _macro("recall", regras)}
+            for c, regras in sorted(regras_da_categoria.items())
+        },
         r03=[
             id_regra
             for id_regra, m in medidas.items()

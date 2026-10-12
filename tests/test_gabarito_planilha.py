@@ -172,3 +172,14 @@ def test_csv_ida_e_volta(tmp_path):
     gravar_csv(linhas, csv)
     assert csv.read_text(encoding="utf-8").splitlines()[0] == "id,projeto,id_regra,objeto,veredito,justificativa,referencia"
     assert ler_csv(csv) == sorted(linhas, key=lambda l: l.id)
+
+
+def test_protecao_deixa_ajustar_colunas_linhas_e_filtrar(tmp_path):
+    destino = tmp_path / "a.xlsx"
+    gerar_planilha(_candidatos(), destino)
+    aba = load_workbook(destino)["PERF-001"]
+    assert aba.protection.sheet is True
+    assert (aba.protection.formatColumns, aba.protection.formatRows, aba.protection.autoFilter) == (False, False, False)
+    assert aba.auto_filter.ref == "A4:G5"
+    assert aba.column_dimensions["A"].width >= 40
+    assert aba.column_dimensions["D"].width >= 60

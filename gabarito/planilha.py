@@ -20,6 +20,9 @@ from gabarito.candidatos import COLUNAS_DE_FATOS, Candidato, ErroDeGabarito
 VEREDITOS = ("viola", "não viola", "indeterminado")
 COLUNAS_EDITAVEIS = ("veredito", "justificativa", "referencia")
 LINHA_CABECALHO = 4
+LARGURAS = {"id": 45, "projeto": 9, "objeto": 40, "expressao": 80, "divisoes": 60, "veredito": 14, "justificativa": 50, "referencia": 30}
+"""Largura de cada coluna; os fatos que não estão aqui ficam com `LARGURA_PADRAO`."""
+LARGURA_PADRAO = 20
 
 PERGUNTAS = {
     "MOD-001": "Esta tabela foi gerada pelo Tempo automático de data/hora?",
@@ -70,7 +73,16 @@ def _aba_de_regra(livro: Workbook, id_regra: str, candidatos: list[Candidato]) -
         validacao = DataValidation(type="list", formula1=f'"{",".join(VEREDITOS)}"', allow_blank=True)
         validacao.add(f"{letra}{LINHA_CABECALHO + 1}:{letra}{LINHA_CABECALHO + len(linhas)}")
         aba.add_data_validation(validacao)
+    for coluna, nome in enumerate(cabecalho, start=1):
+        aba.column_dimensions[aba.cell(row=LINHA_CABECALHO, column=coluna).column_letter].width = LARGURAS.get(nome, LARGURA_PADRAO)
+    ultima = aba.cell(row=LINHA_CABECALHO, column=len(cabecalho)).column_letter
+    aba.auto_filter.ref = f"A{LINHA_CABECALHO}:{ultima}{LINHA_CABECALHO + max(len(linhas), 1)}"
     aba.freeze_panes = aba.cell(row=LINHA_CABECALHO + 1, column=4)
+    # Protegida contra editar fato ou ID, mas livre para alargar coluna, ajustar
+    # linha e filtrar: senão a única saída para ler uma expressão é desproteger.
+    aba.protection.formatColumns = False
+    aba.protection.formatRows = False
+    aba.protection.autoFilter = False
     aba.protection.sheet = True
 
 

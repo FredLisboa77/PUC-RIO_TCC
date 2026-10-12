@@ -95,3 +95,9 @@ def test_gabarito_com_veredito_vazio_aborta():
     gabarito[0] = _linha("MOD-003", "P1", "A", None)
     with pytest.raises(ErroDeGabarito, match="sem veredito"):
         medir(gabarito, achados)
+
+
+def test_macro_por_categoria_media_das_regras_da_categoria():
+    r = medir(*_cenario())
+    assert r.macro_por_categoria["modelagem"] == {"precisao": 0.5, "recall": 0.5}
+    assert r.macro_por_categoria["performance"] == {"precisao": 1.0, "recall": 1.0}

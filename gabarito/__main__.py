@@ -36,8 +36,9 @@ def formatar(r: ResultadoMedicao) -> str:
         )
     for categoria, m in r.por_categoria.items():
         linhas.append(
-            f"categoria {categoria}: precisao {_pct(m.taxas['precisao']['principal'])}, "
-            f"recall {_pct(m.taxas['recall']['principal'])}"
+            f"categoria {categoria}: micro precisao {_pct(m.taxas['precisao']['principal'])}, "
+            f"recall {_pct(m.taxas['recall']['principal'])} | macro precisao "
+            f"{_pct(r.macro_por_categoria[categoria]['precisao'])}, recall {_pct(r.macro_por_categoria[categoria]['recall'])}"
         )
     total = r.total_micro.taxas
     linhas.append(

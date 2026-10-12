@@ -65,6 +65,14 @@ def _tabelas_do_autor(modelo: ModeloSemantico) -> list[Tabela]:
     return [t for t in modelo.tabelas if not tabela_automatica_de_data(t)]
 
 
+def _relacionamentos_do_autor(modelo: ModeloSemantico) -> list[Relacionamento]:
+    """Relacionamentos sem ponta em tabela de data automática, pelo mesmo motivo de
+    `_tabelas_do_autor`: senão um relacionamento do produto vira candidato (ou fato)
+    de outra regra e pode virar falso negativo espúrio."""
+    automaticas = {t.nome for t in modelo.tabelas if tabela_automatica_de_data(t)}
+    return [r for r in modelo.relacionamentos if not {r.tabela_origem, r.tabela_destino} & automaticas]
+
+
 def _mod001(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
     return [
         Candidato(
@@ -93,15 +101,16 @@ def _mod002(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
             objeto=nome_do_relacionamento(r),
             fatos={"direcao": r.direcao_filtro, "cardinalidades": _cardinalidades(r), "ativo": _sim_nao(r.ativo)},
         )
-        for r in modelo.relacionamentos
+        for r in _relacionamentos_do_autor(modelo)
         if not um_para_um(r)
     ]
 
 
 def _mod003(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
+    relacionamentos = _relacionamentos_do_autor(modelo)
     saida = []
     for t in _tabelas_do_autor(modelo):
-        ligacoes = sum(1 for r in modelo.relacionamentos if t.nome in (r.tabela_origem, r.tabela_destino))
+        ligacoes = sum(1 for r in relacionamentos if t.nome in (r.tabela_origem, r.tabela_destino))
         saida.append(
             Candidato(
                 id_regra="MOD-003",
@@ -120,11 +129,12 @@ def _mod003(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
 
 def _mod006(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
     """Filtro desce do lado "um" para o lado "muitos"."""
+    relacionamentos = _relacionamentos_do_autor(modelo)
     saida = []
     for t in _tabelas_do_autor(modelo):
         filtra: set[str] = set()
         filtrada_por: set[str] = set()
-        for r in modelo.relacionamentos:
+        for r in relacionamentos:
             if t.nome in lado_um(r):
                 filtra |= lado_muitos(r) - {t.nome}
             if t.nome in lado_muitos(r):
@@ -148,7 +158,7 @@ def _mod007(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
             objeto=nome_do_relacionamento(r),
             fatos={"cardinalidades": _cardinalidades(r), "direcao": r.direcao_filtro},
         )
-        for r in modelo.relacionamentos
+        for r in _relacionamentos_do_autor(modelo)
     ]
 
 

@@ -165,3 +165,25 @@ def test_todo_achado_real_de_p1_a_p7_casa_com_um_candidato():
         if f"{a.id_regra}|{projeto}|{a.evidencia.objeto}" not in ids
     ]
     assert faltando == []
+
+
+def test_relacionamento_com_tabela_automatica_nao_entra_nas_outras_regras(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Vendas", colunas=[coluna("ProdutoKey", tipo_dado="int64"), coluna("Data", tipo_dado="dateTime")]),
+            tabela("Produto", colunas=[coluna("ProdutoKey", tipo_dado="int64")]),
+            tabela(
+                "LocalDateTable_1",
+                colunas=[coluna("Date", tipo_dado="dateTime")],
+                annotations={"__PBI_LocalDateTable": "true"},
+            ),
+        ],
+        relacionamentos=[
+            relacionamento("Vendas", "ProdutoKey", "Produto", "ProdutoKey"),
+            relacionamento("Vendas", "Data", "LocalDateTable_1", "Date"),
+        ],
+    )
+    candidatos = candidatos_do_modelo("P1", modelo)
+    assert [c for c in candidatos if "LocalDateTable_1" in c.objeto and c.id_regra != "MOD-001"] == []
+    assert _por_regra(candidatos, "MOD-006")["Vendas"].fatos["filtrada_por"] == "Produto"
+    assert _por_regra(candidatos, "MOD-003")["Vendas"].fatos["relacionamentos"] == "1"
