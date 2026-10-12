@@ -92,10 +92,10 @@
       "matriz": {
         "vp": 0,
         "fp": 0,
-        "fn": 7,
+        "fn": 0,
         "vn": 6,
         "ind_marcados": 0,
-        "ind_nao_marcados": 0
+        "ind_nao_marcados": 7
       },
       "taxas": {
         "precisao": {
@@ -104,9 +104,9 @@
           "teto": null
         },
         "recall": {
-          "principal": 0.0,
+          "principal": null,
           "piso": 0.0,
-          "teto": 0.0
+          "teto": null
         }
       }
     },
@@ -158,8 +158,8 @@
       "matriz": {
         "vp": 18,
         "fp": 0,
-        "fn": 7,
-        "vn": 2,
+        "fn": 6,
+        "vn": 3,
         "ind_marcados": 1,
         "ind_nao_marcados": 4
       },
@@ -170,9 +170,9 @@
           "teto": 1.0
         },
         "recall": {
-          "principal": 0.72,
-          "piso": 0.6206896551724138,
-          "teto": 0.7307692307692307
+          "principal": 0.75,
+          "piso": 0.6428571428571429,
+          "teto": 0.76
         }
       }
     },
@@ -226,10 +226,10 @@
       "matriz": {
         "vp": 5,
         "fp": 7,
-        "fn": 7,
+        "fn": 0,
         "vn": 259,
         "ind_marcados": 0,
-        "ind_nao_marcados": 1
+        "ind_nao_marcados": 8
       },
       "taxas": {
         "precisao": {
@@ -238,9 +238,9 @@
           "teto": 0.4166666666666667
         },
         "recall": {
-          "principal": 0.4166666666666667,
+          "principal": 1.0,
           "piso": 0.38461538461538464,
-          "teto": 0.4166666666666667
+          "teto": 1.0
         }
       }
     },
@@ -248,8 +248,8 @@
       "matriz": {
         "vp": 34,
         "fp": 0,
-        "fn": 7,
-        "vn": 15,
+        "fn": 6,
+        "vn": 16,
         "ind_marcados": 1,
         "ind_nao_marcados": 4
       },
@@ -260,9 +260,9 @@
           "teto": 1.0
         },
         "recall": {
-          "principal": 0.8292682926829268,
-          "piso": 0.7555555555555555,
-          "teto": 0.8333333333333334
+          "principal": 0.85,
+          "piso": 0.7727272727272727,
+          "teto": 0.8536585365853658
         }
       }
     }
@@ -272,10 +272,10 @@
       "matriz": {
         "vp": 7,
         "fp": 2,
-        "fn": 4,
+        "fn": 3,
         "vn": 45,
         "ind_marcados": 1,
-        "ind_nao_marcados": 0
+        "ind_nao_marcados": 1
       },
       "taxas": {
         "precisao": {
@@ -284,9 +284,9 @@
           "teto": 0.8
         },
         "recall": {
-          "principal": 0.6363636363636364,
+          "principal": 0.7,
           "piso": 0.6363636363636364,
-          "teto": 0.6666666666666666
+          "teto": 0.7272727272727273
         }
       }
     },
@@ -294,10 +294,10 @@
       "matriz": {
         "vp": 2,
         "fp": 2,
-        "fn": 2,
+        "fn": 1,
         "vn": 53,
         "ind_marcados": 0,
-        "ind_nao_marcados": 0
+        "ind_nao_marcados": 1
       },
       "taxas": {
         "precisao": {
@@ -306,9 +306,9 @@
           "teto": 0.5
         },
         "recall": {
-          "principal": 0.5,
+          "principal": 0.6666666666666666,
           "piso": 0.5,
-          "teto": 0.5
+          "teto": 0.6666666666666666
         }
       }
     },
@@ -316,10 +316,10 @@
       "matriz": {
         "vp": 8,
         "fp": 0,
-        "fn": 1,
+        "fn": 0,
         "vn": 47,
         "ind_marcados": 0,
-        "ind_nao_marcados": 0
+        "ind_nao_marcados": 1
       },
       "taxas": {
         "precisao": {
@@ -328,9 +328,9 @@
           "teto": 1.0
         },
         "recall": {
-          "principal": 0.8888888888888888,
+          "principal": 1.0,
           "piso": 0.8888888888888888,
-          "teto": 0.8888888888888888
+          "teto": 1.0
         }
       }
     },
@@ -338,10 +338,10 @@
       "matriz": {
         "vp": 5,
         "fp": 1,
-        "fn": 3,
+        "fn": 2,
         "vn": 46,
         "ind_marcados": 0,
-        "ind_nao_marcados": 4
+        "ind_nao_marcados": 5
       },
       "taxas": {
         "precisao": {
@@ -350,9 +350,9 @@
           "teto": 0.8333333333333334
         },
         "recall": {
-          "principal": 0.625,
+          "principal": 0.7142857142857143,
           "piso": 0.4166666666666667,
-          "teto": 0.625
+          "teto": 0.7142857142857143
         }
       }
     },
@@ -360,10 +360,10 @@
       "matriz": {
         "vp": 15,
         "fp": 3,
-        "fn": 3,
-        "vn": 30,
+        "fn": 0,
+        "vn": 31,
         "ind_marcados": 0,
-        "ind_nao_marcados": 1
+        "ind_nao_marcados": 3
       },
       "taxas": {
         "precisao": {
@@ -372,9 +372,9 @@
           "teto": 0.8333333333333334
         },
         "recall": {
-          "principal": 0.8333333333333334,
-          "piso": 0.7894736842105263,
-          "teto": 0.8333333333333334
+          "principal": 1.0,
+          "piso": 0.8333333333333334,
+          "teto": 1.0
         }
       }
     },
@@ -404,10 +404,10 @@
       "matriz": {
         "vp": 0,
         "fp": 0,
-        "fn": 1,
+        "fn": 0,
         "vn": 37,
         "ind_marcados": 0,
-        "ind_nao_marcados": 0
+        "ind_nao_marcados": 1
       },
       "taxas": {
         "precisao": {
@@ -416,9 +416,9 @@
           "teto": null
         },
         "recall": {
-          "principal": 0.0,
+          "principal": null,
           "piso": 0.0,
-          "teto": 0.0
+          "teto": null
         }
       }
     }
@@ -427,10 +427,10 @@
     "matriz": {
       "vp": 42,
       "fp": 10,
-      "fn": 14,
-      "vn": 278,
+      "fn": 6,
+      "vn": 279,
       "ind_marcados": 1,
-      "ind_nao_marcados": 5
+      "ind_nao_marcados": 12
     },
     "taxas": {
       "precisao": {
@@ -439,15 +439,15 @@
         "teto": 0.8113207547169812
       },
       "recall": {
-        "principal": 0.75,
-        "piso": 0.6885245901639344,
-        "teto": 0.7543859649122807
+        "principal": 0.875,
+        "piso": 0.7,
+        "teto": 0.8775510204081632
       }
     }
   },
   "macro": {
     "precisao": 0.7857142857142857,
-    "recall": 0.8171428571428572
+    "recall": 0.9583333333333334
   },
   "macro_por_categoria": {
     "dax": {
@@ -456,11 +456,11 @@
     },
     "modelagem": {
       "precisao": 0.75,
-      "recall": 0.75
+      "recall": 1.0
     },
     "performance": {
       "precisao": 1.0,
-      "recall": 0.86
+      "recall": 0.875
     }
   },
   "r03": [
@@ -525,41 +525,6 @@
     },
     {
       "tipo": "FN",
-      "id": "MOD-005|P1|Date",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P2|Date",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P3|Date",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P4|Date",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P5|Date",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P5|Fiscal calendar",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
-      "id": "MOD-005|P7|Dates",
-      "justificativa": "A tabela não está marcada como tabela de data"
-    },
-    {
-      "tipo": "FN",
       "id": "PERF-001|P1|Date[Mth of year]",
       "justificativa": "Função MONTH é cálculo por linha determinístico; pode ser movida para Power Query (redução de dados)."
     },
@@ -587,11 +552,6 @@
       "tipo": "FN",
       "id": "PERF-001|P4|Date[RunningMonths]",
       "justificativa": "É um cálculo matemático estático linha-a-linha (Row Context) baseado em constantes e colunas da própria linha. Deve ser feito no Power Query."
-    },
-    {
-      "tipo": "FN",
-      "id": "PERF-001|P5|Item[Category (clusters) 2]",
-      "justificativa": "A função LOOKUPVALUE é o equivalente DAX a um \"Mesclar Consultas\" (Merge) ou \"Procv\". A recomendação de redução de dados estabelece explicitamente que o relacionamento e a integração de colunas de outras tabelas para gerar novas classificações (neste caso, buscar um Cluster) devem ser processados no Power Query através da mesclagem de consultas (Merge Queries)."
     }
   ]
 }

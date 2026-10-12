@@ -1440,3 +1440,30 @@ Total micro: precisão 0,81, recall 0,75; macro: precisão 0,79, recall 0,82. Po
 **Próximo passo:** o Fred decide cada grupo de divergências (corrigir a regra, declarar a
 limitação ou aceitar) e se algum julgamento deve ser revisto por razão factual —
 registrando o motivo, para que o gabarito não seja ajustado ao resultado.
+
+### Revisão de 8 julgamentos pela documentação (mesmo dia)
+
+Decisão do Fred: prevalece a documentação. Cada linha revista guarda, na justificativa, o
+motivo factual e o julgamento original; a primeira medição fica no Git (`d78bbda`).
+
+- **MOD-005, 7 linhas: `viola` → `indeterminado`.** O `model.bim` não registra a marcação
+  de tabela de data (verificado em 06/10/2026, nota da regra); não há como afirmar que a
+  tabela não está marcada.
+- **PERF-001, `Item[Category (clusters) 2]`: `viola` → `não viola`.** Coluna e
+  `ClusterMappingTable 2` gerados pelo recurso de clusters do Power BI; a orientação de
+  redução de dados abre exceção para funcionalidade que só existe no Power BI.
+- **PERF-001, 6 colunas de tabelas de data (P1, P2, P4): `viola` mantido.** As tabelas são
+  importadas pelo Power Query (Excel em P1 e P2, SQL em P4). A página de tabelas de data só
+  recomenda estender com colunas calculadas a tabela **gerada em DAX** (CALENDAR/
+  CALENDARAUTO); quando a origem tem a tabela, recomenda usar a origem. **A exclusão da
+  PERF-001 é larga demais**: exclui toda dimensão de data, e não só as calculadas em DAX —
+  defeito da regra.
+
+**Medição revista:** precisão inalterada; recall total micro 0,88 (era 0,75), macro 0,96;
+PERF-001 recall 0,75 (0,64 a 0,76); MOD-005 sem divisor (0 achados, 7 indeterminados). R-03
+segue para DAX-001 (0,50) e MOD-003 (0,00); R-12 segue 42 (26 sem PERF-003). Restam **16
+divergências**: MOD-003 (7 FP), DAX-001 (3 FP) e PERF-001 (6 FN), as três por defeito de
+regra. O console passou a mostrar a faixa como `0.95 a 1.00`, e `- (-)` sem divisor.
+
+**Próximo passo:** o Fred decide sobre os três defeitos de regra (corrigir agora ou declarar)
+— correção de regra é outra etapa, medida de novo contra o **mesmo** CSV.

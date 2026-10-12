@@ -25,14 +25,20 @@ def _pct(valor: float | None) -> str:
     return "-" if valor is None else f"{valor:.2f}"
 
 
+def _faixa(taxa: dict[str, float | None]) -> str:
+    """Principal e, entre parênteses, piso a teto; sem divisor nenhum, só `- (-)`."""
+    if taxa["piso"] is None and taxa["teto"] is None:
+        return f"{_pct(taxa['principal'])} (-)"
+    return f"{_pct(taxa['principal'])} ({_pct(taxa['piso'])} a {_pct(taxa['teto'])})"
+
+
 def formatar(r: ResultadoMedicao) -> str:
-    linhas = ["regra      VP  FP  FN  VN  ind   precisao (piso-teto)   recall (piso-teto)"]
+    linhas = ["regra      VP  FP  FN  VN  ind   precisao (piso a teto)  recall (piso a teto)"]
     for id_regra, m in r.por_regra.items():
         x, p, c = m.matriz, m.taxas["precisao"], m.taxas["recall"]
         linhas.append(
             f"{id_regra:<9} {x.vp:>3} {x.fp:>3} {x.fn:>3} {x.vn:>3} {x.ind_marcados + x.ind_nao_marcados:>4}   "
-            f"{_pct(p['principal'])} ({_pct(p['piso'])}-{_pct(p['teto'])})        "
-            f"{_pct(c['principal'])} ({_pct(c['piso'])}-{_pct(c['teto'])})"
+            f"{_faixa(p):<23}{_faixa(c)}"
         )
     for categoria, m in r.por_categoria.items():
         linhas.append(

@@ -94,3 +94,13 @@ def test_medir_grava_json_e_imprime_em_ascii(ambiente, capsys):
 def test_medir_sem_csv_sai_com_erro(ambiente, capsys):
     assert comando.main(["medir"]) == 1
     assert "importar" in capsys.readouterr().err
+
+
+def test_formatar_mostra_faixa_sem_divisor_de_forma_legivel():
+    from gabarito.metricas import medir
+    from gabarito.planilha import LinhaGabarito
+
+    linha = LinhaGabarito(id="MOD-002|P1|R", projeto="P1", id_regra="MOD-002", objeto="R", veredito="não viola")
+    texto = comando.formatar(medir([linha], {"P1": []}))
+    assert "---" not in texto and "--" not in texto
+    assert "- (-)" in texto
