@@ -1680,3 +1680,7 @@ achado** ao lado da macro da spec — as 9 consultas da regra pesam ~41% da macr
 nunca as faz —; e o JSON grava modelo e versões. O teste do índice real passa a comparar com
 a configuração gravada no índice. Sete menores adiados (ledger da branch). Suíte: **706
 testes**. A planilha gerada continua casando com o pool.
+
+**Decisão do Fred (antes de julgar):** a escolha da busca segue a **macro das 70 consultas**,
+como na spec aprovada (opção A). A macro só das consultas de achado fica registrada ao lado, e
+uma divergência entre as duas vai à monografia.
