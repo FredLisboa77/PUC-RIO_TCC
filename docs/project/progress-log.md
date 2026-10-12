@@ -1495,3 +1495,60 @@ apresentação, sem sinal estrutural seguro — decisão do Fred, opção A). Os
 (colunas de tabelas de data importadas pelo Power Query) também serão corrigidos.
 
 **Próximo passo:** PR da branch; etapa nova `fase3-correcao-regras` (spec, plano e execução).
+
+---
+
+## 12/10/2026 — Correção da MOD-003 e da PERF-001 (análise de erros)
+
+Branch `fase3-correcao-regras`, spec `docs/superpowers/specs/2026-10-12-correcao-mod003-perf001-design.md`,
+plano de 5 tarefas executado na sessão. **A medição abaixo foi motivada pelo conjunto de
+teste e não substitui o resultado oficial** (tag `regras-gt`, protocolo do R-04): entra na
+monografia como análise de erros; a validação das correções fica para um projeto que as
+regras não viram.
+
+**Correções (todas por sinal estrutural do TMSL, nenhuma por nome):**
+
+- **MOD-003:** `grupo_de_calculo` (propriedade `calculationGroup`) e
+  `tabela_de_parametro_de_campo` (`ParameterMetadata` com `kind: 2` — o `kind` separa do
+  parâmetro hipotético do P8) entram em `fora_de_escopo`. O parâmetro de campo também sai do
+  escopo das regras de DAX (tuplas `NAMEOF` escritas pelo Desktop); o grupo de cálculo não
+  (o DAX dos itens é do autor).
+- **PERF-001:** só pula a dimensão de data **calculada em DAX** (`tabela_calculada_em_dax`),
+  como dizem as páginas de tempo automático e de tabelas de data; a importada pelo Power
+  Query volta a ser auditada.
+- `python -m gabarito medir --rotulo`, para não sobrescrever o resultado oficial do mesmo
+  dia.
+
+**Oficial × pós-correção** (mesmo `eval/ground_truth.csv`):
+
+| | Oficial (`regras-gt`) | Pós-correção |
+|---|---|---|
+| MOD-003 | VP 1, FP 6 — precisão 0,14 | VP 1, FP 2 — precisão **0,33** |
+| PERF-001 | VP 18, FN 6 — precisão 1,00, recall 0,75 | VP 24, FP 2 — precisão **0,92**, recall **1,00** |
+| Total micro | precisão 0,88, recall 0,88 | precisão 0,93, recall 1,00 |
+| Macro | precisão 0,88, recall 0,96 | precisão 0,89, recall 1,00 |
+| R-03 | MOD-003 | MOD-003 |
+| R-12 | 46 (30 sem PERF-003) | 52 (36 sem PERF-003) |
+| Divergências | 12 | 4 |
+
+**As 4 divergências que restam:**
+
+- **MOD-003, `Logo` (P6) e `Indicators` (P4):** limitação declarada — tabelas digitadas à mão
+  para a apresentação, sem sinal estrutural que as separe de uma dimensão digitada e
+  esquecida (registrada na `nota_de_verificacao` da regra).
+- **PERF-001, `Date[Month increment number]` (P3) e `Date[MonthIndex]` (P4):** colunas de
+  tabela de data importada que dependem de agregação sobre o modelo (`MIN([Year])`;
+  `CALCULATE` com `DISTINCTCOUNT`, `ALL` e `EARLIER`). É a exceção que a própria
+  recomendação da regra já declara ("a fórmula avalia medidas ou exige funcionalidade que só
+  existe em DAX"); a regra não a detecta. **Não corrigido**, para não ajustar a regra ao
+  gabarito: fica como observação para a Fase 5.
+
+**Conjunto da recuperação regerado:** 62 → 70 consultas (−4 da MOD-003, +12 da PERF-001),
+porque deriva dos achados e o teste exige que esteja em dia. A medição da recuperação de
+11/10 foi feita sobre o conjunto da tag e não foi refeita — o subprojeto 2 (busca combinada)
+vai medir de novo.
+
+Suíte: **652 testes passando**. P8 sem mudança.
+
+**Próximo passo:** revisão final da branch; merge do PR #6 e do PR desta branch; depois o
+subprojeto 2 (busca combinada).
