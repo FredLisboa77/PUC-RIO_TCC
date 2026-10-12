@@ -1,8 +1,10 @@
 """Candidatos do gabarito: o universo de cada regra, com fatos neutros."""
 
+import pytest
 from conftest import coluna, medida, relacionamento, tabela
 
-from gabarito.candidatos import COLUNAS_DE_FATOS, candidatos_do_modelo
+from gabarito.candidatos import COLUNAS_DE_FATOS, candidatos_do_dataset, candidatos_do_modelo
+from rag.avaliacao import PASTA_PBIP, achados_dos_projetos
 
 
 def _por_regra(candidatos, id_regra):
@@ -80,3 +82,86 @@ def test_mod006_mostra_quem_filtra_e_quem_e_filtrado(ler):
 def test_todo_candidato_tem_exatamente_as_colunas_de_fatos_da_regra(ler):
     for c in candidatos_do_modelo("P1", _modelo_basico(ler)):
         assert tuple(c.fatos) == COLUNAS_DE_FATOS[c.id_regra], c.id
+
+
+def test_mod005_lista_tabelas_com_coluna_de_data_e_a_variations(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Calendario", colunas=[coluna("Data", tipo_dado="dateTime", variacao_para="LocalDateTable_9")]),
+            tabela("Pedidos", colunas=[coluna("Emissao", tipo_dado="dateTime"), coluna("Valor", tipo_dado="double")]),
+            tabela("Produto", colunas=[coluna("Nome")]),
+        ]
+    )
+    mod005 = _por_regra(candidatos_do_modelo("P1", modelo), "MOD-005")
+    assert set(mod005) == {"Calendario", "Pedidos"}
+    assert mod005["Calendario"].fatos["colunas_de_data"] == "Data -> LocalDateTable_9"
+    assert mod005["Pedidos"].fatos["colunas_de_data"] == "Emissao"
+
+
+def test_perf001_lista_colunas_calculadas_com_a_expressao(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Pessoa", colunas=[
+                coluna("Salário", tipo="calculated", expressao="Pessoa[Base] * 1.1", tipo_dado="double"),
+                coluna("Base", tipo_dado="double"),
+            ])
+        ]
+    )
+    perf001 = _por_regra(candidatos_do_modelo("P1", modelo), "PERF-001")
+    assert set(perf001) == {"Pessoa[Salário]"}
+    assert perf001["Pessoa[Salário]"].fatos["expressao"] == "Pessoa[Base] * 1.1"
+
+
+def test_perf003_lista_toda_coluna_double_somada_ou_nao(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Fato", colunas=[
+                coluna("Valor", tipo_dado="double", resumir_por="sum"),
+                coluna("Taxa", tipo_dado="double"),
+                coluna("Qtd", tipo_dado="int64", resumir_por="sum"),
+            ])
+        ]
+    )
+    perf003 = _por_regra(candidatos_do_modelo("P1", modelo), "PERF-003")
+    assert set(perf003) == {"Fato[Valor]", "Fato[Taxa]"}
+    assert perf003["Fato[Taxa]"].fatos == {"tipo_dado": "double", "resumir_por": "none"}
+
+
+def test_dax001_lista_expressoes_com_barra_e_o_que_vem_depois_de_cada_uma(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Fato", colunas=[coluna("Valor", tipo_dado="double")], medidas=[
+                medida("Margem", "SUM(Fato[Valor]) / [Receita]"),
+                medida("Metade", "SUM(Fato[Valor]) / 2"),
+                medida("Total", "SUM(Fato[Valor])"),
+            ])
+        ]
+    )
+    dax001 = _por_regra(candidatos_do_modelo("P1", modelo), "DAX-001")
+    assert set(dax001) == {"Fato[Margem]", "Fato[Metade]"}
+    assert dax001["Fato[Margem]"].fatos["sitio"] == "medida"
+    assert dax001["Fato[Margem]"].fatos["divisoes"] == "/ [Receita]"
+    assert dax001["Fato[Metade]"].fatos["divisoes"] == "/ 2"
+
+
+def test_expressao_longa_e_cortada(ler):
+    longa = "SUM(Fato[Valor]) / [Receita] + " + "1 + " * 600 + "1"
+    modelo = ler(tabelas=[tabela("Fato", colunas=[coluna("Valor", tipo_dado="double")], medidas=[medida("Longa", longa)])])
+    fatos = _por_regra(candidatos_do_modelo("P1", modelo), "DAX-001")["Fato[Longa]"].fatos
+    assert len(fatos["expressao"]) == 1500 + len(" […]")
+    assert fatos["expressao"].endswith(" […]")
+
+
+SEM_DADOS = not (PASTA_PBIP / "P1_AdventureWorks Sales").is_dir()
+
+
+@pytest.mark.skipif(SEM_DADOS, reason="data/ não é versionado")
+def test_todo_achado_real_de_p1_a_p7_casa_com_um_candidato():
+    ids = {c.id for c in candidatos_do_dataset()}
+    faltando = [
+        f"{a.id_regra}|{projeto}|{a.evidencia.objeto}"
+        for projeto, achados in achados_dos_projetos(PASTA_PBIP).items()
+        for a in achados
+        if f"{a.id_regra}|{projeto}|{a.evidencia.objeto}" not in ids
+    ]
+    assert faltando == []

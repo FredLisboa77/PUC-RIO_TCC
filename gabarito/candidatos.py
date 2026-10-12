@@ -14,10 +14,12 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from core.dax import TipoToken
 from core.ingest import abrir_pbip
 from core.model import ModeloSemantico, Relacionamento, Tabela
 from core.parser_bim import ler_modelo
 from core.rules.escopo import anotacoes, lado_muitos, lado_um, tabela_automatica_de_data, um_para_um
+from core.rules.expressoes import varrer_dax
 from rag.avaliacao import PASTA_PBIP, PROJETOS
 
 COLUNAS_DE_FATOS: dict[str, tuple[str, ...]] = {
@@ -150,7 +152,87 @@ def _mod007(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
     ]
 
 
-GERADORES = [_mod001, _mod002, _mod003, _mod006, _mod007]
+LIMITE_EXPRESSAO = 1500
+TRECHO_DIVISAO = 100
+"""Quantos caracteres depois de cada `/` a linha mostra: o bastante para ver o
+denominador, sem decidir por quem lê onde ele termina — isso é lógica da regra."""
+
+
+def _cortar(texto: str) -> str:
+    return texto if len(texto) <= LIMITE_EXPRESSAO else texto[:LIMITE_EXPRESSAO] + " […]"
+
+
+def _destino_da_variations(bruto: dict) -> str | None:
+    for variacao in bruto.get("variations") or []:
+        destino = (variacao.get("defaultHierarchy") or {}).get("table")
+        if destino:
+            return destino
+    return None
+
+
+def _mod005(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
+    saida = []
+    for t in _tabelas_do_autor(modelo):
+        datas = [c for c in t.colunas if c.tipo_dado == "dateTime"]
+        if not datas:
+            continue
+        descricoes = []
+        for c in datas:
+            destino = _destino_da_variations(c.bruto)
+            descricoes.append(f"{c.nome} -> {destino}" if destino else c.nome)
+        saida.append(
+            Candidato(id_regra="MOD-005", projeto=projeto, objeto=t.nome, fatos={"colunas_de_data": "; ".join(descricoes)})
+        )
+    return saida
+
+
+def _perf001(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
+    return [
+        Candidato(
+            id_regra="PERF-001", projeto=projeto, objeto=f"{t.nome}[{c.nome}]", fatos={"expressao": _cortar(c.expressao or "")}
+        )
+        for t in _tabelas_do_autor(modelo)
+        for c in t.colunas_calculadas
+    ]
+
+
+def _perf003(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
+    return [
+        Candidato(
+            id_regra="PERF-003",
+            projeto=projeto,
+            objeto=f"{t.nome}[{c.nome}]",
+            fatos={"tipo_dado": c.tipo_dado or "", "resumir_por": c.resumir_por or "none"},
+        )
+        for t in _tabelas_do_autor(modelo)
+        for c in t.colunas
+        if c.tipo_dado == "double"
+    ]
+
+
+def _dax001(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
+    """Usa a varredura de DAX (o escopo de expressões do autor), não a regra: cada
+    `/` aparece com o texto que vem depois, e quem julga decide o denominador."""
+    saida = []
+    for e in varrer_dax(modelo).expressoes:
+        barras = [t for t in e.tokens if t.tipo is TipoToken.OPERADOR and t.texto == "/"]
+        if not barras:
+            continue
+        divisoes = " | ".join(
+            " ".join(e.texto[b.posicao : b.posicao + TRECHO_DIVISAO].split()) for b in barras
+        )
+        saida.append(
+            Candidato(
+                id_regra="DAX-001",
+                projeto=projeto,
+                objeto=e.objeto,
+                fatos={"sitio": e.sitio, "expressao": _cortar(e.texto), "divisoes": divisoes},
+            )
+        )
+    return saida
+
+
+GERADORES = [_mod001, _mod002, _mod003, _mod005, _mod006, _mod007, _perf001, _perf003, _dax001]
 
 
 def candidatos_do_modelo(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
