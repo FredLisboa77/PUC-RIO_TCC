@@ -354,7 +354,7 @@ git commit -m "feat(gabarito): candidatos de tabela e relacionamento"
 
 **Interfaces:**
 - Consumes: `varrer_dax` (`core.rules.expressoes`), `TipoToken` (`core.dax`), `achados_dos_projetos` (`rag.avaliacao`), `Candidato`, `GERADORES` (Task 1).
-- Produces: geradores `_mod005`, `_perf001`, `_perf003`, `_dax001` incluídos em `GERADORES`; `LIMITE_EXPRESSAO = 1500`; `TRECHO_DIVISAO = 40`.
+- Produces: geradores `_mod005`, `_perf001`, `_perf003`, `_dax001` incluídos em `GERADORES`; `LIMITE_EXPRESSAO = 1500`; `TRECHO_DIVISAO = 100`.
 
 - [ ] **Step 1: Escrever os testes que falham**
 
@@ -463,7 +463,7 @@ Em `gabarito/candidatos.py`, acrescentar aos imports `from core.dax import TipoT
 
 ```python
 LIMITE_EXPRESSAO = 1500
-TRECHO_DIVISAO = 40
+TRECHO_DIVISAO = 100
 """Quantos caracteres depois de cada `/` a linha mostra: o bastante para ver o
 denominador, sem decidir por quem lê onde ele termina — isso é lógica da regra."""
 
@@ -1310,6 +1310,7 @@ import pytest
 from core.rules.base import Achado, Evidencia
 from gabarito import __main__ as comando
 from gabarito.candidatos import Candidato
+from gabarito.planilha import LINHA_CABECALHO
 
 CANDIDATOS = [
     Candidato(id_regra="MOD-003", projeto="P1", objeto="A", fatos={"relacionamentos": "0", "medidas": "0", "colunas": "3", "oculta": "não"}),
@@ -1333,9 +1334,11 @@ def _preencher_tudo(caminho, veredito="viola"):
 
     livro = load_workbook(caminho)
     aba = livro["MOD-003"]
-    for r in range(5, aba.max_row + 1):
-        aba.cell(row=r, column=8, value=veredito)
-        aba.cell(row=r, column=9, value="justificativa")
+    cabecalho = [c.value for c in aba[LINHA_CABECALHO]]
+    col_v = cabecalho.index("veredito") + 1
+    for r in range(LINHA_CABECALHO + 1, aba.max_row + 1):
+        aba.cell(row=r, column=col_v, value=veredito)
+        aba.cell(row=r, column=col_v + 1, value="justificativa")
     livro.save(caminho)
 
 
@@ -1525,7 +1528,7 @@ Em `.gitignore`, na seção "Dados de projetos PBIP reais e artefatos gerados", 
 - [ ] **Step 4: Rodar e ver passar**
 
 Run: `.\.venv\Scripts\python.exe -m pytest tests/test_gabarito_comando.py -q`
-Expected: 7 passed. Coluna 8 do `_preencher_tudo` = `veredito` na aba MOD-003 (3 colunas fixas + 4 fatos + 1).
+Expected: 7 passed. `_preencher_tudo` acha a coluna `veredito` pelo cabeçalho, como o `_preencher` da Task 4.
 
 - [ ] **Step 5: Suíte inteira e commit**
 
