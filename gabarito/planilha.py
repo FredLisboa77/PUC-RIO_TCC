@@ -5,11 +5,13 @@ dizer quais a ferramenta marcou. Fica protegida, com só as colunas de anotaçã
 livres, para que um fato ou um ID não seja editado por engano.
 """
 
+import csv
 from pathlib import Path
 
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Font, Protection
 from openpyxl.worksheet.datavalidation import DataValidation
+from pydantic import BaseModel
 
 import core.rules.todas  # noqa: F401 — registra as regras
 from core.rules.registry import REGISTRO
@@ -84,3 +86,112 @@ def gerar_planilha(candidatos: list[Candidato], destino: Path) -> None:
         _aba_de_regra(livro, id_regra, [c for c in candidatos if c.id_regra == id_regra])
     destino.parent.mkdir(parents=True, exist_ok=True)
     livro.save(destino)
+
+
+CAMPOS_CSV = ("id", "projeto", "id_regra", "objeto", "veredito", "justificativa", "referencia")
+
+
+class LinhaGabarito(BaseModel):
+    id: str
+    projeto: str
+    id_regra: str
+    objeto: str
+    veredito: str | None = None
+    justificativa: str | None = None
+    referencia: str | None = None
+
+
+class Problema(BaseModel):
+    aba: str
+    linha: int
+    id: str
+    motivo: str
+
+
+def _texto(valor) -> str | None:
+    if valor is None:
+        return None
+    texto = str(valor)
+    return texto if texto.strip() else None
+
+
+def ler_planilha(caminho: Path) -> list[tuple[str, int, LinhaGabarito]]:
+    livro = load_workbook(caminho, read_only=True)
+    lidas: list[tuple[str, int, LinhaGabarito]] = []
+    for aba in livro.worksheets[1:]:
+        linhas = list(aba.iter_rows(min_row=LINHA_CABECALHO, values_only=True))
+        if not linhas:
+            continue
+        cabecalho = list(linhas[0])
+        posicao = {nome: cabecalho.index(nome) for nome in ("id", "projeto", "objeto", *COLUNAS_EDITAVEIS)}
+        for numero, valores in enumerate(linhas[1:], start=LINHA_CABECALHO + 1):
+            if valores[posicao["id"]] is None:
+                continue
+            lidas.append(
+                (
+                    aba.title,
+                    numero,
+                    LinhaGabarito(
+                        id=str(valores[posicao["id"]]),
+                        projeto=str(valores[posicao["projeto"]]),
+                        id_regra=aba.title,
+                        objeto=str(valores[posicao["objeto"]]),
+                        veredito=_texto(valores[posicao["veredito"]]),
+                        justificativa=_texto(valores[posicao["justificativa"]]),
+                        referencia=_texto(valores[posicao["referencia"]]),
+                    ),
+                )
+            )
+    livro.close()
+    return lidas
+
+
+def validar(lidas: list[tuple[str, int, LinhaGabarito]], candidatos: list[Candidato], parcial: bool) -> list[Problema]:
+    """Não normaliza: um veredito fora da lista é apontado, não corrigido em silêncio."""
+    problemas: list[Problema] = []
+    for aba, numero, linha in lidas:
+        if linha.veredito is None:
+            if not parcial:
+                problemas.append(Problema(aba=aba, linha=numero, id=linha.id, motivo="sem veredito"))
+            continue
+        if linha.veredito not in VEREDITOS:
+            problemas.append(
+                Problema(aba=aba, linha=numero, id=linha.id, motivo=f"veredito fora da lista: {linha.veredito!r}")
+            )
+        elif linha.veredito != "não viola" and linha.justificativa is None:
+            problemas.append(Problema(aba=aba, linha=numero, id=linha.id, motivo="sem justificativa"))
+
+    na_planilha = {linha.id: (aba, numero) for aba, numero, linha in lidas}
+    atuais = {c.id: c for c in candidatos}
+    for id_, (aba, numero) in na_planilha.items():
+        if id_ not in atuais:
+            problemas.append(Problema(aba=aba, linha=numero, id=id_, motivo="não é mais candidato"))
+    for id_, c in atuais.items():
+        if id_ not in na_planilha:
+            problemas.append(Problema(aba=c.id_regra, linha=0, id=id_, motivo="candidato ausente da planilha"))
+    return problemas
+
+
+def progresso(lidas: list[tuple[str, int, LinhaGabarito]]) -> dict[str, tuple[int, int]]:
+    contagem: dict[str, tuple[int, int]] = {}
+    for aba, _, linha in lidas:
+        julgadas, total = contagem.get(aba, (0, 0))
+        contagem[aba] = (julgadas + (linha.veredito is not None), total + 1)
+    return contagem
+
+
+def gravar_csv(linhas: list[LinhaGabarito], destino: Path) -> None:
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    with destino.open("w", encoding="utf-8", newline="") as arquivo:
+        escritor = csv.DictWriter(arquivo, fieldnames=CAMPOS_CSV, lineterminator="\n")
+        escritor.writeheader()
+        for linha in sorted(linhas, key=lambda l: l.id):
+            escritor.writerow({campo: getattr(linha, campo) or "" for campo in CAMPOS_CSV})
+
+
+def ler_csv(caminho: Path) -> list[LinhaGabarito]:
+    with caminho.open(encoding="utf-8", newline="") as arquivo:
+        return [
+            LinhaGabarito(**{campo: (valor or None) for campo, valor in linha.items()})
+            for linha in csv.DictReader(arquivo)
+        ]

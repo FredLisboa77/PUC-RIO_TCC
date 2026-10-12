@@ -4,7 +4,16 @@ import pytest
 from openpyxl import load_workbook
 
 from gabarito.candidatos import COLUNAS_DE_FATOS, Candidato, ErroDeGabarito
-from gabarito.planilha import LINHA_CABECALHO, PERGUNTAS, gerar_planilha
+from gabarito.planilha import (
+    LINHA_CABECALHO,
+    PERGUNTAS,
+    gerar_planilha,
+    gravar_csv,
+    ler_csv,
+    ler_planilha,
+    progresso,
+    validar,
+)
 
 
 def _candidatos():
@@ -85,3 +94,81 @@ def test_recusa_sobrescrever(tmp_path):
     gerar_planilha(_candidatos(), destino)
     with pytest.raises(ErroDeGabarito, match="já existe"):
         gerar_planilha(_candidatos(), destino)
+
+
+def _preencher(destino, vereditos):
+    """vereditos: {id: (veredito, justificativa)} — escreve como o Fred faria."""
+    livro = load_workbook(destino)
+    for aba in livro.worksheets[1:]:
+        cabecalho = [c.value for c in aba[LINHA_CABECALHO]]
+        col_v = cabecalho.index("veredito") + 1
+        for r in range(LINHA_CABECALHO + 1, aba.max_row + 1):
+            id_ = aba.cell(row=r, column=1).value
+            if id_ in vereditos:
+                veredito, justificativa = vereditos[id_]
+                aba.cell(row=r, column=col_v, value=veredito)
+                aba.cell(row=r, column=col_v + 1, value=justificativa)
+    livro.save(destino)
+
+
+ID_REL = "MOD-002|P1|Vendas[Produto] → Produto[Produto]"
+ID_COL = "PERF-001|P3|Pessoa[Salário]"
+
+
+def _planilha(tmp_path, vereditos):
+    destino = tmp_path / "a.xlsx"
+    gerar_planilha(_candidatos(), destino)
+    _preencher(destino, vereditos)
+    return destino
+
+
+def test_planilha_completa_valida_sem_problemas(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "bidirecional sem motivo"), ID_COL: ("não viola", None)})
+    lidas = ler_planilha(destino)
+    assert validar(lidas, _candidatos(), parcial=False) == []
+    assert {l.id: l.veredito for _, _, l in lidas} == {ID_REL: "viola", ID_COL: "não viola"}
+
+
+def test_veredito_ausente_e_problema(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x")})
+    problemas = validar(ler_planilha(destino), _candidatos(), parcial=False)
+    assert [(p.id, p.motivo) for p in problemas] == [(ID_COL, "sem veredito")]
+
+
+@pytest.mark.parametrize("valor", ["Viola", " não viola ", "nao viola", "talvez"])
+def test_veredito_fora_da_lista_e_problema_sem_normalizar(tmp_path, valor):
+    destino = _planilha(tmp_path, {ID_REL: (valor, "x"), ID_COL: ("não viola", None)})
+    problemas = validar(ler_planilha(destino), _candidatos(), parcial=False)
+    assert [(p.aba, p.id) for p in problemas] == [("MOD-002", ID_REL)]
+    assert "fora da lista" in problemas[0].motivo
+
+
+@pytest.mark.parametrize("veredito", ["viola", "indeterminado"])
+def test_viola_e_indeterminado_exigem_justificativa(tmp_path, veredito):
+    destino = _planilha(tmp_path, {ID_REL: (veredito, "  "), ID_COL: ("não viola", None)})
+    problemas = validar(ler_planilha(destino), _candidatos(), parcial=False)
+    assert [(p.id, p.motivo) for p in problemas] == [(ID_REL, "sem justificativa")]
+
+
+def test_id_faltando_e_sobrando_sao_problemas(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x"), ID_COL: ("não viola", None)})
+    atuais = [_candidatos()[0], Candidato(id_regra="PERF-001", projeto="P3", objeto="Pessoa[Novo]", fatos={"expressao": "1"})]
+    motivos = {(p.id, p.motivo) for p in validar(ler_planilha(destino), atuais, parcial=False)}
+    assert motivos == {(ID_COL, "não é mais candidato"), ("PERF-001|P3|Pessoa[Novo]", "candidato ausente da planilha")}
+
+
+def test_parcial_aceita_em_branco_e_informa_progresso(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x")})
+    lidas = ler_planilha(destino)
+    assert validar(lidas, _candidatos(), parcial=True) == []
+    assert progresso(lidas)["MOD-002"] == (1, 1)
+    assert progresso(lidas)["PERF-001"] == (0, 1)
+
+
+def test_csv_ida_e_volta(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "bidirecional, sem motivo"), ID_COL: ("não viola", None)})
+    linhas = [l for _, _, l in ler_planilha(destino)]
+    csv = tmp_path / "ground_truth.csv"
+    gravar_csv(linhas, csv)
+    assert csv.read_text(encoding="utf-8").splitlines()[0] == "id,projeto,id_regra,objeto,veredito,justificativa,referencia"
+    assert ler_csv(csv) == sorted(linhas, key=lambda l: l.id)
