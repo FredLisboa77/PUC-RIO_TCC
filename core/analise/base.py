@@ -13,7 +13,8 @@ from core.rules.base import Achado, RegraMeta
 Origem = Literal["ancora", "busca"]
 Situacao = Literal["gerado", "sem_fundamentacao"]
 MotivoDescarte = Literal[
-    "json_invalido", "campo_vazio", "citacoes_fora_do_limite", "citacao_inexistente", "erro_llm"
+    "json_invalido", "campo_vazio", "citacoes_fora_do_limite", "citacao_inexistente", "erro_llm",
+    "contexto_excedido",
 ]
 
 
@@ -57,7 +58,10 @@ class AchadoEnriquecido(BaseModel):
     segundos: float | None = None
     """Tempo da chamada, sem a carga do modelo. `None` quando o LLM não respondeu."""
     tokens_prompt: int | None = None
-    """Tamanho real do prompt, para saber se ele coube no `num_ctx`."""
+    """O `prompt_eval_count` do Ollama: custo do achado em tokens."""
+    reducoes_de_contexto: int = 0
+    """Quantos trechos complementares saíram para o prompt caber no `num_ctx`. O
+    `contexto` gravado é o que o modelo de fato leu, já reduzido."""
 
     @model_validator(mode="after")
     def _situacao_coerente(self) -> "AchadoEnriquecido":

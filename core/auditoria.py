@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from core.analise.base import AchadoEnriquecido
 from core.analise.contexto import ErroDeContexto, carregar_gabaritos, verificar_ancoras
 from core.analise.enriquecimento import enriquecer
-from core.analise.llm import LIMITE_PROMPT, MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
+from core.analise.llm import MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
 from core.ingest import ErroEstruturaPbip, abrir_pbip
 from core.parser_bim import ler_modelo
 from core.rules.registry import Registro
@@ -107,9 +107,9 @@ def resumir(resultado: ResultadoAuditoria) -> str:
         citam = sum(1 for a in gerados if a.cita_ancora)
         divergem = sum(1 for a in gerados if a.fidelidade.divergencias)
         linhas.append(f"Citam a ancora: {citam}/{len(gerados)} | com divergencia de fidelidade: {divergem}")
-    no_limite = sum(1 for a in achados if a.tokens_prompt is not None and a.tokens_prompt >= LIMITE_PROMPT)
-    if no_limite:
-        linhas.append(f"Prompts no limite do contexto (possivel truncamento): {no_limite}")
+    reduzidos = sum(1 for a in achados if a.reducoes_de_contexto)
+    if reduzidos:
+        linhas.append(f"Contexto reduzido para caber: {reduzidos}")
     if tempos:
         linhas.append(f"Tempo por achado: medio {sum(tempos) / len(tempos):.1f}s, pior {max(tempos):.1f}s")
     linhas.append(f"Tempo total: {resultado.segundos_total:.1f}s")
@@ -139,8 +139,14 @@ def main(argv: list[str] | None = None) -> int:
         # spec pede mensagem e código 1, não traceback.
         print(f"erro: {type(erro).__name__}: {erro}", file=sys.stderr)
         return 1
-    caminho = gravar(resultado)
     print(resumir(resultado))
+    try:
+        caminho = gravar(resultado)
+    except OSError as erro:
+        # Arquivo aberto em outro programa, pasta sem permissão: a geração já
+        # custou minutos, então o resumo sai antes e a falha vira mensagem.
+        print(_ascii(f"erro: nao foi possivel gravar o resultado: {erro}"), file=sys.stderr)
+        return 1
     print(_ascii(f"Gravado em {caminho}"))
     return 0
 

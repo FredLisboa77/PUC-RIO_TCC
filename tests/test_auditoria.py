@@ -5,7 +5,7 @@ import pytest
 from conftest import escrever_pbip, modelo_tmsl, tabela
 from core import auditoria
 from core.analise.contexto import ErroDeContexto
-from core.analise.llm import LIMITE_PROMPT, ErroDeLLM
+from core.analise.llm import ContextoExcedido, ErroDeLLM
 from core.auditoria import ErroDeAuditoria, ResultadoAuditoria, gravar, resumir, run_audit
 from core.rules.registry import Registro
 from fabricas_analise import LLMFalso, achado, base_padrao, gabarito, meta, resposta
@@ -117,16 +117,14 @@ def test_comando_com_ollama_fora_do_ar_sai_com_erro(tmp_path, monkeypatch, capsy
     assert "aquecimento" in capsys.readouterr().err
 
 
-def test_resumo_aponta_prompts_no_limite_do_contexto(tmp_path):
-    # O Ollama trunca o prompt que passa do num_ctx sem erro na API: sem este
-    # alerta, o achado sairia "gerado" com um contexto que o modelo não leu inteiro.
-    resultado, _ = _auditar(tmp_path, llm=LLMFalso(tokens_prompt=LIMITE_PROMPT))
-    assert "Prompts no limite do contexto (possivel truncamento): 2" in resumir(resultado)
+def test_resumo_conta_os_contextos_reduzidos(tmp_path):
+    resultado, _ = _auditar(tmp_path, llm=LLMFalso(ContextoExcedido("7231 tokens")))
+    assert "Contexto reduzido para caber: 1" in resumir(resultado)
 
 
-def test_resumo_sem_prompt_no_limite_nao_alerta(tmp_path):
-    resultado, _ = _auditar(tmp_path, llm=LLMFalso(tokens_prompt=LIMITE_PROMPT - 1))
-    assert "limite do contexto" not in resumir(resultado)
+def test_resumo_sem_reducao_nao_menciona(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    assert "reduzido" not in resumir(resultado)
 
 
 def test_comando_com_model_bim_corrompido_sai_com_mensagem(tmp_path, monkeypatch, capsys):
@@ -135,3 +133,16 @@ def test_comando_com_model_bim_corrompido_sai_com_mensagem(tmp_path, monkeypatch
     (pasta / "Minimal.SemanticModel" / "model.bim").write_text("{ quebrado", encoding="utf-8")
     assert auditoria.main([str(pasta)]) == 1
     assert "erro:" in capsys.readouterr().err
+
+
+def test_falha_ao_gravar_sai_com_mensagem_e_ainda_mostra_o_resumo(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+
+    def gravar_bloqueado(resultado, pasta=None):
+        raise PermissionError("o arquivo está aberto em outro programa")
+
+    monkeypatch.setattr(auditoria, "gravar", gravar_bloqueado)
+    assert auditoria.main([str(_pbip(tmp_path))]) == 1
+    saida = capsys.readouterr()
+    assert "Achados: 2" in saida.out
+    assert "erro:" in saida.err

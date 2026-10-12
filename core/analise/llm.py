@@ -6,6 +6,7 @@ mesma auditoria repetida dá a mesma resposta, o que a avaliação acadêmica pe
 (o spike usou 0,2).
 """
 
+import http.client
 import json
 import time
 import urllib.error
@@ -19,18 +20,21 @@ MODELO_PADRAO = "qwen2.5:7b-instruct-q4_K_M"
 NUM_CTX = 4096
 """O 7B em Q4_K_M ocupa ~5,3 GB dos 6 GB de VRAM com este contexto (spike de
 29/09); aumentá-lo empurraria camadas para a CPU."""
-RESERVA_RESPOSTA = 512
-LIMITE_PROMPT = NUM_CTX - RESERVA_RESPOSTA
-"""Prompt a partir deste tamanho pode ter sido truncado: o Ollama corta o que passa
-do `num_ctx` sem erro na API. O orçamento de contexto é em palavras, e trechos de
-código chegam a ~3,4 tokens por palavra (revisão final de 11/10), então o tamanho
-real só se sabe pela contagem que o Ollama devolve."""
 SEED = 42
 TIMEOUT_S = 120
 
 
 class ErroDeLLM(Exception):
     """O LLM não respondeu, ou respondeu algo que não é uma resposta do chat."""
+
+
+class ContextoExcedido(ErroDeLLM):
+    """O prompt, ou o prompt mais a resposta, não cabe no `num_ctx`.
+
+    Por padrão o Ollama corta o prompt em silêncio e informa só o tamanho já
+    cortado — medido em 11/10: 7.231 tokens viraram 2.050 e a instrução de sistema
+    se perdeu. Com `truncate` e `shift` desligados ele recusa ou para no limite, e
+    quem chama decide o que tirar do contexto."""
 
 
 class RespostaLLM(BaseModel):
@@ -59,6 +63,8 @@ class ClienteOllama:
             "model": self.nome,
             "messages": mensagens,
             "stream": False,
+            "truncate": False,
+            "shift": False,
             "options": {"num_ctx": NUM_CTX, "temperature": 0, "seed": SEED},
         }
         if esquema is not None:
@@ -75,11 +81,19 @@ class ClienteOllama:
             with urllib.request.urlopen(pedido, timeout=self.timeout) as resposta:
                 return json.loads(resposta.read())
         except urllib.error.HTTPError as erro:
-            detalhe = erro.read().decode("utf-8", "replace")[:200]
-            raise ErroDeLLM(f"o Ollama respondeu HTTP {erro.code} para o modelo {self.nome}: {detalhe}") from erro
-        except OSError as erro:  # URLError, recusa de conexão e timeout são OSError
-            raise ErroDeLLM(f"o Ollama não respondeu em {self.url}: {erro}") from erro
-        except json.JSONDecodeError as erro:
+            detalhe = erro.read().decode("utf-8", "replace")
+            if erro.code == 400 and "exceed" in detalhe:
+                raise ContextoExcedido(
+                    f"o prompt não cabe no contexto de {NUM_CTX} tokens: {detalhe[:200]}"
+                ) from erro
+            raise ErroDeLLM(
+                f"o Ollama respondeu HTTP {erro.code} para o modelo {self.nome}: {detalhe[:200]}"
+            ) from erro
+        # URLError, recusa de conexão e timeout são OSError; leitura interrompida é
+        # HTTPException. Nenhum deles pode derrubar a auditoria inteira.
+        except (OSError, http.client.HTTPException) as erro:
+            raise ErroDeLLM(f"o Ollama não respondeu em {self.url}: {erro!r}") from erro
+        except ValueError as erro:  # JSON inválido ou bytes que não são UTF-8
             raise ErroDeLLM(f"o Ollama devolveu algo que não é JSON: {erro}") from erro
 
     def aquecer(self) -> None:
@@ -95,4 +109,8 @@ class ClienteOllama:
             texto = dados["message"]["content"]
         except (KeyError, TypeError) as erro:
             raise ErroDeLLM("resposta do Ollama sem message.content") from erro
+        if not isinstance(texto, str):
+            raise ErroDeLLM("resposta do Ollama sem message.content em texto")
+        if dados.get("done_reason") == "length":
+            raise ContextoExcedido(f"a resposta foi cortada no limite de {NUM_CTX} tokens do contexto")
         return RespostaLLM(texto=texto, segundos=round(segundos, 2), tokens_prompt=dados.get("prompt_eval_count"))
