@@ -183,3 +183,57 @@ def test_protecao_deixa_ajustar_colunas_linhas_e_filtrar(tmp_path):
     assert aba.auto_filter.ref == "A4:G5"
     assert aba.column_dimensions["A"].width >= 40
     assert aba.column_dimensions["D"].width >= 60
+
+
+def test_texto_que_parece_formula_fica_texto_e_caractere_de_controle_sai(tmp_path):
+    destino = tmp_path / "a.xlsx"
+    candidatos = [
+        Candidato(id_regra="PERF-001", projeto="P1", objeto="T[A]", fatos={"expressao": "=SUM(T[B])"}),
+        Candidato(id_regra="PERF-001", projeto="P1", objeto="T[B]", fatos={"expressao": "1\x07 + 2"}),
+    ]
+    gerar_planilha(candidatos, destino)
+    aba = load_workbook(destino)["PERF-001"]
+    assert aba["D5"].value == "=SUM(T[B])" and aba["D5"].data_type == "s"
+    assert aba["D6"].value == "1 + 2"
+
+
+def test_gerar_recusa_id_duplicado(tmp_path):
+    dobrado = _candidatos() + [_candidatos()[0]]
+    with pytest.raises(ErroDeGabarito, match="duplicado"):
+        gerar_planilha(dobrado, tmp_path / "a.xlsx")
+
+
+def test_aba_extra_e_ignorada_e_aba_faltando_vira_erro(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x"), ID_COL: ("não viola", None)})
+    livro = load_workbook(destino)
+    livro.create_sheet("Notas", 0)["A1"] = "rascunho do Fred"
+    livro.save(destino)
+    assert {l.id for _, _, l in ler_planilha(destino)} == {ID_REL, ID_COL}
+
+    livro = load_workbook(destino)
+    livro["MOD-002"].title = "MOD-002 (revisar)"
+    livro.save(destino)
+    with pytest.raises(ErroDeGabarito, match="MOD-002"):
+        ler_planilha(destino)
+
+
+def test_coluna_do_cabecalho_apagada_vira_erro(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x")})
+    livro = load_workbook(destino)
+    aba = livro["MOD-002"]
+    cabecalho = [c.value for c in aba[LINHA_CABECALHO]]
+    aba.cell(row=LINHA_CABECALHO, column=cabecalho.index("veredito") + 1).value = None
+    livro.save(destino)
+    with pytest.raises(ErroDeGabarito, match="veredito"):
+        ler_planilha(destino)
+
+
+def test_validar_aponta_id_duplicado_e_candidato_ausente_sem_numero_de_linha(tmp_path):
+    destino = _planilha(tmp_path, {ID_REL: ("viola", "x"), ID_COL: ("não viola", None)})
+    lidas = ler_planilha(destino)
+    lidas.append(lidas[0])
+    atuais = _candidatos() + [Candidato(id_regra="PERF-001", projeto="P3", objeto="Pessoa[Novo]", fatos={"expressao": "1"})]
+    problemas = validar(lidas, atuais, parcial=False)
+    assert (ID_REL, "id duplicado") in {(p.id, p.motivo) for p in problemas}
+    ausente = next(p for p in problemas if p.motivo == "candidato ausente da planilha")
+    assert ausente.linha is None

@@ -39,8 +39,8 @@ from core.rules.registry import regra
         "consulta SQL ou ser materializado como coluna na origem. Há exceções "
         "legítimas: a coluna calculada em DAX é a melhor escolha quando a fórmula "
         "avalia medidas ou exige funcionalidade que só existe em DAX, como as funções "
-        "de hierarquia pai-filho, ou quando estende uma tabela de data gerada em DAX "
-        "com CALENDAR ou CALENDARAUTO."
+        "de hierarquia pai-filho, ou quando estende uma tabela de data calculada em "
+        "DAX, tipicamente gerada com CALENDAR ou CALENDARAUTO."
     ),
 )
 def coluna_calculada_em_dax(modelo: ModeloSemantico) -> Iterator[Achado]:

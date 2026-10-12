@@ -9,6 +9,7 @@ import pytest
 from core.rules.escopo import (
     anotacoes,
     coluna_gerada_por_analise,
+    colunas_com_data_automatica,
     dax_escrito_pela_ferramenta,
     dimensao_de_data,
     fora_de_escopo,
@@ -523,3 +524,21 @@ def test_medida_do_autor_em_parametro_de_campo_continua_no_escopo_de_dax(ler):
     modelo = ler(tabelas=[t])
     assert dax_escrito_pela_ferramenta(modelo.tabelas[0]) is False
     assert [x.nome for x in tabelas_com_dax_do_autor(modelo)] == ["Toggle"]
+
+
+@pytest.mark.parametrize("valor", [5, True, "texto", {"name": "x"}])
+def test_propriedades_tmsl_escalares_nao_derrubam_o_escopo(ler, valor):
+    """Num `model.bim` editado à mão, `annotations`, `extendedProperties` ou
+    `variations` podem vir com um escalar. Os predicados rodam dentro de
+    `fora_de_escopo`: uma exceção ali derrubaria todas as regras de uma vez."""
+    c = coluna("Data", tipo_dado="dateTime")
+    c["extendedProperties"] = valor
+    c["variations"] = valor
+    t = tabela("Fato", colunas=[c])
+    t["annotations"] = valor
+    modelo = ler(tabelas=[t])
+    tab = modelo.tabelas[0]
+    assert anotacoes(tab.bruto) == {}
+    assert tabela_de_parametro_de_campo(tab) is False
+    assert fora_de_escopo(tab) is False
+    assert colunas_com_data_automatica(modelo, tab) == []
