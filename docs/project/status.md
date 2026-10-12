@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 7 de 13 — Fase 2 encerrada; Fase 3: geração com o LLM e citação obrigatória rodando no P8 · **Atualizado em:** 11/10/2026
+**Posição:** semana 8 de 13 — Fase 2 encerrada; Fase 3: revisão de meio de projeto, gabarito das regras em anotação · **Atualizado em:** 12/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -40,7 +40,7 @@ uma das 9 regras foi conferida no texto extraído.
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
-| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8 |
+| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras com planilha gerada (350 candidatos em P1–P7), anotação em andamento |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 

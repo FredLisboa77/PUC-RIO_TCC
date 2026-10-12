@@ -1321,3 +1321,58 @@ Branch `fase3-gabarito-regras`. Nenhum código escrito ainda; suíte segue em **
 subagentes); executar as 7 tarefas; gerar `eval/gabarito/anotacao-P1-P7.xlsx` e entregá-la
 para o Fred anotar.
 
+
+---
+
+## 12/10/2026 — Gabarito das regras: ferramentas prontas, planilha gerada
+
+Plano de 7 tarefas executado na sessão, uma tarefa por commit, na branch
+`fase3-gabarito-regras`. Antes de executar, o plano passou por uma revisão de melhorias
+sugeridas: entraram o trecho de 100 caracteres depois de cada `/` na DAX-001 (era 40) e o
+teste do comando achando a coluna `veredito` pelo cabeçalho. Ficaram de fora o registro
+dos geradores por decorador (a lista tem um gerador por regra, não por projeto, e ligá-la ao
+`REGISTRO` iria contra a independência das regras), o `model_dump()` na soma de matrizes
+(estilo, sem ganho) e a troca do `_ascii()` por `PYTHONIOENCODING` (traria de volta o
+risco do console cp1252 que já derrubou o `rag.medicao`).
+
+**Construído — pacote novo `gabarito/`** (dependência nova `openpyxl==3.1.5`):
+
+- `candidatos.py`: o universo de cada regra e os fatos neutros, montados do
+  `ModeloSemantico` e do lexer, **sem** chamar as funções de regra. As tabelas de data
+  automática entram só como candidatas da MOD-001. Teste sobre P1–P7: **todo achado real
+  casa com um candidato**.
+- `planilha.py`: a planilha **cega**, com uma aba por regra (pergunta da âncora e link do
+  Learn no topo), lista suspensa no `veredito` e aba protegida com só as colunas de anotação
+  livres; a importação valida sem normalizar (veredito fora da lista, justificativa ausente,
+  ID faltando ou sobrando) e grava `eval/ground_truth.csv`.
+- `metricas.py`: matriz por regra, precisão e recall em três versões — principal, **piso**
+  (indeterminado contra a regra) e **teto** (a favor) —, `None` sem divisor, micro e macro,
+  por categoria e por projeto, gatilhos do R-03 e do R-12 e a lista de divergências.
+- `python -m gabarito gerar | importar [--parcial] | medir`.
+
+**Planilha gerada:** `eval/gabarito/anotacao-P1-P7.xlsx` (fora do Git), **350 candidatos**
+— abaixo dos ~400–450 que a spec estimou:
+
+| Regra | Candidatos |
+|---|---|
+| MOD-001 | 59 |
+| MOD-002 | 45 |
+| MOD-003 | 58 |
+| MOD-005 | 13 |
+| MOD-006 | 58 |
+| MOD-007 | 46 |
+| PERF-001 | 32 |
+| PERF-003 | 29 |
+| DAX-001 | 10 |
+
+Conferido por código nas 9 abas: proteção ligada, lista suspensa cobrindo todas as linhas
+da coluna `veredito`, link do Learn no topo.
+
+**Ressalva declarada:** os candidatos saem do mesmo parser que alimenta as regras; um
+objeto que o parser não lê fica fora dos dois lados — vai para a monografia ao lado do viés
+de anotador único.
+
+Suíte: **628 testes passando** (580 + 48 do gabarito).
+
+**Próximo passo:** o Fred preenche `eval/gabarito/anotacao-P1-P7.xlsx` (acompanhando com
+`python -m gabarito importar --parcial`); depois `python -m gabarito importar` e `medir`.
