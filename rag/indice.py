@@ -8,7 +8,6 @@ resultado mais recente em `eval/results/`, reaproveitando os vetores do cache.
 
 import argparse
 import json
-import json
 import sys
 from pathlib import Path
 
@@ -74,6 +73,15 @@ def configuracao_do_indice(pasta_resultados: Path, busca: str | None) -> tuple[C
     return configuracao.model_copy(update={"busca": busca}), arquivos[-1].name
 
 
+def criar_colecao(cliente):
+    """A coleção do índice: espaço cosseno e HNSW com busca ampla, para que a busca densa
+    pelo Chroma reproduza a medida em memória (produto escalar exato sobre vetores
+    normalizados). Com os padrões (l2, ef 100), o top-10 divergia em 5 das 70 consultas."""
+    return cliente.create_collection(
+        COLECAO, configuration={"hnsw": {"space": "cosine", "ef_search": 200, "ef_construction": 200}}
+    )
+
+
 def construir(
     *,
     pasta_resultados: Path = PASTA_RESULTADOS,
@@ -107,7 +115,7 @@ def construir(
         cliente.delete_collection(COLECAO)
     except Exception:  # coleção ainda não existe: o tipo da exceção muda entre versões do Chroma
         pass
-    colecao = cliente.create_collection(COLECAO)
+    colecao = criar_colecao(cliente)
     for inicio in range(0, len(trechos), LOTE_CHROMA):
         lote = trechos[inicio : inicio + LOTE_CHROMA]
         colecao.add(

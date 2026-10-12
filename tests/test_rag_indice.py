@@ -201,3 +201,12 @@ def test_busca_sem_resultado_de_complementares_e_recusada(tmp_path):
     gravar_resultado(tmp_path / "recuperacao-2026-10-11.json", [], _decisao("completo"), {})
     with pytest.raises(ErroDeIndice, match="rag.complementares medir"):
         configuracao_do_indice(tmp_path, "hibrida")
+
+
+def test_colecao_usa_cosseno_e_busca_hnsw_ampla(tmp_path):
+    """Depois de trocar para densa ou combinada, o Chroma precisa reproduzir a busca medida
+    (produto escalar exato sobre vetores normalizados): espaço cosseno e ef alto."""
+    colecao = modulo_indice.criar_colecao(modulo_indice._cliente(tmp_path / "c"))
+    hnsw = colecao.configuration.get("hnsw")
+    assert hnsw["space"] == "cosine"
+    assert hnsw["ef_search"] >= 200 and hnsw["ef_construction"] >= 200

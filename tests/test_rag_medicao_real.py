@@ -60,11 +60,14 @@ def test_oraculo_com_o_contador_do_modelo(variantes_do_modelo, variante):
 def test_o_indice_chroma_reproduz_a_metrica_da_medicao(embedder):
     from rag.avaliacao import avaliar
     from rag.indice import ARQUIVO_CONFIG, carregar_buscador, resultado_mais_recente
-    from rag.medicao import PASTA_RESULTADOS, ler_resultado
+    from rag.medicao import PASTA_RESULTADOS, Configuracao, ler_resultado
 
     if not ARQUIVO_CONFIG.is_file():
         pytest.skip("índice não construído — rode `python -m rag.indice construir`")
-    resultados, decisao = ler_resultado(resultado_mais_recente(PASTA_RESULTADOS))
-    medido = next(r for r in resultados if r.configuracao == decisao.vencedora)
+    # A configuração gravada no índice, não a vencedora de 11/10: depois de
+    # `construir --busca`, o índice pode usar outra busca da mesma medição.
+    configuracao = Configuracao.model_validate_json(ARQUIVO_CONFIG.read_text(encoding="utf-8"))
+    resultados, _ = ler_resultado(resultado_mais_recente(PASTA_RESULTADOS))
+    medido = next(r for r in resultados if r.configuracao == configuracao)
     relatorio = avaliar(carregar_buscador(embedder), ler_conjunto(ARQUIVO_CONSULTAS))
     assert relatorio.macro.acerto[5] == pytest.approx(medido.macro.acerto[5])

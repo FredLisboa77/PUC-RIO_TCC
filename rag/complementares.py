@@ -12,6 +12,7 @@ import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
+from importlib.metadata import version
 from statistics import mean
 
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ from pydantic import BaseModel
 from core.analise.contexto import K_BUSCA, escolher_complementares
 from rag.avaliacao import ARQUIVO_CONSULTAS, RAIZ_REPO, Consulta, ErroDeAvaliacao, avaliar, ler_conjunto
 from rag.chunking import TrechoIndexado
+from rag.embeddings import MODELO
 
 Ranqueador = Callable[[str, int], list[int]]
 """Consulta e k → índices em `trechos`, do mais ao menos relevante."""
@@ -243,6 +245,9 @@ def carregar_ambiente() -> Ambiente:
 
 class ResultadoComplementares(BaseModel):
     por_busca: dict[str, MedidaBusca]
+    por_busca_achados: dict[str, MedidaBusca]
+    """Só as consultas de achado — as únicas que o pipeline faz. Registro ao lado da macro
+    da spec, que inclui as 9 consultas da regra; não decide."""
     decisao: DecisaoBusca
     regua_antiga: dict[str, dict[str, float]]
     """Acerto@5 e MRR@10 da âncora, por busca, nas 70 consultas: registro, não decide."""
@@ -270,6 +275,7 @@ def formatar(r: ResultadoComplementares) -> str:
     linhas.append("regua antiga (acerto@5 / MRR@10): " + ", ".join(
         f"{t} {r.regua_antiga[t]['acerto5']:.3f}/{r.regua_antiga[t]['mrr']:.3f}" for t in TIPOS
     ))
+    linhas.append("so achados " + "".join(f"{_pct(r.por_busca_achados[t].macro.principal):>10}" for t in TIPOS))
     linhas.append(f"Decisao: {r.decisao.vencedora} - {r.decisao.justificativa}")
     return _ascii("\n".join(linhas))
 
@@ -318,6 +324,10 @@ def _medir() -> int:
     amb = carregar_ambiente()
     medidas = complementares_por_busca(amb.consultas, amb.ancoras, amb.trechos, amb.ranqueadores)
     por_busca = {t: medir_busca(medidas[t], julgamentos) for t in TIPOS}
+    de_achado = {c.id for c in amb.consultas if c.tipo == "achado"}
+    por_busca_achados = {
+        t: medir_busca([m for m in medidas[t] if m.id in de_achado], julgamentos) for t in TIPOS
+    }
     conjunto = ler_conjunto(ARQUIVO_CONSULTAS)
     regua_antiga = {}
     for t in TIPOS:
@@ -325,10 +335,13 @@ def _medir() -> int:
         regua_antiga[t] = {"acerto5": relatorio.macro.acerto[5], "mrr": relatorio.macro.mrr}
     resultado = ResultadoComplementares(
         por_busca=por_busca,
+        por_busca_achados=por_busca_achados,
         decisao=decidir_busca({t: por_busca[t].macro.principal for t in TIPOS}),
         regua_antiga=regua_antiga,
         ambiente={
             "data": date.today().isoformat(),
+            "modelo": MODELO,
+            "versoes": {p: version(p) for p in ("torch", "sentence-transformers", "rank-bm25", "chromadb", "numpy")},
             "sha256_consultas": hashlib.sha256(ARQUIVO_CONSULTAS.read_bytes()).hexdigest(),
             "sha256_pertinencia": hashlib.sha256(ARQUIVO_CSV.read_bytes()).hexdigest(),
             "margem": MARGEM,

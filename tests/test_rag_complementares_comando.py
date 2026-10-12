@@ -57,6 +57,29 @@ def test_fluxo_completo_decide_e_grava_json(ambiente, capsys):
     capsys.readouterr().out.encode("ascii")
 
 
+def test_medir_registra_a_macro_so_dos_achados_e_o_ambiente(ambiente, monkeypatch):
+    """O pipeline só busca com consulta de achado; a consulta da regra entra na macro da spec,
+    mas a macro só dos achados fica registrada ao lado (revisão final)."""
+    def dois():
+        amb = _ambiente()
+        amb.consultas.append(
+            Consulta(id="P1/MOD-001/1", tipo="achado", projeto="P1", id_regra="MOD-001", objeto="X", texto="q2")
+        )
+        amb.ranqueadores["bm25"] = lambda q, k: ([0, 2] if q == "q" else [0, 1])[:k]
+        return amb
+
+    monkeypatch.setattr(comando, "carregar_ambiente", dois)
+    comando.main(["gerar"])
+    _julgar(ambiente / "gabarito" / "p.xlsx", {"MOD-001|learn:a#s": "pertinente", "MOD-001|learn:b#s": "não pertinente"})
+    comando.main(["importar"])
+    assert comando.main(["medir"]) == 0
+    dados = json.loads(next((ambiente / "results").glob("complementares-*.json")).read_text(encoding="utf-8"))
+    assert dados["por_busca"]["bm25"]["macro"]["principal"] == 0.5
+    assert dados["por_busca_achados"]["bm25"]["macro"]["principal"] == 1.0
+    assert dados["ambiente"]["modelo"] == "BAAI/bge-small-en-v1.5"
+    assert {"sentence-transformers", "torch", "rank-bm25", "chromadb"} <= set(dados["ambiente"]["versoes"])
+
+
 def test_importar_incompleto_nao_grava(ambiente, capsys):
     comando.main(["gerar"])
     assert comando.main(["importar"]) == 1
