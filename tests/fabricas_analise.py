@@ -4,7 +4,10 @@ Ficam fora do `conftest.py` porque não são fixtures: são construtores que cad
 teste chama com os parâmetros que quer variar.
 """
 
+import json
+
 from core.analise.base import TrechoDeContexto
+from core.analise.llm import ErroDeLLM, RespostaLLM
 from core.rules.base import Achado, Evidencia, RegraMeta
 from rag.avaliacao import Gabarito
 from rag.chunking import TrechoIndexado
@@ -97,3 +100,41 @@ TRECHO_ANCORA = trecho_indexado("learn:auto", "You should disable the auto date 
 
 def base_padrao() -> BaseRag:
     return base_bm25([TRECHO_ANCORA, trecho_indexado("learn:outra", "auto date time tables are hidden")])
+
+
+def resposta(
+    explicacao: str = "As tabelas automáticas aumentam o tamanho do modelo sem necessidade.",
+    recomendacao: str = "Desative a opção global de data/hora automática.",
+    citacoes: tuple[int, ...] = (1,),
+) -> str:
+    return json.dumps(
+        {"explicacao": explicacao, "recomendacao": recomendacao, "citacoes": list(citacoes)}, ensure_ascii=False
+    )
+
+
+RESPOSTA_BOA = resposta()
+
+
+class LLMFalso:
+    """Devolve as respostas roteirizadas, em ordem; depois delas, `RESPOSTA_BOA`.
+    Uma exceção na lista é levantada no lugar da resposta."""
+
+    nome = "llm-falso"
+
+    def __init__(self, *respostas, falha_no_aquecimento: bool = False) -> None:
+        self.respostas = list(respostas)
+        self.falha_no_aquecimento = falha_no_aquecimento
+        self.chamadas: list[list[dict[str, str]]] = []
+        self.aquecimentos = 0
+
+    def aquecer(self) -> None:
+        self.aquecimentos += 1
+        if self.falha_no_aquecimento:
+            raise ErroDeLLM("o Ollama não respondeu em http://127.0.0.1:11434")
+
+    def gerar(self, mensagens, esquema) -> RespostaLLM:
+        self.chamadas.append(mensagens)
+        proxima = self.respostas.pop(0) if self.respostas else RESPOSTA_BOA
+        if isinstance(proxima, Exception):
+            raise proxima
+        return RespostaLLM(texto=proxima, segundos=0.5)
