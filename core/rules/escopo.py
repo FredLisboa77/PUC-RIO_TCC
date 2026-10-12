@@ -29,19 +29,26 @@ TIPO_PARAMETRO_DE_CAMPO = 2
 parâmetro hipotético também tem `ParameterMetadata`, mas sem `kind`."""
 
 
+def _itens(valor) -> list:
+    """Uma propriedade TMSL que deveria ser lista, ou lista vazia.
+
+    `model.bim` editado à mão pode trazer `null` ou um escalar onde o esquema
+    pede lista. Os predicados deste módulo rodam dentro de `fora_de_escopo`, e
+    iterar um escalar levantaria `TypeError` ali — o que derrubaria todas as
+    regras de uma vez e entregaria auditoria vazia.
+    """
+    return valor if isinstance(valor, list) else []
+
+
 def anotacoes(bruto: dict) -> dict[str, str]:
     """As annotations do objeto TMSL, como nome → valor.
 
     O parser guarda o TMSL de origem em `bruto` justamente para isto: a
     annotation não foi normalizada, mas está acessível sem reabrir o arquivo.
     """
-    # `or []` em vez de valor padrão: `annotations` pode existir com valor nulo
-    # num `model.bim` editado à mão, e iterar `None` levantaria `TypeError` aqui
-    # — em `fora_de_escopo`, o que derrubaria todas as regras de uma vez e
-    # entregaria auditoria vazia.
     return {
         item.get("name", ""): item.get("value", "")
-        for item in (bruto.get("annotations") or [])
+        for item in _itens(bruto.get("annotations"))
         if isinstance(item, dict)
     }
 
@@ -122,7 +129,7 @@ def tabela_de_parametro_de_campo(t: Tabela) -> bool:
     `fora_de_escopo`, e uma exceção aqui derrubaria todas as regras.
     """
     for c in t.colunas:
-        for propriedade in c.bruto.get("extendedProperties") or []:
+        for propriedade in _itens(c.bruto.get("extendedProperties")):
             if not isinstance(propriedade, dict) or propriedade.get("name") != METADADO_DE_PARAMETRO:
                 continue
             valor = propriedade.get("value")
@@ -290,7 +297,7 @@ def colunas_com_data_automatica(modelo: ModeloSemantico, t: Tabela) -> list[str]
     com_automatica: list[str] = []
 
     for c in t.colunas:
-        for v in c.bruto.get("variations") or []:
+        for v in _itens(c.bruto.get("variations")):
             if not isinstance(v, dict):
                 continue
             alvo = (v.get("defaultHierarchy") or {}).get("table")
