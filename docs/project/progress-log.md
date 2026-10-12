@@ -1288,3 +1288,36 @@ remoto como registro.
 **Próximo passo:** revisão de meio de projeto (semana 8) — *ground truth* das regras em
 P1–P7, com atenção à PERF-003, e decisão sobre a busca combinada para os trechos
 complementares fracos de PERF-001 e PERF-003.
+
+---
+
+## 11/10/2026 — Semana 8 iniciada: gabarito das regras (spec e plano)
+
+A revisão de meio de projeto da semana 8 foi dividida em três subprojetos, cada um com
+spec e plano próprios: **(1) gabarito das regras em P1–P7** (ground truth), **(2) busca
+combinada para os trechos complementares** e **(3) documento da revisão de meio de projeto**
+para o orientador. Começa pelo (1), que está no caminho crítico: decide a precisão da
+PERF-003, a margem do R-12 e o P9, e o gatilho do R-03.
+
+**Decisões do Fred no desenho do gabarito:**
+
+- **O Fred julga**; o código prepara, valida e calcula. O gabarito fica independente de
+  quem escreveu as regras.
+- **Recall por regra**, dentro do que cada regra cobre (universo = todo candidato do tipo
+  certo; pergunta = a condição da âncora).
+- **Julgamento cego, numa passada só:** a planilha lista todos os candidatos sem dizer
+  quais a ferramenta marcou; precisão e recall saem do cruzamento posterior.
+- **Planilha `.xlsx`** gerada pelo código (lista suspensa `viola` / `não viola` /
+  `indeterminado`, abas protegidas), convertida em `eval/ground_truth.csv` versionado.
+- **Pacote novo `gabarito/`**, com candidatos gerados **sem** a lógica das regras.
+- `indeterminado` não é forçado: cada regra sai com precisão e recall principal, piso e
+  teto.
+
+Spec: `docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`. Plano (7 tarefas,
+dependência nova `openpyxl==3.1.5`): `docs/superpowers/plans/2026-10-11-gabarito-das-regras.md`.
+Branch `fase3-gabarito-regras`. Nenhum código escrito ainda; suíte segue em **580 testes**.
+
+**Próximo passo:** o Fred revisar o plano e escolher o modo de execução (nativo ou
+subagentes); executar as 7 tarefas; gerar `eval/gabarito/anotacao-P1-P7.xlsx` e entregá-la
+para o Fred anotar.
+
