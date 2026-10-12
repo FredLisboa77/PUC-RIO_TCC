@@ -1211,8 +1211,24 @@ passaram nos três critérios automáticos com recomendação errada.
 um teste do BM25 tinha IDF zero com dois documentos (ganhou um terceiro), e a contagem
 esperada de um arquivo de teste estava errada no plano (18, não 19).
 
-Suíte: **564 testes passando** (incluindo 1 contra o Ollama real, pulado quando ele não
+**Revisão final da branch (revisor independente):** nenhum achado crítico. Um importante:
+o orçamento de 1.800 palavras não garante caber nos 4096 tokens — trechos de código DAX
+chegam a ~3,4 tokens por palavra (o desenho supunha ~1,4), e o Ollama trunca o prompt em
+silêncio, então um achado poderia sair "gerado" com um contexto que o modelo não leu
+inteiro. Corrigido por medição, sem mudar o orçamento da spec: cada achado guarda
+`tokens_prompt` (o `prompt_eval_count` do Ollama) e o resumo alerta quem passar de 3.584
+(4096 − 512 de reserva para a resposta). Na nova rodada do P8 os prompts ficaram entre
+**960 e 2.003 tokens** — e o resultado foi **idêntico** ao da primeira (mesmas citações),
+o que confirma a reprodutibilidade com temperatura 0 e semente fixa. Também corrigido: um
+`model.bim` corrompido saía com traceback em vez de mensagem. Oito menores adiados, no
+ledger da execução: fidelidade acusa "[1]" se o modelo citar no texto; separador de
+milhar vira decimal; `sort_keys` quebra com chaves de tipos mistos em `detalhe`;
+`nome_do_projeto(".")` vazio; extração de `.zip` fica no `%TEMP%`; rodada repetida no mesmo
+dia sobrescreve o JSON; docstring antiga em `rag/indice.py`.
+
+Suíte: **570 testes passando** (incluindo 1 contra o Ollama real, pulado quando ele não
 responde).
 
-**Próximo passo:** revisão final da branch por um revisor independente, correções que ela
-pedir, e o PR da `fase3-geracao-citacao`.
+**Próximo passo:** PR da `fase3-geracao-citacao` para revisão do Fred; depois, a revisão de
+meio de projeto da semana 8, com a reavaliação da busca híbrida para os trechos
+complementares fracos de PERF-001 e PERF-003.
