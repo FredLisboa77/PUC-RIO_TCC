@@ -2,8 +2,8 @@
   "por_regra": {
     "DAX-001": {
       "matriz": {
-        "vp": 3,
-        "fp": 3,
+        "vp": 6,
+        "fp": 0,
         "fn": 0,
         "vn": 4,
         "ind_marcados": 0,
@@ -11,9 +11,9 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.5,
-          "piso": 0.5,
-          "teto": 0.5
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
         },
         "recall": {
           "principal": 1.0,
@@ -68,8 +68,8 @@
     },
     "MOD-003": {
       "matriz": {
-        "vp": 0,
-        "fp": 7,
+        "vp": 1,
+        "fp": 6,
         "fn": 0,
         "vn": 51,
         "ind_marcados": 0,
@@ -77,14 +77,14 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.0,
-          "piso": 0.0,
-          "teto": 0.0
+          "principal": 0.14285714285714285,
+          "piso": 0.14285714285714285,
+          "teto": 0.14285714285714285
         },
         "recall": {
-          "principal": null,
-          "piso": null,
-          "teto": null
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
         }
       }
     },
@@ -202,8 +202,8 @@
   "por_categoria": {
     "dax": {
       "matriz": {
-        "vp": 3,
-        "fp": 3,
+        "vp": 6,
+        "fp": 0,
         "fn": 0,
         "vn": 4,
         "ind_marcados": 0,
@@ -211,9 +211,9 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.5,
-          "piso": 0.5,
-          "teto": 0.5
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
         },
         "recall": {
           "principal": 1.0,
@@ -224,8 +224,8 @@
     },
     "modelagem": {
       "matriz": {
-        "vp": 5,
-        "fp": 7,
+        "vp": 6,
+        "fp": 6,
         "fn": 0,
         "vn": 259,
         "ind_marcados": 0,
@@ -233,13 +233,13 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.4166666666666667,
-          "piso": 0.4166666666666667,
-          "teto": 0.4166666666666667
+          "principal": 0.5,
+          "piso": 0.5,
+          "teto": 0.5
         },
         "recall": {
           "principal": 1.0,
-          "piso": 0.38461538461538464,
+          "piso": 0.42857142857142855,
           "teto": 1.0
         }
       }
@@ -358,8 +358,8 @@
     },
     "P5": {
       "matriz": {
-        "vp": 15,
-        "fp": 3,
+        "vp": 18,
+        "fp": 0,
         "fn": 0,
         "vn": 31,
         "ind_marcados": 0,
@@ -367,21 +367,21 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.8333333333333334,
-          "piso": 0.8333333333333334,
-          "teto": 0.8333333333333334
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
         },
         "recall": {
           "principal": 1.0,
-          "piso": 0.8333333333333334,
+          "piso": 0.8571428571428571,
           "teto": 1.0
         }
       }
     },
     "P6": {
       "matriz": {
-        "vp": 5,
-        "fp": 2,
+        "vp": 6,
+        "fp": 1,
         "fn": 0,
         "vn": 20,
         "ind_marcados": 0,
@@ -389,9 +389,9 @@
       },
       "taxas": {
         "precisao": {
-          "principal": 0.7142857142857143,
-          "piso": 0.7142857142857143,
-          "teto": 0.7142857142857143
+          "principal": 0.8571428571428571,
+          "piso": 0.8571428571428571,
+          "teto": 0.8571428571428571
         },
         "recall": {
           "principal": 1.0,
@@ -425,8 +425,8 @@
   },
   "total_micro": {
     "matriz": {
-      "vp": 42,
-      "fp": 10,
+      "vp": 46,
+      "fp": 6,
       "fn": 6,
       "vn": 279,
       "ind_marcados": 1,
@@ -434,28 +434,28 @@
     },
     "taxas": {
       "precisao": {
-        "principal": 0.8076923076923077,
-        "piso": 0.7924528301886793,
-        "teto": 0.8113207547169812
+        "principal": 0.8846153846153846,
+        "piso": 0.8679245283018868,
+        "teto": 0.8867924528301887
       },
       "recall": {
-        "principal": 0.875,
-        "piso": 0.7,
-        "teto": 0.8775510204081632
+        "principal": 0.8846153846153846,
+        "piso": 0.71875,
+        "teto": 0.8867924528301887
       }
     }
   },
   "macro": {
-    "precisao": 0.7857142857142857,
-    "recall": 0.9583333333333334
+    "precisao": 0.8775510204081632,
+    "recall": 0.9642857142857143
   },
   "macro_por_categoria": {
     "dax": {
-      "precisao": 0.5,
+      "precisao": 1.0,
       "recall": 1.0
     },
     "modelagem": {
-      "precisao": 0.75,
+      "precisao": 0.7857142857142857,
       "recall": 1.0
     },
     "performance": {
@@ -464,30 +464,14 @@
     }
   },
   "r03": [
-    "DAX-001",
     "MOD-003"
   ],
   "r12": {
-    "vp": 42,
-    "vp_sem_perf003": 26,
+    "vp": 46,
+    "vp_sem_perf003": 30,
     "gatilho": 40
   },
   "divergencias": [
-    {
-      "tipo": "FP",
-      "id": "DAX-001|P5|Sales[Avg $/Unit LY]",
-      "justificativa": "Há verificação explícita <>0 antes da divisão. Isso segue a prática de evitar divisão por zero."
-    },
-    {
-      "tipo": "FP",
-      "id": "DAX-001|P5|Sales[Avg $/Unit TY]",
-      "justificativa": "Verificação explícita presente."
-    },
-    {
-      "tipo": "FP",
-      "id": "DAX-001|P5|Sales[Total Sales Var %]",
-      "justificativa": "Verificação explícita <>0 protege a divisão."
-    },
     {
       "tipo": "FP",
       "id": "MOD-003|P1|Date Role",
@@ -516,11 +500,6 @@
     {
       "tipo": "FP",
       "id": "MOD-003|P6|Logo",
-      "justificativa": null
-    },
-    {
-      "tipo": "FP",
-      "id": "MOD-003|P6|Supply Analytics",
       "justificativa": null
     },
     {

@@ -1467,3 +1467,31 @@ regra. O console passou a mostrar a faixa como `0.95 a 1.00`, e `- (-)` sem divi
 
 **Próximo passo:** o Fred decide sobre os três defeitos de regra (corrigir agora ou declarar)
 — correção de regra é outra etapa, medida de novo contra o **mesmo** CSV.
+
+### Resultado oficial com as regras congeladas (tag `regras-gt`)
+
+O protocolo do R-04 (`eval/dataset.md`) manda congelar as regras numa tag **antes** da
+anotação; a tag não tinha sido criada. Como nenhuma regra mudou desde a `main`, ela é criada
+agora, no commit que fecha a anotação, e marca as regras que o gabarito mediu. Decisão do
+Fred (opção A): as correções de regra seguem numa etapa própria, mas entram na monografia como
+**análise de erros**, não como resultado.
+
+Mais 4 vereditos revistos pela documentação, antes da tag:
+
+- **DAX-001, 3 linhas de P5: `não viola` → `viola`.** A página da âncora usa exatamente o
+  padrão `IF(denominador <> 0, a / denominador, BLANK())` como exemplo a trocar por DIVIDE
+  ("better optimized for testing the denominator value than the IF function").
+- **MOD-003, `Supply Analytics` (P6): `não viola` → `viola`.** 14 colunas de negócio de um
+  Excel, sem relacionamento e sem medida que a use.
+
+**Resultado oficial:** precisão total 0,88 (micro e macro), recall 0,88 micro e 0,96 macro.
+DAX-001 1,00/1,00; MOD-003 precisão **0,14** (1 VP, 6 FP); PERF-001 recall 0,75. **R-03**
+dispara só para a MOD-003. **R-12:** 46 confirmados (30 sem a PERF-003) contra 40.
+
+Os 6 FP da MOD-003: 4 têm sinal estrutural e serão corrigidos (grupos de cálculo `Date Role`
+e `Time Intelligence`; parâmetros de campo `Toggle for breakdown` e `Toggle for variance to
+plan`); 2 são **limitação declarada** (`Logo` e `Indicators`, tabelas digitadas à mão para a
+apresentação, sem sinal estrutural seguro — decisão do Fred, opção A). Os 6 FN da PERF-001
+(colunas de tabelas de data importadas pelo Power Query) também serão corrigidos.
+
+**Próximo passo:** PR da branch; etapa nova `fase3-correcao-regras` (spec, plano e execução).
