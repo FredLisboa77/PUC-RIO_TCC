@@ -1372,7 +1372,26 @@ da coluna `veredito`, link do Learn no topo.
 objeto que o parser não lê fica fora dos dois lados — vai para a monografia ao lado do viés
 de anotador único.
 
-Suíte: **628 testes passando** (580 + 48 do gabarito).
+**Revisão final da branch (revisor independente):** nenhum achado crítico; o núcleo
+(candidatos, cruzamento, validação, fórmulas) conferido nos dados reais — os 53 achados de
+P1–P7 casam com um candidato. Três importantes corrigidos, cada um com teste:
+
+- a proteção da aba travava largura de coluna, altura de linha e filtro, e nenhuma largura
+  vinha definida — anotar 350 linhas com expressões DAX em colunas de 8 caracteres obrigaria
+  a desproteger. Agora há larguras por coluna, filtro no cabeçalho e só fatos e IDs travados;
+- faltava o **macro por categoria** que a spec §5 pede (defeito do plano);
+- relacionamentos com ponta em tabela de data automática entravam como candidatos (e fatos)
+  da MOD-002/003/006/007 — sem efeito em P1–P7, mas um P9 com Tempo automático ganharia
+  falsos negativos espúrios.
+
+A planilha foi regerada depois das correções (estava com 0/350 julgadas), com as mesmas
+contagens. Nove menores ficaram adiados, nenhum com efeito nos dados atuais: importação que
+confia na ordem e no nome das abas, texto iniciado por `=` ou com caractere de controle,
+exceções de arquivo corrompido sem mensagem, edição não salva no Excel lida sem aviso, IDs
+duplicados, `summarizeBy` ausente exibido como `none`, fatos de relacionamento inativo na
+MOD-006/007, "linha 0" na mensagem de candidato ausente e falta de teste do `-` no console.
+
+Suíte: **631 testes passando** (580 + 51 do gabarito).
 
 **Próximo passo:** o Fred preenche `eval/gabarito/anotacao-P1-P7.xlsx` (acompanhando com
 `python -m gabarito importar --parcial`); depois `python -m gabarito importar` e `medir`.
