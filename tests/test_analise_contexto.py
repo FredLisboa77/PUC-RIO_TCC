@@ -2,7 +2,7 @@
 
 import pytest
 
-from core.analise.contexto import ErroDeContexto, carregar_gabaritos, montar_contexto, verificar_ancoras
+from core.analise.contexto import ErroDeContexto, carregar_gabaritos, escolher_complementares, montar_contexto, verificar_ancoras
 from core.rules.todas import REGISTRO
 from fabricas_analise import TRECHO_ANCORA, achado, base_bm25, gabarito, meta, trecho_indexado
 
@@ -55,3 +55,20 @@ def test_ancora_ausente_do_indice_falha_na_verificacao():
 
 def test_gabaritos_reais_cobrem_todas_as_regras_registradas():
     assert set(REGISTRO.ids()) <= set(carregar_gabaritos())
+
+
+def test_escolher_complementares_pula_a_ancora_e_para_em_quatro():
+    outros = [trecho_indexado(f"learn:p{i}", f"texto {i}") for i in range(6)]
+    escolhidos = escolher_complementares(TRECHO_ANCORA, [TRECHO_ANCORA, *outros])
+    assert escolhidos == outros[:4]
+
+
+def test_escolher_complementares_respeita_o_orcamento_contando_a_ancora():
+    grande = trecho_indexado("learn:grande", "x " * 1790)
+    pequeno = trecho_indexado("learn:pequeno", "y z")
+    escolhidos = escolher_complementares(TRECHO_ANCORA, [grande, pequeno])
+    assert escolhidos == [pequeno]
+
+
+def test_escolher_complementares_sem_resultado_util_devolve_lista_vazia():
+    assert escolher_complementares(TRECHO_ANCORA, [TRECHO_ANCORA]) == []
