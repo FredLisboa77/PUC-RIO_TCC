@@ -19,6 +19,7 @@ from core.rules.escopo import (
     relacionamentos_em_escopo,
     tabela_apenas_de_medidas,
     tabela_automatica_de_data,
+    tabela_calculada_em_dax,
     tabela_de_parametro_de_campo,
     tabela_de_parametro_hipotetico,
     tabela_gerada_por_analise,
@@ -502,3 +503,14 @@ def test_tabela_comum_nao_e_grupo_nem_parametro(ler):
     assert grupo_de_calculo(t) is False
     assert tabela_de_parametro_de_campo(t) is False
     assert fora_de_escopo(t) is False
+
+
+def test_tabela_calculada_em_dax_olha_o_tipo_da_particao(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Calculada", particoes=[particao(tipo="calculated", expressao="CALENDARAUTO()")]),
+            tabela("Importada", particoes=[particao(tipo="m")]),
+            tabela("SemParticao"),
+        ]
+    )
+    assert [tabela_calculada_em_dax(t) for t in modelo.tabelas] == [True, False, False]

@@ -12,6 +12,7 @@ from core.rules.base import Achado, Evidencia
 from core.rules.escopo import (
     coluna_gerada_por_analise,
     dimensao_de_data,
+    tabela_calculada_em_dax,
     tabelas_em_escopo,
 )
 from core.rules.registry import regra
@@ -38,21 +39,24 @@ from core.rules.registry import regra
         "consulta SQL ou ser materializado como coluna na origem. Há exceções "
         "legítimas: a coluna calculada em DAX é a melhor escolha quando a fórmula "
         "avalia medidas ou exige funcionalidade que só existe em DAX, como as funções "
-        "de hierarquia pai-filho."
+        "de hierarquia pai-filho, ou quando estende uma tabela de data gerada em DAX "
+        "com CALENDAR ou CALENDARAUTO."
     ),
 )
 def coluna_calculada_em_dax(modelo: ModeloSemantico) -> Iterator[Achado]:
     """Uma ocorrência por coluna com `type: calculated`.
 
-    Duas exclusões, ambas pelo princípio de auditar o que o autor escreveu: as
-    colunas de agrupamento e cluster, cujo DAX é escrito pela interface, e as
-    colunas da dimensão de data — a documentação recomenda acrescentá-las a uma
-    tabela de data construída em DAX.
+    Duas exclusões. As colunas de agrupamento e cluster, cujo DAX é escrito pela
+    interface. E as colunas da dimensão de data **calculada em DAX**: as páginas de
+    tempo automático e de tabelas de data recomendam gerar a tabela com CALENDAR ou
+    CALENDARAUTO e então acrescentar colunas calculadas. Dimensão de data importada
+    pelo Power Query não tem essa exceção — quando a origem já tem a tabela de data,
+    a recomendação é usá-la (corrigido em 12/10/2026, pelo gabarito de P1–P7).
     """
     dimensoes_de_data = dimensao_de_data(modelo)
 
     for t in tabelas_em_escopo(modelo):
-        if t.nome in dimensoes_de_data:
+        if t.nome in dimensoes_de_data and tabela_calculada_em_dax(t):
             continue
         for c in t.colunas:
             if c.tipo != "calculated" or coluna_gerada_por_analise(c):

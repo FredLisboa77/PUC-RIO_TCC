@@ -98,6 +98,11 @@ def tabela_gerada_por_analise(t: Tabela) -> bool:
     return ANOTACAO_ANALISE_GERADA in anotacoes(t.bruto)
 
 
+def tabela_calculada_em_dax(t: Tabela) -> bool:
+    """A tabela é gerada por expressão DAX (partição `calculated`)."""
+    return any(p.tipo_origem == "calculated" for p in t.particoes)
+
+
 def grupo_de_calculo(t: Tabela) -> bool:
     """Grupo de cálculo: a tabela carrega a propriedade `calculationGroup`.
 
