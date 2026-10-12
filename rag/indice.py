@@ -17,6 +17,7 @@ from rag.chunking import TrechoIndexado, montar_trechos
 from rag.coleta import PASTA_STORE
 from rag.embeddings import PASTA_EMBEDDINGS, Embedder, EmbedderBge, ler_cache
 from rag.medicao import PASTA_RESULTADOS, Configuracao, carregar_paginas, ler_resultado
+from rag.texto import normalizar
 
 PASTA_INDICE = PASTA_STORE / "indice"
 ARQUIVO_TRECHOS = PASTA_INDICE / "trechos.jsonl"
@@ -105,41 +106,96 @@ def construir(
     return configuracao
 
 
+class BaseRag:
+    """Os trechos do índice e a busca da configuração vencedora.
+
+    A geração precisa de mais do que a régua: URL e título para o contexto, e o
+    trecho âncora de cada regra. Com a vencedora BM25, a consulta não passa pelo
+    Chroma nem pelo `bge-small` — então nenhum dos dois é carregado.
+    """
+
+    def __init__(
+        self,
+        configuracao: Configuracao,
+        trechos: list[TrechoIndexado],
+        *,
+        embedder: Embedder | None = None,
+        colecao=None,
+    ) -> None:
+        self.configuracao = configuracao
+        self.trechos = trechos
+        self._posicao = {t.id: i for i, t in enumerate(trechos)}
+        self._embedder = embedder
+        self._colecao = colecao
+        self._bm25 = IndiceBm25([t.texto_indexado for t in trechos]) if configuracao.busca != "densa" else None
+
+    @classmethod
+    def carregar(
+        cls,
+        embedder: Embedder | None = None,
+        *,
+        pasta_indice: Path = PASTA_INDICE,
+        pasta_chroma: Path = PASTA_CHROMA,
+    ) -> "BaseRag":
+        config = pasta_indice / ARQUIVO_CONFIG.name
+        if not config.is_file():
+            raise ErroDeIndice(f"índice ausente em {pasta_indice} — rode `python -m rag.indice construir`")
+        configuracao = Configuracao.model_validate_json(config.read_text(encoding="utf-8"))
+        _exigir_corpus_completo(configuracao)
+        linhas = (pasta_indice / ARQUIVO_TRECHOS.name).read_text(encoding="utf-8").splitlines()
+        trechos = [TrechoIndexado.model_validate_json(linha) for linha in linhas if linha.strip()]
+        if configuracao.busca == "bm25":
+            return cls(configuracao, trechos)
+        return cls(
+            configuracao,
+            trechos,
+            embedder=embedder or EmbedderBge(),
+            colecao=_cliente(pasta_chroma).get_collection(COLECAO),
+        )
+
+    def _densa(self, consulta: str, k: int) -> list[int]:
+        resposta = self._colecao.query(
+            query_embeddings=[self._embedder.vetor_consulta(consulta).tolist()], n_results=k, include=["distances"]
+        )
+        return [self._posicao[i] for i in resposta["ids"][0]]
+
+    def _por_bm25(self, consulta: str, k: int) -> list[int]:
+        return ranquear(self._bm25.pontuacoes(consulta), None, k)
+
+    def buscar(self, consulta: str, k: int) -> list[TrechoIndexado]:
+        busca = self.configuracao.busca
+        if busca == "densa":
+            indices = self._densa(consulta, k)
+        elif busca == "bm25":
+            indices = self._por_bm25(consulta, k)
+        else:
+            indices = fundir_rrf([self._densa(consulta, K_FUSAO), self._por_bm25(consulta, K_FUSAO)], k)
+        return [self.trechos[i] for i in indices]
+
+    def trecho_ancora(self, id_pagina: str, ancora: str, frase_marca: str) -> TrechoIndexado:
+        """A parte da seção âncora que contém a frase-marca — o mesmo critério de
+        acerto da régua, para que o contexto use o trecho que a medição validou."""
+        da_secao = [t for t in self.trechos if t.id_pagina == id_pagina and t.ancora == ancora]
+        if not da_secao:
+            raise ErroDeIndice(f"seção {id_pagina}#{ancora} ausente do índice")
+        alvo = normalizar(frase_marca)
+        for trecho in da_secao:
+            if alvo in normalizar(trecho.texto):
+                return trecho
+        raise ErroDeIndice(f"nenhuma parte de {id_pagina}#{ancora} contém a frase-marca")
+
+
 def carregar_buscador(
     embedder: Embedder | None = None,
     *,
     pasta_indice: Path = PASTA_INDICE,
     pasta_chroma: Path = PASTA_CHROMA,
 ) -> Buscador:
-    config = pasta_indice / ARQUIVO_CONFIG.name
-    if not config.is_file():
-        raise ErroDeIndice(f"índice ausente em {pasta_indice} — rode `python -m rag.indice construir`")
-    configuracao = Configuracao.model_validate_json(config.read_text(encoding="utf-8"))
-    _exigir_corpus_completo(configuracao)
-    linhas = (pasta_indice / ARQUIVO_TRECHOS.name).read_text(encoding="utf-8").splitlines()
-    trechos = [TrechoIndexado.model_validate_json(linha) for linha in linhas if linha.strip()]
-    posicao = {t.id: i for i, t in enumerate(trechos)}
-    embedder = embedder or EmbedderBge()
-    colecao = _cliente(pasta_chroma).get_collection(COLECAO)
-    bm25 = IndiceBm25([t.texto_indexado for t in trechos]) if configuracao.busca != "densa" else None
-
-    def densa(consulta: str, k: int) -> list[int]:
-        resposta = colecao.query(
-            query_embeddings=[embedder.vetor_consulta(consulta).tolist()], n_results=k, include=["distances"]
-        )
-        return [posicao[i] for i in resposta["ids"][0]]
-
-    def por_bm25(consulta: str, k: int) -> list[int]:
-        return ranquear(bm25.pontuacoes(consulta), None, k)
+    """A busca no formato da régua — o que a medição e seus testes consomem."""
+    base = BaseRag.carregar(embedder, pasta_indice=pasta_indice, pasta_chroma=pasta_chroma)
 
     def buscar(consulta: str, k: int) -> list[Trecho]:
-        if configuracao.busca == "densa":
-            indices = densa(consulta, k)
-        elif configuracao.busca == "bm25":
-            indices = por_bm25(consulta, k)
-        else:
-            indices = fundir_rrf([densa(consulta, K_FUSAO), por_bm25(consulta, K_FUSAO)], k)
-        return [trechos[i].para_regua() for i in indices]
+        return [t.para_regua() for t in base.buscar(consulta, k)]
 
     return buscar
 

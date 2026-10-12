@@ -1133,3 +1133,145 @@ perdida nos ~115 trechos partidos por tokens, modelo não registrado no `config.
 Suíte: **483 testes passando**.
 
 **Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7).
+
+---
+
+## 11/10/2026 — PRs #2, #3 e #4 mergeados
+
+Considerados revisados pelo Fred e mergeados na `main`, na ordem de dependência, por merge
+commit (preserva os hashes citados nos documentos): #2 coleta e extração (`28483ca`), #3
+conjunto de avaliação da recuperação (`9769f43`), #4 medição da recuperação e índice
+(`b27b999`). Suíte na `main` pós-merge: **483 testes passando**. As branches ficam no
+remoto como registro.
+
+**Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7),
+na branch `fase3-geracao-citacao`.
+
+---
+
+## 11/10/2026 — Geração com o LLM e citação obrigatória (semana 7)
+
+Spec `docs/superpowers/specs/2026-10-11-geracao-com-citacao-design.md`, plano
+`docs/superpowers/plans/2026-10-11-geracao-com-citacao.md`, executado na branch
+`fase3-geracao-citacao`.
+
+**Decisões do Fred no desenho:** citação pelo **número do trecho** (não pela URL); resposta
+em **JSON com esquema imposto pelo Ollama**, com 1 a 3 citações; resposta inválida é
+**descartada sem nova tentativa**, com o motivo registrado; a **fidelidade** à evidência é
+verificada e registrada, mas **não descarta**; escopo = geração + `run_audit()` mínimo com
+comando de linha (interface, relatório, cache F16 e medição em P1–P7 ficam fora).
+
+**Construído:** pacote `core/analise/` (contratos, contexto, prompt, cliente do Ollama,
+validação, fidelidade, enriquecimento) e `core/auditoria.py` (`run_audit()` e
+`python -m core.auditoria <pasta-pbip>`). No `rag/indice.py`, a classe `BaseRag` dá ao
+contexto URL, título e o trecho âncora de cada regra, e com a vencedora BM25 **não carrega
+mais o `bge-small` nem o Chroma** — a auditoria roda sem `HF_HUB_OFFLINE`. O contexto põe a
+seção âncora sempre em [1] e completa com até 4 trechos do BM25, num orçamento de 1.800
+palavras. O cliente usa `temperature=0` e `seed=42` (o spike usou 0,2), para a mesma
+auditoria dar a mesma resposta.
+
+**Rodada no P8** (`qwen2.5:7b-instruct-q4_K_M`, `outputs/P8_contoso-vendas-2026-10-11.json`):
+
+| Medida | Valor |
+|---|---|
+| Achados | 15 |
+| Gerados (citação válida) | **15/15** — nenhum descarte |
+| Citam a seção âncora | **14/15** — a exceção (um MOD-001) citou outras duas seções da mesma página `auto-date-time` e a `model-date-tables` |
+| Com divergência de fidelidade | 1/15 |
+| Tempo por achado | médio 8,1 s, pior 10,5 s (spike: 6,0 s; agora o contexto tem até 5 trechos) |
+| Auditoria inteira | 123 s, com a carga do modelo |
+
+**Leitura à mão das 15 respostas** — o que os critérios automáticos não pegam:
+
+1. **Erro de conteúdo no MOD-006 (`DimProduct`):** a recomendação manda integrar
+   `DimProduct`, `DimProductSubcategory` **e `FactOnlineSales`** numa única tabela. Juntar a
+   tabela de fatos à dimensão é errado. Todos os nomes existem no achado, então a
+   fidelidade não acusa: é o "erro de sentido com nomes certos" que a spec declarou como
+   limite da heurística.
+2. **Erro de termo no MOD-006 (`DimProductSubcategory`):** recomenda uma tabela única
+   "normalizada" quando a fonte diz desnormalizar.
+3. **Tradução torta no PERF-001:** "o VertiPaq não **compreende** eficientemente" (a fonte
+   fala em comprimir). O sentido se perde.
+4. **A divergência acusada (PERF-003) é tradução, não invenção:** "Número fixo decimal" é
+   o *Fixed decimal number* do trecho, traduzido. Falso positivo da heurística, coerente
+   com a limitação declarada.
+5. **Trechos complementares fracos em PERF-001 e PERF-003:** o BM25 trouxe páginas de
+   referência de funções (`INFO.CALENDARCOLUMNREFERENCES`, `RANKX`, `YEARFRAC`) sem relação
+   com o achado. A âncora em [1] segurou a explicação. É o sinal que a emenda de 11/10 da
+   ADR-002 aponta para reavaliar a híbrida — registrado para a revisão da semana 8, sem
+   troca agora.
+6. As outras explicações estão corretas e ancoradas; as quatro MOD-001 repetem quase o
+   mesmo texto, como esperado de achados da mesma regra com temperatura 0.
+
+Consequência para a Fase 5: a rubrica humana precisa de um item **"recomendação
+tecnicamente correta"**, separado de citação válida, pertinente e fiel — 2 dos 15 achados
+passaram nos três critérios automáticos com recomendação errada.
+
+**Ledger da execução:** duas decisões, ambas sem efeito no código do plano — o fixture de
+um teste do BM25 tinha IDF zero com dois documentos (ganhou um terceiro), e a contagem
+esperada de um arquivo de teste estava errada no plano (18, não 19).
+
+**Revisão final da branch (revisor independente):** nenhum achado crítico. Um importante:
+o orçamento de 1.800 palavras não garante caber nos 4096 tokens — trechos de código DAX
+chegam a ~3,4 tokens por palavra (o desenho supunha ~1,4), e o Ollama trunca o prompt em
+silêncio, então um achado poderia sair "gerado" com um contexto que o modelo não leu
+inteiro. Corrigido por medição, sem mudar o orçamento da spec: cada achado guarda
+`tokens_prompt` (o `prompt_eval_count` do Ollama) e o resumo alerta quem passar de 3.584
+(4096 − 512 de reserva para a resposta). Na nova rodada do P8 os prompts ficaram entre
+**960 e 2.003 tokens** — e o resultado foi **idêntico** ao da primeira (mesmas citações),
+o que confirma a reprodutibilidade com temperatura 0 e semente fixa. Também corrigido: um
+`model.bim` corrompido saía com traceback em vez de mensagem. Oito menores adiados, no
+ledger da execução: fidelidade acusa "[1]" se o modelo citar no texto; separador de
+milhar vira decimal; `sort_keys` quebra com chaves de tipos mistos em `detalhe`;
+`nome_do_projeto(".")` vazio; extração de `.zip` fica no `%TEMP%`; rodada repetida no mesmo
+dia sobrescreve o JSON; docstring antiga em `rag/indice.py`.
+
+Suíte: **570 testes passando** (incluindo 1 contra o Ollama real, pulado quando ele não
+responde).
+
+**Próximo passo:** PR da `fase3-geracao-citacao` para revisão do Fred; depois, a revisão de
+meio de projeto da semana 8, com a reavaliação da busca híbrida para os trechos
+complementares fracos de PERF-001 e PERF-003.
+
+---
+
+## 11/10/2026 — Revisão do PR #5: duas correções do que registrei acima
+
+A revisão do PR #5 (com medições no Ollama real) desfez duas afirmações da entrada
+anterior.
+
+**1. O alerta de truncagem não funcionava.** O registro anterior diz "corrigido por
+medição": cada achado guardava `tokens_prompt` e o resumo alertava acima de 3.584 tokens.
+Medido: com o padrão do Ollama 0.40, um prompt de 7.231 tokens é **cortado em silêncio
+para 2.050**, a instrução de sistema se perde, e a contagem informada é a do prompt já
+cortado — o alerta nunca dispararia. Corrigido de fato (emenda da spec, §13): o cliente
+pede `truncate: false` e `shift: false`, e o Ollama passa a recusar (HTTP 400) ou parar no
+limite (`done_reason: "length"`). Nesses casos o enriquecimento tira o último trecho
+complementar e tenta de novo (decisão do Fred); sem caber nem a âncora, o achado sai com o
+motivo novo `contexto_excedido`. No P8 nenhum contexto precisou ser reduzido.
+
+**2. As rodadas não são idênticas.** O registro anterior diz que a segunda rodada deu
+"resultado idêntico, com as mesmas citações". Eu tinha comparado os totais e só as quatro
+primeiras citações. Comparando as 15: duas rodadas seguidas, com a mesma configuração,
+deram **13/15 citações e 9/15 textos iguais**. Temperatura 0 e semente fixa não bastam no
+Ollama com GPU. Os totais se repetiram nas quatro rodadas (15/15 gerados, 14/15 citando a
+âncora, 1 divergência de fidelidade; tempo médio de 7,9 a 8,2 s). Consequência para a Fase
+5: tratar a geração como estocástica e medir a variação entre rodadas.
+
+**Também corrigido:** leitura interrompida, bytes inválidos e `content` nulo na resposta do
+Ollama derrubavam a auditoria inteira — agora viram `erro_llm` naquele achado; e falha ao
+gravar o JSON (arquivo aberto em outro programa) saía com traceback depois dos minutos de
+geração — agora o resumo sai antes e a falha vira mensagem.
+
+**Descartado por medição:** a revisão supunha que o Ollama informa menos tokens quando
+reaproveita o cache de um prefixo comum. Três chamadas com o mesmo prefixo deram 772, 773
+e 773.
+
+**Menores da revisão, adiados:** citação repetida (`[1, 1]`) descarta a resposta — é regra
+da spec e não ocorreu no P8; a âncora é procurada de novo a cada achado, em milissegundos.
+Os demais já estavam listados acima.
+
+Suíte: **580 testes passando**.
+
+**Próximo passo:** merge do PR #5 pelo Fred; depois, a revisão de meio de projeto da
+semana 8.

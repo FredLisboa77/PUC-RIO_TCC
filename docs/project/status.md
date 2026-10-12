@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 6 de 13 — Fase 2 encerrada; Fase 3: catálogo de fontes e base coletada · **Atualizado em:** 11/10/2026
+**Posição:** semana 7 de 13 — Fase 2 encerrada; Fase 3: geração com o LLM e citação obrigatória rodando no P8 · **Atualizado em:** 11/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -17,7 +17,7 @@ As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de r
 de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
 um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
 práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **483 testes** automatizados passando. O maior risco técnico do
+Learn. São **580 testes** automatizados passando. O maior risco técnico do
 projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
 estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
 (D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
@@ -40,7 +40,7 @@ uma das 9 regras foi conferida no texto extraído.
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
-| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo de fontes (G-8) concluído em 09/10/2026; próximo: coleta. Revisão de meio de projeto na semana 8 |
+| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8 em 11/10/2026. Revisão de meio de projeto na semana 8 |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
@@ -74,7 +74,8 @@ regras de M, depois abrir mão do PDF (R-07).
 | Coleta e extração da base RAG (`python -m rag.coleta`, `python -m rag.extracao`) | **1.420 páginas** coletadas (0 erros, 37,6 min, 73 MB) e extraídas por seção, com âncora, caminho e blocos tipados (13 MB); a passagem citada por cada uma das 9 regras conferida no texto extraído (`tests/test_rag_store_real.py`) |
 | Conjunto de avaliação da recuperação (`python -m rag.avaliacao gerar`) | 9 gabaritos com a seção âncora deduzida da base, 62 consultas (9 por regra, 53 por achado de P1–P7) congeladas em `eval/recuperacao/consultas.yaml`; métricas acerto@K, Precision@K e MRR@10, com a macro por regra como número que decide |
 | Recuperação escolhida por medição (`python -m rag.medicao`, `python -m rag.indice construir`) | 24 combinações medidas com a régua; vence, pela regra fixada antes, **seção + BM25 sobre o corpus completo** (macro acerto@5 = 1,000); índice construído e conferido contra a medição. Efeito teto e decisão por uma consulta declarados (emenda de 11/10 da ADR-002) |
-| Suíte de testes | **483 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Geração com o LLM e citação obrigatória (`python -m core.auditoria <pasta-pbip>`) | No P8, com o `qwen2.5:7b`: **15 de 15** achados com explicação gerada e citação válida, **14 de 15** citando a seção âncora da regra, 1 com divergência de fidelidade; 8,1 s por achado em média (pior 10,5 s), 123 s a auditoria inteira. Os totais se repetem entre rodadas, mas os textos e algumas citações variam: temperatura 0 não torna o Ollama determinístico. A leitura à mão achou 2 erros de conteúdo que os critérios automáticos não pegam (progress-log de 11/10) |
+| Suíte de testes | **580 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
