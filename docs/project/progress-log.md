@@ -1275,3 +1275,16 @@ Suíte: **580 testes passando**.
 
 **Próximo passo:** merge do PR #5 pelo Fred; depois, a revisão de meio de projeto da
 semana 8.
+
+---
+
+## 11/10/2026 — PR #5 mergeado
+
+Revisado e mergeado na `main` por merge commit (`66fb804`), preservando os hashes citados
+nos documentos: geração com o LLM e citação obrigatória, com as correções da revisão do PR.
+Suíte na `main` pós-merge: **580 testes passando**. A branch `fase3-geracao-citacao` fica no
+remoto como registro.
+
+**Próximo passo:** revisão de meio de projeto (semana 8) — *ground truth* das regras em
+P1–P7, com atenção à PERF-003, e decisão sobre a busca combinada para os trechos
+complementares fracos de PERF-001 e PERF-003.

@@ -40,7 +40,7 @@ uma das 9 regras foi conferida no texto extraído.
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
-| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8 em 11/10/2026. Revisão de meio de projeto na semana 8 |
+| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8 |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
