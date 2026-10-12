@@ -1333,7 +1333,7 @@ teste do comando achando a coluna `veredito` pelo cabeçalho. Ficaram de fora o 
 dos geradores por decorador (a lista tem um gerador por regra, não por projeto, e ligá-la ao
 `REGISTRO` iria contra a independência das regras), o `model_dump()` na soma de matrizes
 (estilo, sem ganho) e a troca do `_ascii()` por `PYTHONIOENCODING` (traria de volta o
-risco do console cp1252 que já derrubou o `rag.medicao`).
+risco do console cp1252, que já derrubou um comando da Fase 3).
 
 **Construído — pacote novo `gabarito/`** (dependência nova `openpyxl==3.1.5`):
 
