@@ -1670,3 +1670,13 @@ Suíte: **704 testes passando**.
 **Próximo passo:** o Fred julga `eval/gabarito/pertinencia-complementares.xlsx`; depois
 `python -m rag.complementares importar` e `medir` (com `HF_HUB_OFFLINE=1` e
 `HF_HOME=D:\dev\hf-cache`).
+
+**Revisão final da branch (revisor independente), antes do julgamento:** nenhum crítico; pool
+determinístico (89 seções, iguais em duas montagens), planilha cega, consultas idênticas às
+da geração. Corrigidos, com teste: a coleção do Chroma passa a ser criada em cosseno com
+`ef` 200 (com os padrões, depois de uma troca para densa ou combinada, o top-10 divergia da
+busca medida em 5 a 7 das 70 consultas); o resultado registra a **macro só das consultas de
+achado** ao lado da macro da spec — as 9 consultas da regra pesam ~41% da macro e o pipeline
+nunca as faz —; e o JSON grava modelo e versões. O teste do índice real passa a comparar com
+a configuração gravada no índice. Sete menores adiados (ledger da branch). Suíte: **706
+testes**. A planilha gerada continua casando com o pool.
