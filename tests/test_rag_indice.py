@@ -2,7 +2,7 @@
 
 import pytest
 
-from rag.indice import ErroDeIndice, carregar_buscador, construir, resultado_mais_recente
+from rag.indice import ErroDeIndice, carregar_buscador, configuracao_do_indice, construir, resultado_mais_recente
 
 
 def test_resultado_mais_recente_pega_o_ultimo_por_data(tmp_path):
@@ -54,7 +54,7 @@ def test_carregar_recusa_indice_de_outro_corpus(tmp_path):
 
 
 def test_resumo_do_comando_imprime_no_console_padrao_do_windows(monkeypatch, capsys):
-    monkeypatch.setattr(modulo_indice, "construir", lambda: _decisao("completo").vencedora)
+    monkeypatch.setattr(modulo_indice, "construir", lambda busca=None: _decisao("completo").vencedora)
     assert modulo_indice.main(["construir"]) == 0
     capsys.readouterr().out.encode("cp1252")
 
@@ -162,3 +162,42 @@ def test_trecho_ancora_sem_a_frase_marca_falha():
     base = BaseRag(_config("bm25"), [_t("learn:p", "outro texto")])
     with pytest.raises(ErroDeIndice, match="frase-marca"):
         base.trecho_ancora("learn:p", "s", "disable the option")
+
+
+import json as _json
+
+
+
+def _complementares(pasta, vencedora, data="2026-10-13"):
+    (pasta / f"complementares-{data}.json").write_text(
+        _json.dumps({"decisao": {"vencedora": vencedora, "justificativa": "x"}}), encoding="utf-8"
+    )
+
+
+def test_sem_busca_a_configuracao_e_a_vencedora_de_11_10(tmp_path):
+    gravar_resultado(tmp_path / "recuperacao-2026-10-11.json", [], _decisao("completo"), {})
+    configuracao, origem = configuracao_do_indice(tmp_path, None)
+    assert configuracao.busca == "bm25" and origem is None
+
+
+def test_busca_que_casa_com_a_decisao_troca_so_a_busca(tmp_path):
+    gravar_resultado(tmp_path / "recuperacao-2026-10-11.json", [], _decisao("completo"), {})
+    _complementares(tmp_path, "hibrida")
+    configuracao, origem = configuracao_do_indice(tmp_path, "hibrida")
+    assert (configuracao.busca, configuracao.chunking, configuracao.cabecalho, configuracao.corpus) == (
+        "hibrida", "secao", False, "completo",
+    )
+    assert origem == "complementares-2026-10-13.json"
+
+
+def test_busca_que_nao_casa_com_a_decisao_e_recusada(tmp_path):
+    gravar_resultado(tmp_path / "recuperacao-2026-10-11.json", [], _decisao("completo"), {})
+    _complementares(tmp_path, "bm25")
+    with pytest.raises(ErroDeIndice, match="decisão mais recente"):
+        configuracao_do_indice(tmp_path, "densa")
+
+
+def test_busca_sem_resultado_de_complementares_e_recusada(tmp_path):
+    gravar_resultado(tmp_path / "recuperacao-2026-10-11.json", [], _decisao("completo"), {})
+    with pytest.raises(ErroDeIndice, match="rag.complementares medir"):
+        configuracao_do_indice(tmp_path, "hibrida")
