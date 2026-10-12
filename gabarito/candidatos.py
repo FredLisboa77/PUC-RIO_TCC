@@ -28,7 +28,7 @@ COLUNAS_DE_FATOS: dict[str, tuple[str, ...]] = {
     "MOD-003": ("relacionamentos", "medidas", "colunas", "oculta"),
     "MOD-005": ("colunas_de_data",),
     "MOD-006": ("filtra", "filtrada_por"),
-    "MOD-007": ("cardinalidades", "direcao"),
+    "MOD-007": ("cardinalidades", "direcao", "ativo"),
     "PERF-001": ("expressao",),
     "PERF-003": ("tipo_dado", "resumir_por"),
     "DAX-001": ("sitio", "expressao", "divisoes"),
@@ -132,22 +132,30 @@ def _mod006(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
     relacionamentos = _relacionamentos_do_autor(modelo)
     saida = []
     for t in _tabelas_do_autor(modelo):
-        filtra: set[str] = set()
-        filtrada_por: set[str] = set()
+        filtra: dict[str, bool] = {}
+        filtrada_por: dict[str, bool] = {}
         for r in relacionamentos:
             if t.nome in lado_um(r):
-                filtra |= lado_muitos(r) - {t.nome}
+                for nome in lado_muitos(r) - {t.nome}:
+                    filtra[nome] = filtra.get(nome, False) or r.ativo
             if t.nome in lado_muitos(r):
-                filtrada_por |= lado_um(r) - {t.nome}
+                for nome in lado_um(r) - {t.nome}:
+                    filtrada_por[nome] = filtrada_por.get(nome, False) or r.ativo
         saida.append(
             Candidato(
                 id_regra="MOD-006",
                 projeto=projeto,
                 objeto=t.nome,
-                fatos={"filtra": ", ".join(sorted(filtra)), "filtrada_por": ", ".join(sorted(filtrada_por))},
+                fatos={"filtra": _ligacoes(filtra), "filtrada_por": _ligacoes(filtrada_por)},
             )
         )
     return saida
+
+
+def _ligacoes(tabelas: dict[str, bool]) -> str:
+    """Nomes em ordem; o ligado só por relacionamento inativo leva `(inativo)`,
+    porque o inativo não propaga filtro sem USERELATIONSHIP."""
+    return ", ".join(nome if ativo else f"{nome} (inativo)" for nome, ativo in sorted(tabelas.items()))
 
 
 def _mod007(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
@@ -156,7 +164,7 @@ def _mod007(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
             id_regra="MOD-007",
             projeto=projeto,
             objeto=nome_do_relacionamento(r),
-            fatos={"cardinalidades": _cardinalidades(r), "direcao": r.direcao_filtro},
+            fatos={"cardinalidades": _cardinalidades(r), "direcao": r.direcao_filtro, "ativo": _sim_nao(r.ativo)},
         )
         for r in _relacionamentos_do_autor(modelo)
     ]
@@ -173,8 +181,10 @@ def _cortar(texto: str) -> str:
 
 
 def _destino_da_variations(bruto: dict) -> str | None:
-    for variacao in bruto.get("variations") or []:
-        destino = (variacao.get("defaultHierarchy") or {}).get("table")
+    variacoes = bruto.get("variations")
+    for variacao in variacoes if isinstance(variacoes, list) else []:
+        hierarquia = variacao.get("defaultHierarchy") if isinstance(variacao, dict) else None
+        destino = hierarquia.get("table") if isinstance(hierarquia, dict) else None
         if destino:
             return destino
     return None
@@ -212,7 +222,7 @@ def _perf003(projeto: str, modelo: ModeloSemantico) -> list[Candidato]:
             id_regra="PERF-003",
             projeto=projeto,
             objeto=f"{t.nome}[{c.nome}]",
-            fatos={"tipo_dado": c.tipo_dado or "", "resumir_por": c.resumir_por or "none"},
+            fatos={"tipo_dado": c.tipo_dado or "", "resumir_por": c.resumir_por or "(ausente)"},
         )
         for t in _tabelas_do_autor(modelo)
         for c in t.colunas

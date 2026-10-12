@@ -127,3 +127,28 @@ def test_medir_recusa_rotulo_invalido_sem_gravar(ambiente, capsys, rotulo):
     assert "rotulo" in capsys.readouterr().err
     assert not (ambiente / "results").exists() or list((ambiente / "results").iterdir()) == []
     assert not (ambiente / "fora.json").exists()
+
+
+def test_planilha_corrompida_vira_mensagem(ambiente, capsys):
+    destino = ambiente / "gabarito" / "anotacao.xlsx"
+    destino.parent.mkdir(parents=True)
+    destino.write_bytes(b"isto nao e um xlsx")
+    assert comando.main(["importar"]) == 1
+    assert "erro:" in capsys.readouterr().err
+
+
+def test_importar_avisa_quando_o_excel_esta_com_a_planilha_aberta(ambiente, capsys):
+    comando.main(["gerar"])
+    (ambiente / "gabarito" / "~$anotacao.xlsx").write_bytes(b"")
+    comando.main(["importar", "--parcial"])
+    erro = capsys.readouterr().err
+    assert "aberta no Excel" in erro and "salve" in erro
+
+
+def test_candidato_ausente_nao_aparece_como_linha_zero(ambiente, monkeypatch, capsys):
+    comando.main(["gerar"])
+    novo = Candidato(id_regra="MOD-003", projeto="P1", objeto="C", fatos=CANDIDATOS[0].fatos)
+    monkeypatch.setattr(comando, "candidatos_do_dataset", lambda: CANDIDATOS + [novo])
+    assert comando.main(["importar", "--parcial"]) == 1
+    erro = capsys.readouterr().err
+    assert "MOD-003|P1|C" in erro and "linha 0" not in erro and "fora da planilha" in erro

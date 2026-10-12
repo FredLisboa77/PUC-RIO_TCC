@@ -9,6 +9,7 @@ import csv
 from pathlib import Path
 
 from openpyxl import Workbook, load_workbook
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Font, Protection
 from openpyxl.worksheet.datavalidation import DataValidation
 from pydantic import BaseModel
@@ -64,7 +65,10 @@ def _aba_de_regra(livro: Workbook, id_regra: str, candidatos: list[Candidato]) -
     for i, c in enumerate(linhas, start=LINHA_CABECALHO + 1):
         valores = [c.id, c.projeto, c.objeto, *(c.fatos[f] for f in COLUNAS_DE_FATOS[id_regra])]
         for coluna, valor in enumerate(valores, start=1):
-            aba.cell(row=i, column=coluna, value=valor).alignment = Alignment(wrap_text=True, vertical="top")
+            celula = aba.cell(row=i, column=coluna, value=ILLEGAL_CHARACTERS_RE.sub("", valor))
+            # Texto, sempre: uma expressão DAX que começa com `=` viraria fórmula do Excel.
+            celula.data_type = "s"
+            celula.alignment = Alignment(wrap_text=True, vertical="top")
         for coluna in range(primeira_editavel, len(cabecalho) + 1):
             aba.cell(row=i, column=coluna).protection = Protection(locked=False)
 
@@ -89,6 +93,10 @@ def _aba_de_regra(livro: Workbook, id_regra: str, candidatos: list[Candidato]) -
 def gerar_planilha(candidatos: list[Candidato], destino: Path) -> None:
     if destino.exists():
         raise ErroDeGabarito(f"{destino} já existe e pode ter vereditos — apague ou renomeie antes de gerar outra")
+    ids = [c.id for c in candidatos]
+    duplicados = sorted({i for i in ids if ids.count(i) > 1})
+    if duplicados:
+        raise ErroDeGabarito(f"id duplicado entre os candidatos — o cruzamento contaria em dobro: {', '.join(duplicados)}")
     livro = Workbook()
     instrucoes = livro.active
     instrucoes.title = "Instruções"
@@ -115,7 +123,8 @@ class LinhaGabarito(BaseModel):
 
 class Problema(BaseModel):
     aba: str
-    linha: int
+    linha: int | None
+    """Número da linha na aba; `None` quando o candidato não está na planilha."""
     id: str
     motivo: str
 
@@ -130,11 +139,21 @@ def _texto(valor) -> str | None:
 def ler_planilha(caminho: Path) -> list[tuple[str, int, LinhaGabarito]]:
     livro = load_workbook(caminho, read_only=True)
     lidas: list[tuple[str, int, LinhaGabarito]] = []
-    for aba in livro.worksheets[1:]:
+    # Pelas abas de regra, pelo nome: uma aba de notas acrescentada ou a ordem
+    # trocada não mudam nada; uma aba de regra renomeada ou apagada é erro.
+    faltando = [id_regra for id_regra in sorted(COLUNAS_DE_FATOS) if id_regra not in livro.sheetnames]
+    if faltando:
+        livro.close()
+        raise ErroDeGabarito(f"aba(s) de regra ausente(s) na planilha: {', '.join(faltando)} — foram renomeadas ou apagadas?")
+    for aba in (livro[id_regra] for id_regra in sorted(COLUNAS_DE_FATOS)):
         linhas = list(aba.iter_rows(min_row=LINHA_CABECALHO, values_only=True))
         if not linhas:
             continue
         cabecalho = list(linhas[0])
+        sem_coluna = [nome for nome in ("id", "projeto", "objeto", *COLUNAS_EDITAVEIS) if nome not in cabecalho]
+        if sem_coluna:
+            livro.close()
+            raise ErroDeGabarito(f"aba {aba.title}: coluna(s) ausente(s) no cabeçalho da linha {LINHA_CABECALHO}: {', '.join(sem_coluna)}")
         posicao = {nome: cabecalho.index(nome) for nome in ("id", "projeto", "objeto", *COLUNAS_EDITAVEIS)}
         for numero, valores in enumerate(linhas[1:], start=LINHA_CABECALHO + 1):
             if valores[posicao["id"]] is None:
@@ -173,6 +192,12 @@ def validar(lidas: list[tuple[str, int, LinhaGabarito]], candidatos: list[Candid
         elif linha.veredito != "não viola" and linha.justificativa is None:
             problemas.append(Problema(aba=aba, linha=numero, id=linha.id, motivo="sem justificativa"))
 
+    vistos: set[str] = set()
+    for aba, numero, linha in lidas:
+        if linha.id in vistos:
+            problemas.append(Problema(aba=aba, linha=numero, id=linha.id, motivo="id duplicado"))
+        vistos.add(linha.id)
+
     na_planilha = {linha.id: (aba, numero) for aba, numero, linha in lidas}
     atuais = {c.id: c for c in candidatos}
     for id_, (aba, numero) in na_planilha.items():
@@ -180,7 +205,7 @@ def validar(lidas: list[tuple[str, int, LinhaGabarito]], candidatos: list[Candid
             problemas.append(Problema(aba=aba, linha=numero, id=id_, motivo="não é mais candidato"))
     for id_, c in atuais.items():
         if id_ not in na_planilha:
-            problemas.append(Problema(aba=c.id_regra, linha=0, id=id_, motivo="candidato ausente da planilha"))
+            problemas.append(Problema(aba=c.id_regra, linha=None, id=id_, motivo="candidato ausente da planilha"))
     return problemas
 
 

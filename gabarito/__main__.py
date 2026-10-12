@@ -6,7 +6,10 @@ Desenho: `docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`.
 import argparse
 import re
 import sys
+import zipfile
 from datetime import date
+
+from openpyxl.utils.exceptions import InvalidFileException
 
 from gabarito.candidatos import ErroDeGabarito, candidatos_do_dataset
 from gabarito.metricas import ResultadoMedicao, medir
@@ -70,11 +73,16 @@ def _gerar() -> int:
 
 
 def _importar(parcial: bool) -> int:
+    trava = ARQUIVO_PLANILHA.with_name(f"~${ARQUIVO_PLANILHA.name}")
+    if trava.exists():
+        # O Excel deixa ler o arquivo aberto, mas só o que já foi salvo entra.
+        print(_ascii("aviso: a planilha parece aberta no Excel - salve antes, ou as edicoes nao salvas ficam de fora"), file=sys.stderr)
     lidas = ler_planilha(ARQUIVO_PLANILHA)
     problemas = validar(lidas, candidatos_do_dataset(), parcial=parcial)
     if problemas:
         for p in problemas:
-            print(_ascii(f"erro: {p.aba} linha {p.linha} | {p.id} | {p.motivo}"), file=sys.stderr)
+            onde = f"linha {p.linha}" if p.linha is not None else "fora da planilha"
+            print(_ascii(f"erro: {p.aba} {onde} | {p.id} | {p.motivo}"), file=sys.stderr)
         print(f"erro: {len(problemas)} problema(s); nada foi gravado", file=sys.stderr)
         return 1
     if parcial:
@@ -120,8 +128,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.comando == "importar":
             return _importar(args.parcial)
         return _medir(args.rotulo)
-    except (ErroDeGabarito, ErroDeAvaliacao, OSError) as erro:
-        # OSError cobre a planilha aberta no Excel (PermissionError) e arquivo ausente.
+    except (ErroDeGabarito, ErroDeAvaliacao, OSError, zipfile.BadZipFile, InvalidFileException) as erro:
+        # OSError cobre a planilha aberta no Excel (PermissionError) e arquivo ausente;
+        # BadZipFile e InvalidFileException, o arquivo corrompido ou salvo em outro formato.
         print(_ascii(f"erro: {erro}"), file=sys.stderr)
         return 1
 

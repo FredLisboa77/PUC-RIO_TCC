@@ -187,3 +187,39 @@ def test_relacionamento_com_tabela_automatica_nao_entra_nas_outras_regras(ler):
     assert [c for c in candidatos if "LocalDateTable_1" in c.objeto and c.id_regra != "MOD-001"] == []
     assert _por_regra(candidatos, "MOD-006")["Vendas"].fatos["filtrada_por"] == "Produto"
     assert _por_regra(candidatos, "MOD-003")["Vendas"].fatos["relacionamentos"] == "1"
+
+
+def test_perf003_mostra_summarize_by_ausente_sem_disfarcar_de_none(ler):
+    """Sem `summarizeBy`, o Power BI usa o padrão do tipo (soma, para número):
+    mostrar `none` induziria `não viola`."""
+    sem = coluna("Valor", tipo_dado="double")
+    del sem["summarizeBy"]
+    modelo = ler(tabelas=[tabela("Fato", colunas=[sem])])
+    assert _por_regra(candidatos_do_modelo("P1", modelo), "PERF-003")["Fato[Valor]"].fatos["resumir_por"] == "(ausente)"
+
+
+@pytest.mark.parametrize("valor", [5, ["texto"], [{"defaultHierarchy": "x"}]])
+def test_variations_malformada_nao_derruba_a_mod005(ler, valor):
+    c = coluna("Data", tipo_dado="dateTime")
+    c["variations"] = valor
+    modelo = ler(tabelas=[tabela("Pedidos", colunas=[c])])
+    assert _por_regra(candidatos_do_modelo("P1", modelo), "MOD-005")["Pedidos"].fatos["colunas_de_data"] == "Data"
+
+
+def test_mod007_mostra_se_o_relacionamento_esta_ativo_e_mod006_marca_o_inativo(ler):
+    modelo = ler(
+        tabelas=[
+            tabela("Vendas", colunas=[coluna("ProdutoKey", tipo_dado="int64"), coluna("Data", tipo_dado="int64")]),
+            tabela("Produto", colunas=[coluna("ProdutoKey", tipo_dado="int64")]),
+            tabela("Calendario", colunas=[coluna("Data", tipo_dado="int64")]),
+        ],
+        relacionamentos=[
+            relacionamento("Vendas", "ProdutoKey", "Produto", "ProdutoKey"),
+            relacionamento("Vendas", "Data", "Calendario", "Data", ativo=False),
+        ],
+    )
+    candidatos = candidatos_do_modelo("P1", modelo)
+    mod007 = _por_regra(candidatos, "MOD-007")
+    assert mod007["Vendas[Data] → Calendario[Data]"].fatos["ativo"] == "não"
+    assert mod007["Vendas[ProdutoKey] → Produto[ProdutoKey]"].fatos["ativo"] == "sim"
+    assert _por_regra(candidatos, "MOD-006")["Vendas"].fatos["filtrada_por"] == "Calendario (inativo), Produto"
