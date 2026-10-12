@@ -2,7 +2,8 @@
 
 - **Data:** 12/10/2026
 - **Fase:** 3, semana 8 — subprojeto 2 da revisão de meio de projeto
-- **Status:** Aguardando revisão do Fred
+- **Status:** Aprovada pelo Fred em 12/10/2026, depois da checagem de conflitos com a ADR-002, a
+  spec da medição de 11/10 e o protocolo de avaliação
 - **Depende de:** o índice da semana 6 (`rag/indice.py`, BM25 sobre trechos por seção), o
   contexto da geração (`core/analise/contexto.py`), o conjunto de 70 consultas
   (`eval/recuperacao/consultas.yaml`) e o cache de embeddings da variante `secao-sem`
@@ -87,6 +88,22 @@ Por busca:
 2. Senão, o BM25 fica, e a fraqueza dos complementares vai à monografia como limitação
    declarada, com a âncora em [1] como mitigação.
 
+**Coerência com a ADR-002:** a emenda de 09/10 (item 3) só admite a combinada se ela
+superar a densa sozinha; o desempate "densa antes de combinada" preserva isso. A emenda de
+11/10 escolheu o BM25 pela régua antiga e apontou a combinada como primeira alternativa se
+os complementares fossem fracos — é o que esta etapa mede, com régua nova, sem desfazer a
+escolha de chunking, cabeçalho e corpus.
+
+**Limitações declaradas da medição:**
+
+- MOD-001, MOD-002, MOD-005 e MOD-007 têm 1 ou 2 consultas cada; a precisão dessas regras
+  vem de poucas consultas, e é por isso que a decisão exige margem de 0,10 na macro.
+- O anotador já viu os complementares do P8 (semana 7), em que o BM25 trouxe páginas de
+  funções DAX para a PERF-001 e a PERF-003. A planilha é cega quanto à busca, mas o viés
+  de quem já viu o problema é declarado.
+- O pool vem das três buscas medidas; uma busca nova exigiria julgar o que ela trouxer e
+  não estiver no CSV (a medição recusa complementar sem julgamento).
+
 **Saída:** `eval/results/complementares-<AAAA-MM-DD>.json` (precisões por busca, regra e
 consulta; decisão e justificativa; ambiente: modelo, versões, sha256 do `consultas.yaml` e
 do CSV) e uma tabela no console, em ASCII.
@@ -95,8 +112,9 @@ do CSV) e uma tabela no console, em ASCII.
 
 - `python -m rag.indice construir` ganha **`--busca {bm25,densa,hibrida}`**, que
   substitui só o tipo de busca da configuração vencedora de 11/10 (chunking, cabeçalho e
-  corpus ficam). A configuração gravada registra a origem: `"busca_decidida_por":
-  "complementares-<data>.json"`.
+  corpus ficam). O modelo `Configuracao` não muda: a origem da troca fica registrada em
+  `origem-da-busca.json`, ao lado da configuração do índice, com o arquivo de resultado que
+  a decidiu, e na emenda da ADR-002.
 - O índice passa a precisar do ChromaDB e do embedder, como `BaseRag` já prevê.
 - A auditoria do P8 roda de novo (`python -m core.auditoria`), para conferir à mão a
   pertinência dos complementares e o tempo por achado; o resultado vai ao progress-log.
@@ -115,7 +133,8 @@ TDD, sem depender de `data/` nem da base coletada, exceto os marcados:
 - Métrica: contas feitas à mão; consulta sem complementar não entra na média (e é
   contada); `indeterminado` em piso e teto; macro ignora regra sem consulta.
 - Decisão: BM25 fica com margem < 0,10; vence a de maior macro; empate pela simplicidade.
-- `construir --busca`: substitui só a busca e registra a origem.
+- `construir --busca`: substitui só a busca, mantém chunking, cabeçalho e corpus, e grava
+  `origem-da-busca.json`; sem `--busca`, o índice sai igual ao de hoje.
 - Sobre a base real (pulado sem ela): o pool gerado tem as 9 regras.
 
 ## 7. Entrega e registro
