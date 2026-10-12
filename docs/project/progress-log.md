@@ -1146,3 +1146,73 @@ remoto como registro.
 
 **Próximo passo:** brainstorming da geração com o LLM e citação obrigatória (semana 7),
 na branch `fase3-geracao-citacao`.
+
+---
+
+## 11/10/2026 — Geração com o LLM e citação obrigatória (semana 7)
+
+Spec `docs/superpowers/specs/2026-10-11-geracao-com-citacao-design.md`, plano
+`docs/superpowers/plans/2026-10-11-geracao-com-citacao.md`, executado na branch
+`fase3-geracao-citacao`.
+
+**Decisões do Fred no desenho:** citação pelo **número do trecho** (não pela URL); resposta
+em **JSON com esquema imposto pelo Ollama**, com 1 a 3 citações; resposta inválida é
+**descartada sem nova tentativa**, com o motivo registrado; a **fidelidade** à evidência é
+verificada e registrada, mas **não descarta**; escopo = geração + `run_audit()` mínimo com
+comando de linha (interface, relatório, cache F16 e medição em P1–P7 ficam fora).
+
+**Construído:** pacote `core/analise/` (contratos, contexto, prompt, cliente do Ollama,
+validação, fidelidade, enriquecimento) e `core/auditoria.py` (`run_audit()` e
+`python -m core.auditoria <pasta-pbip>`). No `rag/indice.py`, a classe `BaseRag` dá ao
+contexto URL, título e o trecho âncora de cada regra, e com a vencedora BM25 **não carrega
+mais o `bge-small` nem o Chroma** — a auditoria roda sem `HF_HUB_OFFLINE`. O contexto põe a
+seção âncora sempre em [1] e completa com até 4 trechos do BM25, num orçamento de 1.800
+palavras. O cliente usa `temperature=0` e `seed=42` (o spike usou 0,2), para a mesma
+auditoria dar a mesma resposta.
+
+**Rodada no P8** (`qwen2.5:7b-instruct-q4_K_M`, `outputs/P8_contoso-vendas-2026-10-11.json`):
+
+| Medida | Valor |
+|---|---|
+| Achados | 15 |
+| Gerados (citação válida) | **15/15** — nenhum descarte |
+| Citam a seção âncora | **14/15** — a exceção (um MOD-001) citou outras duas seções da mesma página `auto-date-time` e a `model-date-tables` |
+| Com divergência de fidelidade | 1/15 |
+| Tempo por achado | médio 8,1 s, pior 10,5 s (spike: 6,0 s; agora o contexto tem até 5 trechos) |
+| Auditoria inteira | 123 s, com a carga do modelo |
+
+**Leitura à mão das 15 respostas** — o que os critérios automáticos não pegam:
+
+1. **Erro de conteúdo no MOD-006 (`DimProduct`):** a recomendação manda integrar
+   `DimProduct`, `DimProductSubcategory` **e `FactOnlineSales`** numa única tabela. Juntar a
+   tabela de fatos à dimensão é errado. Todos os nomes existem no achado, então a
+   fidelidade não acusa: é o "erro de sentido com nomes certos" que a spec declarou como
+   limite da heurística.
+2. **Erro de termo no MOD-006 (`DimProductSubcategory`):** recomenda uma tabela única
+   "normalizada" quando a fonte diz desnormalizar.
+3. **Tradução torta no PERF-001:** "o VertiPaq não **compreende** eficientemente" (a fonte
+   fala em comprimir). O sentido se perde.
+4. **A divergência acusada (PERF-003) é tradução, não invenção:** "Número fixo decimal" é
+   o *Fixed decimal number* do trecho, traduzido. Falso positivo da heurística, coerente
+   com a limitação declarada.
+5. **Trechos complementares fracos em PERF-001 e PERF-003:** o BM25 trouxe páginas de
+   referência de funções (`INFO.CALENDARCOLUMNREFERENCES`, `RANKX`, `YEARFRAC`) sem relação
+   com o achado. A âncora em [1] segurou a explicação. É o sinal que a emenda de 11/10 da
+   ADR-002 aponta para reavaliar a híbrida — registrado para a revisão da semana 8, sem
+   troca agora.
+6. As outras explicações estão corretas e ancoradas; as quatro MOD-001 repetem quase o
+   mesmo texto, como esperado de achados da mesma regra com temperatura 0.
+
+Consequência para a Fase 5: a rubrica humana precisa de um item **"recomendação
+tecnicamente correta"**, separado de citação válida, pertinente e fiel — 2 dos 15 achados
+passaram nos três critérios automáticos com recomendação errada.
+
+**Ledger da execução:** duas decisões, ambas sem efeito no código do plano — o fixture de
+um teste do BM25 tinha IDF zero com dois documentos (ganhou um terceiro), e a contagem
+esperada de um arquivo de teste estava errada no plano (18, não 19).
+
+Suíte: **564 testes passando** (incluindo 1 contra o Ollama real, pulado quando ele não
+responde).
+
+**Próximo passo:** revisão final da branch por um revisor independente, correções que ela
+pedir, e o PR da `fase3-geracao-citacao`.
