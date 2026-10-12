@@ -1,6 +1,7 @@
 """O comando python -m gabarito: gerar, importar e medir, com dados falsos."""
 
 import json
+from datetime import date
 
 import pytest
 
@@ -104,3 +105,25 @@ def test_formatar_mostra_faixa_sem_divisor_de_forma_legivel():
     texto = comando.formatar(medir([linha], {"P1": []}))
     assert "---" not in texto and "--" not in texto
     assert "- (-)" in texto
+
+
+def test_medir_com_rotulo_grava_ao_lado_sem_sobrescrever(ambiente):
+    comando.main(["gerar"])
+    _preencher_tudo(ambiente / "gabarito" / "anotacao.xlsx")
+    comando.main(["importar"])
+    assert comando.main(["medir"]) == 0
+    assert comando.main(["medir", "--rotulo", "pos-correcao"]) == 0
+    hoje = date.today().isoformat()
+    nomes = sorted(p.name for p in (ambiente / "results").glob("regras-*.json"))
+    assert nomes == [f"regras-{hoje}-pos-correcao.json", f"regras-{hoje}.json"]
+
+
+@pytest.mark.parametrize("rotulo", ["../fora", "Pos", "a b", "-x", ""])
+def test_medir_recusa_rotulo_invalido_sem_gravar(ambiente, capsys, rotulo):
+    comando.main(["gerar"])
+    _preencher_tudo(ambiente / "gabarito" / "anotacao.xlsx")
+    comando.main(["importar"])
+    assert comando.main(["medir", f"--rotulo={rotulo}"]) == 1
+    assert "rotulo" in capsys.readouterr().err
+    assert not (ambiente / "results").exists() or list((ambiente / "results").iterdir()) == []
+    assert not (ambiente / "fora.json").exists()
