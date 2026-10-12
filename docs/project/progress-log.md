@@ -1395,3 +1395,48 @@ Suíte: **631 testes passando** (580 + 51 do gabarito).
 
 **Próximo passo:** o Fred preenche `eval/gabarito/anotacao-P1-P7.xlsx` (acompanhando com
 `python -m gabarito importar --parcial`); depois `python -m gabarito importar` e `medir`.
+
+---
+
+## 12/10/2026 — Gabarito anotado e medido (primeira medição)
+
+O Fred anotou as 350 linhas; `importar` gravou `eval/ground_truth.csv` e `medir` gravou
+`eval/results/regras-2026-10-12.json`.
+
+| Regra | VP | FP | FN | VN | ind | Precisão | Recall |
+|---|---|---|---|---|---|---|---|
+| DAX-001 | 3 | 3 | 0 | 4 | 0 | 0,50 | 1,00 |
+| MOD-001 | 1 | 0 | 0 | 57 | 1 | 1,00 | 1,00 (piso 0,50) |
+| MOD-002 | 0 | 0 | 0 | 45 | 0 | — | — |
+| MOD-003 | 0 | 7 | 0 | 51 | 0 | 0,00 | — |
+| MOD-005 | 0 | 0 | 7 | 6 | 0 | — | 0,00 |
+| MOD-006 | 3 | 0 | 0 | 55 | 0 | 1,00 | 1,00 |
+| MOD-007 | 1 | 0 | 0 | 45 | 0 | 1,00 | 1,00 |
+| PERF-001 | 18 | 0 | 7 | 2 | 5 | 1,00 (piso 0,95) | 0,72 (0,62–0,73) |
+| PERF-003 | 16 | 0 | 0 | 13 | 0 | 1,00 | 1,00 |
+
+Total micro: precisão 0,81, recall 0,75; macro: precisão 0,79, recall 0,82. Por categoria
+(micro | macro): DAX 0,50/1,00 | 0,50/1,00; modelagem 0,42/0,42 | 0,75/0,75; performance
+1,00/0,83 | 1,00/0,86.
+
+**Gatilhos:** **R-03 disparou** para DAX-001 (0,50, sobre 6 achados) e MOD-003 (0,00).
+**R-12:** 42 achados confirmados, acima do gatilho de 40 — mas 26 sem a PERF-003.
+
+**24 divergências para releitura**, em quatro grupos:
+
+- **MOD-003, 7 FP:** tabelas isoladas de propósito — `Date Role` e `Time Intelligence`
+  (P1), os dois `Toggle…` (P2), `Indicators` (P4), `Logo` e `Supply Analytics` (P6). A regra
+  não reconhece grupos de cálculo, parâmetros e tabelas auxiliares.
+- **DAX-001, 3 FP:** divisões protegidas por teste explícito `<> 0` em P5. A regra não
+  reconhece a guarda.
+- **MOD-005, 7 FN:** tabelas de data de P1, P2, P3, P4, P5 (2) e P7 julgadas "não marcadas".
+  A regra cala por desenho quando o Tempo automático está desligado (falso negativo
+  declarado na própria regra), porque o `model.bim` não registra a marcação.
+- **PERF-001, 7 FN:** seis colunas de tabelas de data (P1, P2, P4), que a regra exclui por
+  desenho (a documentação recomenda colunas DAX em tabela de data construída em DAX), e
+  `Item[Category (clusters) 2]` (P5), coluna de cluster gerada pela interface, também
+  excluída por desenho.
+
+**Próximo passo:** o Fred decide cada grupo de divergências (corrigir a regra, declarar a
+limitação ou aceitar) e se algum julgamento deve ser revisto por razão factual —
+registrando o motivo, para que o gabarito não seja ajustado ao resultado.
