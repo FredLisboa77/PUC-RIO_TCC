@@ -1567,3 +1567,36 @@ Suíte: **653 testes passando**. P8 sem mudança.
 
 **Próximo passo:** revisão final da branch; merge do PR #6 e do PR desta branch; depois o
 subprojeto 2 (busca combinada).
+
+---
+
+## 12/10/2026 — PRs #6 e #7 mergeados; pendências saneadas
+
+PR #6 (gabarito, `d7a398f`) e PR #7 (correção da MOD-003 e da PERF-001, `37f430a`) mergeados
+na `main` por merge commit, nessa ordem; suíte na `main`: 653 testes.
+
+Branch `fase3-saneamento` fecha os menores adiados nas duas revisões finais, cada um com
+teste:
+
+- **Escopo:** `annotations`, `extendedProperties` e `variations` com valor escalar (`5`,
+  `true`) levantavam `TypeError` dentro de `fora_de_escopo`; agora valem como lista vazia
+  (`_itens`). Texto da PERF-001: "tabela de data calculada em DAX, tipicamente gerada com
+  CALENDAR ou CALENDARAUTO", igual ao que o predicado faz.
+- **Planilha:** texto que começa com `=` fica texto (não vira fórmula do Excel) e caractere
+  de controle é removido; `gerar` recusa ID duplicado e `validar` aponta ID repetido; as abas
+  são lidas pelo nome — aba de notas acrescentada é ignorada, aba de regra renomeada ou
+  coluna do cabeçalho apagada viram mensagem; candidato ausente aparece como "fora da
+  planilha", não "linha 0".
+- **Comando:** arquivo corrompido ou salvo em outro formato vira mensagem; `importar` avisa
+  quando o Excel está com a planilha aberta (`~$…`), porque só o que foi salvo entra.
+- **Fatos neutros:** `summarizeBy` ausente aparece como `(ausente)`, não `none`; a MOD-007
+  ganha o fato `ativo`; a MOD-006 marca `(inativo)` a tabela ligada só por relacionamento
+  inativo. Valem para a próxima geração (P9); a planilha de P1–P7 já anotada continua
+  importando (350/350).
+
+O teste de `formatar` com taxa `None` já tinha entrado no PR #6. `status.md`: tabela de
+próximos passos atualizada.
+
+Suíte: **670 testes passando**.
+
+**Próximo passo:** merge do PR desta branch; subprojeto 2 (busca combinada).
