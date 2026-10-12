@@ -1630,3 +1630,43 @@ PERF-003" (30) perde a razão de ser. O P9 fica reservado para a Fase 5, **só**
 validar as correções da MOD-003 e da PERF-001 num projeto que as regras não viram — anotação
 reduzida às duas regras. A pequena amostra de algumas regras vai à monografia com intervalo
 de Wilson por regra (backlog). R-12 passa a **Mitigado**.
+
+---
+
+## 12/10/2026 — Pertinência dos complementares: ferramentas prontas, planilha gerada
+
+Subprojeto 2 da revisão de meio de projeto. Spec
+`docs/superpowers/specs/2026-10-12-pertinencia-dos-complementares-design.md`, plano de 8
+tarefas, branch `fase3-busca-complementares`; tarefas 1 a 7 executadas na sessão.
+
+**Por que uma régua nova.** A régua de 11/10 mede se a âncora aparece entre os 5 primeiros:
+saturou (7 de 12 combinações com 9 em 9) e, desde a semana 7, a âncora entra no contexto sem
+depender da busca. O que a busca ainda decide são os complementares (trechos 2 a 5), e é a
+pertinência deles que esta etapa mede.
+
+**Construído:**
+
+- `escolher_complementares` (`core/analise/contexto.py`): a seleção da geração como função
+  pura, usada também pela medição — a régua mede o que o modelo recebe.
+- `rag/complementares.py`: BM25, densa e combinada sobre os trechos do índice (vetores do
+  cache de 11/10), o *pool* por (regra, seção), a precisão dos complementares (por consulta,
+  por regra, macro, micro, piso e teto) e a regra de decisão;
+  `python -m rag.complementares gerar | importar [--parcial] | medir`.
+- `rag/pertinencia.py`: planilha cega (nenhuma célula diz qual busca trouxe a seção), com a
+  âncora da regra no topo de cada aba; CSV em `eval/recuperacao/pertinencia.csv`.
+- `python -m rag.indice construir --busca`: troca só o tipo de busca, e só se casar com a
+  decisão mais recente da medição; grava `origem-da-busca.json`.
+
+**Planilha gerada:** `eval/gabarito/pertinencia-complementares.xlsx` (fora do Git), **89
+seções** — PERF-001 32, DAX-001 9, MOD-006 9, MOD-007 9, PERF-003 9, MOD-002 6, MOD-003 6,
+MOD-005 5, MOD-001 4.
+
+**Regra de decisão, fixada antes de medir:** densa ou combinada substitui o BM25 só com
+macro ≥ macro do BM25 + 0,10; se as duas passarem, a de maior macro; empate pela mais
+simples (BM25, densa, combinada).
+
+Suíte: **704 testes passando**.
+
+**Próximo passo:** o Fred julga `eval/gabarito/pertinencia-complementares.xlsx`; depois
+`python -m rag.complementares importar` e `medir` (com `HF_HUB_OFFLINE=1` e
+`HF_HOME=D:\dev\hf-cache`).
