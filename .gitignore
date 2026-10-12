@@ -2,6 +2,7 @@
 data/
 outputs/
 rag/store/
+eval/gabarito/
 *.pbix
 *.abf
 **/.pbi/localSettings.json
