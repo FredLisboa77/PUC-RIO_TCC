@@ -6,13 +6,18 @@ contexto sem depender da busca. Esta régua mede o que sobra para a busca: se os
 2 a 5 que o LLM recebe são pertinentes ao achado.
 """
 
+import argparse
+import hashlib
+import sys
 from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import date
 from statistics import mean
 
 from pydantic import BaseModel
 
 from core.analise.contexto import K_BUSCA, escolher_complementares
-from rag.avaliacao import Consulta
+from rag.avaliacao import ARQUIVO_CONSULTAS, RAIZ_REPO, Consulta, ErroDeAvaliacao, avaliar, ler_conjunto
 from rag.chunking import TrechoIndexado
 
 Ranqueador = Callable[[str, int], list[int]]
@@ -181,3 +186,180 @@ def decidir_busca(macros: dict[str, float | None]) -> DecisaoBusca:
             + ("; empate resolvido pela mais simples" if len(candidatas) == 2 and abs(macros["densa"] - macros["hibrida"]) < _EPS else "")
         ),
     )
+
+
+ARQUIVO_PLANILHA = RAIZ_REPO / "eval" / "gabarito" / "pertinencia-complementares.xlsx"
+ARQUIVO_CSV = RAIZ_REPO / "eval" / "recuperacao" / "pertinencia.csv"
+PASTA_RESULTADOS = RAIZ_REPO / "eval" / "results"
+
+
+@dataclass
+class Ambiente:
+    consultas: list[Consulta]
+    ancoras: dict[str, TrechoIndexado]
+    trechos: list[TrechoIndexado]
+    ranqueadores: dict[str, Ranqueador]
+
+
+def carregar_ambiente() -> Ambiente:
+    """Os trechos do índice e as três buscas sobre eles. Os vetores vêm do cache da
+    medição de 11/10; sem ele, falha — recalcular em silêncio mudaria o que se mede."""
+    from core.analise.contexto import carregar_gabaritos
+    from rag.busca import K_FUSAO, IndiceBm25, fundir_rrf, ranquear
+    from rag.embeddings import PASTA_EMBEDDINGS, EmbedderBge, ler_cache
+    from rag.indice import BaseRag
+
+    base = BaseRag.carregar()
+    trechos = base.trechos
+    textos = [t.texto_indexado for t in trechos]
+    embedder = EmbedderBge()
+    vetores = ler_cache(PASTA_EMBEDDINGS, base.configuracao.variante, embedder.nome, textos)
+    if vetores is None:
+        raise ErroDeComplementares(
+            f"sem cache de embeddings para {base.configuracao.variante} - rode `python -m rag.medicao`"
+        )
+    bm25 = IndiceBm25(textos)
+
+    def por_bm25(consulta: str, k: int) -> list[int]:
+        return ranquear(bm25.pontuacoes(consulta), None, k)
+
+    def densa(consulta: str, k: int) -> list[int]:
+        return ranquear(vetores @ embedder.vetor_consulta(consulta), None, k)
+
+    def hibrida(consulta: str, k: int) -> list[int]:
+        return fundir_rrf([densa(consulta, K_FUSAO), por_bm25(consulta, K_FUSAO)], k)
+
+    ancoras = {
+        id_regra: base.trecho_ancora(g.id_pagina, g.ancora, g.frase_marca)
+        for id_regra, g in carregar_gabaritos().items()
+    }
+    return Ambiente(
+        consultas=ler_conjunto(ARQUIVO_CONSULTAS).consultas,
+        ancoras=ancoras,
+        trechos=trechos,
+        ranqueadores={"bm25": por_bm25, "densa": densa, "hibrida": hibrida},
+    )
+
+
+class ResultadoComplementares(BaseModel):
+    por_busca: dict[str, MedidaBusca]
+    decisao: DecisaoBusca
+    regua_antiga: dict[str, dict[str, float]]
+    """Acerto@5 e MRR@10 da âncora, por busca, nas 70 consultas: registro, não decide."""
+    ambiente: dict
+
+
+def _ascii(texto: str) -> str:
+    return texto.encode("ascii", "replace").decode("ascii")
+
+
+def _pct(valor: float | None) -> str:
+    return "-" if valor is None else f"{valor:.2f}"
+
+
+def formatar(r: ResultadoComplementares) -> str:
+    regras = sorted(next(iter(r.por_busca.values())).por_regra)
+    linhas = ["regra      " + "".join(f"{t:>10}" for t in TIPOS)]
+    for regra in regras:
+        linhas.append(f"{regra:<10} " + "".join(f"{_pct(r.por_busca[t].por_regra[regra].principal):>10}" for t in TIPOS))
+    linhas.append("macro      " + "".join(f"{_pct(r.por_busca[t].macro.principal):>10}" for t in TIPOS))
+    linhas.append("micro      " + "".join(f"{_pct(r.por_busca[t].micro.principal):>10}" for t in TIPOS))
+    linhas.append("piso-teto  " + "".join(
+        f"{_pct(r.por_busca[t].macro.piso) + '-' + _pct(r.por_busca[t].macro.teto):>10}" for t in TIPOS
+    ))
+    linhas.append("regua antiga (acerto@5 / MRR@10): " + ", ".join(
+        f"{t} {r.regua_antiga[t]['acerto5']:.3f}/{r.regua_antiga[t]['mrr']:.3f}" for t in TIPOS
+    ))
+    linhas.append(f"Decisao: {r.decisao.vencedora} - {r.decisao.justificativa}")
+    return _ascii("\n".join(linhas))
+
+
+def _pool(amb: Ambiente) -> list[ItemPool]:
+    return formar_pool(amb.consultas, amb.ancoras, amb.trechos, amb.ranqueadores)
+
+
+def _gerar() -> int:
+    from rag.pertinencia import gerar_planilha
+
+    amb = carregar_ambiente()
+    pool = _pool(amb)
+    gerar_planilha(pool, amb.ancoras, ARQUIVO_PLANILHA)
+    print(_ascii(f"Planilha gerada em {ARQUIVO_PLANILHA} ({len(pool)} secoes)"))
+    return 0
+
+
+def _importar(parcial: bool) -> int:
+    from rag.pertinencia import gravar_csv, ler_planilha, progresso, validar
+
+    lidas = ler_planilha(ARQUIVO_PLANILHA)
+    problemas = validar(lidas, _pool(carregar_ambiente()), parcial=parcial)
+    if problemas:
+        for p in problemas:
+            onde = f"linha {p.linha}" if p.linha is not None else "fora da planilha"
+            print(_ascii(f"erro: {p.aba} {onde} | {p.id} | {p.motivo}"), file=sys.stderr)
+        print(f"erro: {len(problemas)} problema(s); nada foi gravado", file=sys.stderr)
+        return 1
+    if parcial:
+        for regra, (julgadas, total) in sorted(progresso(lidas).items()):
+            print(f"{regra}: {julgadas}/{total}")
+        return 0
+    gravar_csv([l for _, _, l in lidas], ARQUIVO_CSV)
+    print(_ascii(f"Pertinencia gravada em {ARQUIVO_CSV} ({len(lidas)} linhas)"))
+    return 0
+
+
+def _medir() -> int:
+    from rag.pertinencia import ler_csv
+
+    if not ARQUIVO_CSV.is_file():
+        print(f"erro: {ARQUIVO_CSV.name} ausente - rode `python -m rag.complementares importar`", file=sys.stderr)
+        return 1
+    julgamentos = ler_csv(ARQUIVO_CSV)
+    amb = carregar_ambiente()
+    medidas = complementares_por_busca(amb.consultas, amb.ancoras, amb.trechos, amb.ranqueadores)
+    por_busca = {t: medir_busca(medidas[t], julgamentos) for t in TIPOS}
+    conjunto = ler_conjunto(ARQUIVO_CONSULTAS)
+    regua_antiga = {}
+    for t in TIPOS:
+        relatorio = avaliar(lambda q, k, r=amb.ranqueadores[t]: [amb.trechos[i].para_regua() for i in r(q, k)], conjunto)
+        regua_antiga[t] = {"acerto5": relatorio.macro.acerto[5], "mrr": relatorio.macro.mrr}
+    resultado = ResultadoComplementares(
+        por_busca=por_busca,
+        decisao=decidir_busca({t: por_busca[t].macro.principal for t in TIPOS}),
+        regua_antiga=regua_antiga,
+        ambiente={
+            "data": date.today().isoformat(),
+            "sha256_consultas": hashlib.sha256(ARQUIVO_CONSULTAS.read_bytes()).hexdigest(),
+            "sha256_pertinencia": hashlib.sha256(ARQUIVO_CSV.read_bytes()).hexdigest(),
+            "margem": MARGEM,
+        },
+    )
+    PASTA_RESULTADOS.mkdir(parents=True, exist_ok=True)
+    destino = PASTA_RESULTADOS / f"complementares-{date.today().isoformat()}.json"
+    destino.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(formatar(resultado))
+    print(_ascii(f"Resultado em {destino}"))
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="python -m rag.complementares", description="Pertinencia dos complementares.")
+    sub = parser.add_subparsers(dest="comando", required=True)
+    sub.add_parser("gerar", help="gera a planilha cega de pertinencia")
+    importar = sub.add_parser("importar", help="valida a planilha e grava eval/recuperacao/pertinencia.csv")
+    importar.add_argument("--parcial", action="store_true", help="so mostra o progresso")
+    sub.add_parser("medir", help="precisao dos complementares por busca e decisao")
+    args = parser.parse_args(argv)
+    try:
+        if args.comando == "gerar":
+            return _gerar()
+        if args.comando == "importar":
+            return _importar(args.parcial)
+        return _medir()
+    except (ErroDeComplementares, ErroDeAvaliacao, OSError) as erro:
+        print(_ascii(f"erro: {erro}"), file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
