@@ -1288,3 +1288,210 @@ remoto como registro.
 **Próximo passo:** revisão de meio de projeto (semana 8) — *ground truth* das regras em
 P1–P7, com atenção à PERF-003, e decisão sobre a busca combinada para os trechos
 complementares fracos de PERF-001 e PERF-003.
+
+---
+
+## 11/10/2026 — Semana 8 iniciada: gabarito das regras (spec e plano)
+
+A revisão de meio de projeto da semana 8 foi dividida em três subprojetos, cada um com
+spec e plano próprios: **(1) gabarito das regras em P1–P7** (ground truth), **(2) busca
+combinada para os trechos complementares** e **(3) documento da revisão de meio de projeto**
+para o orientador. Começa pelo (1), que está no caminho crítico: decide a precisão da
+PERF-003, a margem do R-12 e o P9, e o gatilho do R-03.
+
+**Decisões do Fred no desenho do gabarito:**
+
+- **O Fred julga**; o código prepara, valida e calcula. O gabarito fica independente de
+  quem escreveu as regras.
+- **Recall por regra**, dentro do que cada regra cobre (universo = todo candidato do tipo
+  certo; pergunta = a condição da âncora).
+- **Julgamento cego, numa passada só:** a planilha lista todos os candidatos sem dizer
+  quais a ferramenta marcou; precisão e recall saem do cruzamento posterior.
+- **Planilha `.xlsx`** gerada pelo código (lista suspensa `viola` / `não viola` /
+  `indeterminado`, abas protegidas), convertida em `eval/ground_truth.csv` versionado.
+- **Pacote novo `gabarito/`**, com candidatos gerados **sem** a lógica das regras.
+- `indeterminado` não é forçado: cada regra sai com precisão e recall principal, piso e
+  teto.
+
+Spec: `docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`. Plano (7 tarefas,
+dependência nova `openpyxl==3.1.5`): `docs/superpowers/plans/2026-10-11-gabarito-das-regras.md`.
+Branch `fase3-gabarito-regras`. Nenhum código escrito ainda; suíte segue em **580 testes**.
+
+**Próximo passo:** o Fred revisar o plano e escolher o modo de execução (nativo ou
+subagentes); executar as 7 tarefas; gerar `eval/gabarito/anotacao-P1-P7.xlsx` e entregá-la
+para o Fred anotar.
+
+
+---
+
+## 12/10/2026 — Gabarito das regras: ferramentas prontas, planilha gerada
+
+Plano de 7 tarefas executado na sessão, uma tarefa por commit, na branch
+`fase3-gabarito-regras`. Antes de executar, o plano passou por uma revisão de melhorias
+sugeridas: entraram o trecho de 100 caracteres depois de cada `/` na DAX-001 (era 40) e o
+teste do comando achando a coluna `veredito` pelo cabeçalho. Ficaram de fora o registro
+dos geradores por decorador (a lista tem um gerador por regra, não por projeto, e ligá-la ao
+`REGISTRO` iria contra a independência das regras), o `model_dump()` na soma de matrizes
+(estilo, sem ganho) e a troca do `_ascii()` por `PYTHONIOENCODING` (traria de volta o
+risco do console cp1252, que já derrubou um comando da Fase 3).
+
+**Construído — pacote novo `gabarito/`** (dependência nova `openpyxl==3.1.5`):
+
+- `candidatos.py`: o universo de cada regra e os fatos neutros, montados do
+  `ModeloSemantico` e do lexer, **sem** chamar as funções de regra. As tabelas de data
+  automática entram só como candidatas da MOD-001. Teste sobre P1–P7: **todo achado real
+  casa com um candidato**.
+- `planilha.py`: a planilha **cega**, com uma aba por regra (pergunta da âncora e link do
+  Learn no topo), lista suspensa no `veredito` e aba protegida com só as colunas de anotação
+  livres; a importação valida sem normalizar (veredito fora da lista, justificativa ausente,
+  ID faltando ou sobrando) e grava `eval/ground_truth.csv`.
+- `metricas.py`: matriz por regra, precisão e recall em três versões — principal, **piso**
+  (indeterminado contra a regra) e **teto** (a favor) —, `None` sem divisor, micro e macro,
+  por categoria e por projeto, gatilhos do R-03 e do R-12 e a lista de divergências.
+- `python -m gabarito gerar | importar [--parcial] | medir`.
+
+**Planilha gerada:** `eval/gabarito/anotacao-P1-P7.xlsx` (fora do Git), **350 candidatos**
+— abaixo dos ~400–450 que a spec estimou:
+
+| Regra | Candidatos |
+|---|---|
+| MOD-001 | 59 |
+| MOD-002 | 45 |
+| MOD-003 | 58 |
+| MOD-005 | 13 |
+| MOD-006 | 58 |
+| MOD-007 | 46 |
+| PERF-001 | 32 |
+| PERF-003 | 29 |
+| DAX-001 | 10 |
+
+Conferido por código nas 9 abas: proteção ligada, lista suspensa cobrindo todas as linhas
+da coluna `veredito`, link do Learn no topo.
+
+**Ressalva declarada:** os candidatos saem do mesmo parser que alimenta as regras; um
+objeto que o parser não lê fica fora dos dois lados — vai para a monografia ao lado do viés
+de anotador único.
+
+**Revisão final da branch (revisor independente):** nenhum achado crítico; o núcleo
+(candidatos, cruzamento, validação, fórmulas) conferido nos dados reais — os 53 achados de
+P1–P7 casam com um candidato. Três importantes corrigidos, cada um com teste:
+
+- a proteção da aba travava largura de coluna, altura de linha e filtro, e nenhuma largura
+  vinha definida — anotar 350 linhas com expressões DAX em colunas de 8 caracteres obrigaria
+  a desproteger. Agora há larguras por coluna, filtro no cabeçalho e só fatos e IDs travados;
+- faltava o **macro por categoria** que a spec §5 pede (defeito do plano);
+- relacionamentos com ponta em tabela de data automática entravam como candidatos (e fatos)
+  da MOD-002/003/006/007 — sem efeito em P1–P7, mas um P9 com Tempo automático ganharia
+  falsos negativos espúrios.
+
+A planilha foi regerada depois das correções (estava com 0/350 julgadas), com as mesmas
+contagens. Nove menores ficaram adiados, nenhum com efeito nos dados atuais: importação que
+confia na ordem e no nome das abas, texto iniciado por `=` ou com caractere de controle,
+exceções de arquivo corrompido sem mensagem, edição não salva no Excel lida sem aviso, IDs
+duplicados, `summarizeBy` ausente exibido como `none`, fatos de relacionamento inativo na
+MOD-006/007, "linha 0" na mensagem de candidato ausente e falta de teste do `-` no console.
+
+Suíte: **631 testes passando** (580 + 51 do gabarito).
+
+**Próximo passo:** o Fred preenche `eval/gabarito/anotacao-P1-P7.xlsx` (acompanhando com
+`python -m gabarito importar --parcial`); depois `python -m gabarito importar` e `medir`.
+
+---
+
+## 12/10/2026 — Gabarito anotado e medido (primeira medição)
+
+O Fred anotou as 350 linhas; `importar` gravou `eval/ground_truth.csv` e `medir` gravou
+`eval/results/regras-2026-10-12.json`.
+
+| Regra | VP | FP | FN | VN | ind | Precisão | Recall |
+|---|---|---|---|---|---|---|---|
+| DAX-001 | 3 | 3 | 0 | 4 | 0 | 0,50 | 1,00 |
+| MOD-001 | 1 | 0 | 0 | 57 | 1 | 1,00 | 1,00 (piso 0,50) |
+| MOD-002 | 0 | 0 | 0 | 45 | 0 | — | — |
+| MOD-003 | 0 | 7 | 0 | 51 | 0 | 0,00 | — |
+| MOD-005 | 0 | 0 | 7 | 6 | 0 | — | 0,00 |
+| MOD-006 | 3 | 0 | 0 | 55 | 0 | 1,00 | 1,00 |
+| MOD-007 | 1 | 0 | 0 | 45 | 0 | 1,00 | 1,00 |
+| PERF-001 | 18 | 0 | 7 | 2 | 5 | 1,00 (piso 0,95) | 0,72 (0,62–0,73) |
+| PERF-003 | 16 | 0 | 0 | 13 | 0 | 1,00 | 1,00 |
+
+Total micro: precisão 0,81, recall 0,75; macro: precisão 0,79, recall 0,82. Por categoria
+(micro | macro): DAX 0,50/1,00 | 0,50/1,00; modelagem 0,42/0,42 | 0,75/0,75; performance
+1,00/0,83 | 1,00/0,86.
+
+**Gatilhos:** **R-03 disparou** para DAX-001 (0,50, sobre 6 achados) e MOD-003 (0,00).
+**R-12:** 42 achados confirmados, acima do gatilho de 40 — mas 26 sem a PERF-003.
+
+**24 divergências para releitura**, em quatro grupos:
+
+- **MOD-003, 7 FP:** tabelas isoladas de propósito — `Date Role` e `Time Intelligence`
+  (P1), os dois `Toggle…` (P2), `Indicators` (P4), `Logo` e `Supply Analytics` (P6). A regra
+  não reconhece grupos de cálculo, parâmetros e tabelas auxiliares.
+- **DAX-001, 3 FP:** divisões protegidas por teste explícito `<> 0` em P5. A regra não
+  reconhece a guarda.
+- **MOD-005, 7 FN:** tabelas de data de P1, P2, P3, P4, P5 (2) e P7 julgadas "não marcadas".
+  A regra cala por desenho quando o Tempo automático está desligado (falso negativo
+  declarado na própria regra), porque o `model.bim` não registra a marcação.
+- **PERF-001, 7 FN:** seis colunas de tabelas de data (P1, P2, P4), que a regra exclui por
+  desenho (a documentação recomenda colunas DAX em tabela de data construída em DAX), e
+  `Item[Category (clusters) 2]` (P5), coluna de cluster gerada pela interface, também
+  excluída por desenho.
+
+**Próximo passo:** o Fred decide cada grupo de divergências (corrigir a regra, declarar a
+limitação ou aceitar) e se algum julgamento deve ser revisto por razão factual —
+registrando o motivo, para que o gabarito não seja ajustado ao resultado.
+
+### Revisão de 8 julgamentos pela documentação (mesmo dia)
+
+Decisão do Fred: prevalece a documentação. Cada linha revista guarda, na justificativa, o
+motivo factual e o julgamento original; a primeira medição fica no Git (`d78bbda`).
+
+- **MOD-005, 7 linhas: `viola` → `indeterminado`.** O `model.bim` não registra a marcação
+  de tabela de data (verificado em 06/10/2026, nota da regra); não há como afirmar que a
+  tabela não está marcada.
+- **PERF-001, `Item[Category (clusters) 2]`: `viola` → `não viola`.** Coluna e
+  `ClusterMappingTable 2` gerados pelo recurso de clusters do Power BI; a orientação de
+  redução de dados abre exceção para funcionalidade que só existe no Power BI.
+- **PERF-001, 6 colunas de tabelas de data (P1, P2, P4): `viola` mantido.** As tabelas são
+  importadas pelo Power Query (Excel em P1 e P2, SQL em P4). A página de tabelas de data só
+  recomenda estender com colunas calculadas a tabela **gerada em DAX** (CALENDAR/
+  CALENDARAUTO); quando a origem tem a tabela, recomenda usar a origem. **A exclusão da
+  PERF-001 é larga demais**: exclui toda dimensão de data, e não só as calculadas em DAX —
+  defeito da regra.
+
+**Medição revista:** precisão inalterada; recall total micro 0,88 (era 0,75), macro 0,96;
+PERF-001 recall 0,75 (0,64 a 0,76); MOD-005 sem divisor (0 achados, 7 indeterminados). R-03
+segue para DAX-001 (0,50) e MOD-003 (0,00); R-12 segue 42 (26 sem PERF-003). Restam **16
+divergências**: MOD-003 (7 FP), DAX-001 (3 FP) e PERF-001 (6 FN), as três por defeito de
+regra. O console passou a mostrar a faixa como `0.95 a 1.00`, e `- (-)` sem divisor.
+
+**Próximo passo:** o Fred decide sobre os três defeitos de regra (corrigir agora ou declarar)
+— correção de regra é outra etapa, medida de novo contra o **mesmo** CSV.
+
+### Resultado oficial com as regras congeladas (tag `regras-gt`)
+
+O protocolo do R-04 (`eval/dataset.md`) manda congelar as regras numa tag **antes** da
+anotação; a tag não tinha sido criada. Como nenhuma regra mudou desde a `main`, ela é criada
+agora, no commit que fecha a anotação, e marca as regras que o gabarito mediu. Decisão do
+Fred (opção A): as correções de regra seguem numa etapa própria, mas entram na monografia como
+**análise de erros**, não como resultado.
+
+Mais 4 vereditos revistos pela documentação, antes da tag:
+
+- **DAX-001, 3 linhas de P5: `não viola` → `viola`.** A página da âncora usa exatamente o
+  padrão `IF(denominador <> 0, a / denominador, BLANK())` como exemplo a trocar por DIVIDE
+  ("better optimized for testing the denominator value than the IF function").
+- **MOD-003, `Supply Analytics` (P6): `não viola` → `viola`.** 14 colunas de negócio de um
+  Excel, sem relacionamento e sem medida que a use.
+
+**Resultado oficial:** precisão total 0,88 (micro e macro), recall 0,88 micro e 0,96 macro.
+DAX-001 1,00/1,00; MOD-003 precisão **0,14** (1 VP, 6 FP); PERF-001 recall 0,75. **R-03**
+dispara só para a MOD-003. **R-12:** 46 confirmados (30 sem a PERF-003) contra 40.
+
+Os 6 FP da MOD-003: 4 têm sinal estrutural e serão corrigidos (grupos de cálculo `Date Role`
+e `Time Intelligence`; parâmetros de campo `Toggle for breakdown` e `Toggle for variance to
+plan`); 2 são **limitação declarada** (`Logo` e `Indicators`, tabelas digitadas à mão para a
+apresentação, sem sinal estrutural seguro — decisão do Fred, opção A). Os 6 FN da PERF-001
+(colunas de tabelas de data importadas pelo Power Query) também serão corrigidos.
+
+**Próximo passo:** PR da branch; etapa nova `fase3-correcao-regras` (spec, plano e execução).

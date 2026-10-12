@@ -141,6 +141,28 @@ só, sem medida de concordância (Fase 1, limitações declaradas). O protocolo 
    catálogo). Nenhum dos dois mudou a contagem de achados, mas ambos foram motivados
    pelo conjunto de teste.
 
+### Execução do protocolo (registrado em 12/10/2026)
+
+- **Item 1 — tag criada no fim da anotação, não no início.** A anotação de P1–P7 foi feita
+  e importada em 12/10/2026 sem a tag; ela foi criada no mesmo dia, no commit que fecha a
+  anotação. Nenhuma regra (`core/rules/`) mudou entre o início da anotação e a tag, de modo
+  que ela marca exatamente as regras que o gabarito mediu. O **resultado oficial** é
+  `eval/results/regras-2026-10-12.json` medido nessa tag.
+- **Correções de regra depois da tag** (MOD-003: grupos de cálculo e parâmetros de campo;
+  PERF-001: exclusão só da tabela de data calculada em DAX) foram motivadas pelas
+  divergências do gabarito. Entram na monografia como **análise de erros**, com ameaça à
+  validade declarada, e não como resultado; a validação delas fica para um projeto que as
+  regras não viram (P9 ou Fase 5).
+- **Vereditos revistos depois da primeira medição:** 12 linhas, todas pela documentação, com
+  o motivo e o julgamento original na própria justificativa (`progress-log.md`, 12/10/2026).
+- **Item 2 — segundo anotador: em aberto.** A spec do gabarito
+  (`docs/superpowers/specs/2026-10-11-gabarito-das-regras-design.md`, §9) deixou o segundo
+  anotador e o kappa fora do escopo; este protocolo ainda os promete. Decisão pendente do
+  Fred.
+- **Item 3 — anotação cega:** a planilha não mostrava o que a ferramenta marcou.
+- **Formato:** o formato abaixo foi substituído pelo da spec do gabarito —
+  `id,projeto,id_regra,objeto,veredito,justificativa,referencia`.
+
 Formato de `eval/ground_truth.csv`:
 
 ```
