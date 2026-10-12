@@ -5,7 +5,7 @@ import pytest
 from conftest import escrever_pbip, modelo_tmsl, tabela
 from core import auditoria
 from core.analise.contexto import ErroDeContexto
-from core.analise.llm import ErroDeLLM
+from core.analise.llm import LIMITE_PROMPT, ErroDeLLM
 from core.auditoria import ErroDeAuditoria, ResultadoAuditoria, gravar, resumir, run_audit
 from core.rules.registry import Registro
 from fabricas_analise import LLMFalso, achado, base_padrao, gabarito, meta, resposta
@@ -115,3 +115,23 @@ def test_comando_com_ollama_fora_do_ar_sai_com_erro(tmp_path, monkeypatch, capsy
     _comando_falso(monkeypatch, tmp_path, llm=LLMFalso(falha_no_aquecimento=True))
     assert auditoria.main([str(_pbip(tmp_path))]) == 1
     assert "aquecimento" in capsys.readouterr().err
+
+
+def test_resumo_aponta_prompts_no_limite_do_contexto(tmp_path):
+    # O Ollama trunca o prompt que passa do num_ctx sem erro na API: sem este
+    # alerta, o achado sairia "gerado" com um contexto que o modelo não leu inteiro.
+    resultado, _ = _auditar(tmp_path, llm=LLMFalso(tokens_prompt=LIMITE_PROMPT))
+    assert "Prompts no limite do contexto (possivel truncamento): 2" in resumir(resultado)
+
+
+def test_resumo_sem_prompt_no_limite_nao_alerta(tmp_path):
+    resultado, _ = _auditar(tmp_path, llm=LLMFalso(tokens_prompt=LIMITE_PROMPT - 1))
+    assert "limite do contexto" not in resumir(resultado)
+
+
+def test_comando_com_model_bim_corrompido_sai_com_mensagem(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+    pasta = escrever_pbip(tmp_path, model_bim=None)
+    (pasta / "Minimal.SemanticModel" / "model.bim").write_text("{ quebrado", encoding="utf-8")
+    assert auditoria.main([str(pasta)]) == 1
+    assert "erro:" in capsys.readouterr().err

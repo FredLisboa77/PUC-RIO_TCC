@@ -56,6 +56,8 @@ class AchadoEnriquecido(BaseModel):
     modelo: str
     segundos: float | None = None
     """Tempo da chamada, sem a carga do modelo. `None` quando o LLM não respondeu."""
+    tokens_prompt: int | None = None
+    """Tamanho real do prompt, para saber se ele coube no `num_ctx`."""
 
     @model_validator(mode="after")
     def _situacao_coerente(self) -> "AchadoEnriquecido":

@@ -121,8 +121,9 @@ class LLMFalso:
 
     nome = "llm-falso"
 
-    def __init__(self, *respostas, falha_no_aquecimento: bool = False) -> None:
+    def __init__(self, *respostas, falha_no_aquecimento: bool = False, tokens_prompt: int | None = None) -> None:
         self.respostas = list(respostas)
+        self.tokens_prompt = tokens_prompt
         self.falha_no_aquecimento = falha_no_aquecimento
         self.chamadas: list[list[dict[str, str]]] = []
         self.aquecimentos = 0
@@ -137,4 +138,4 @@ class LLMFalso:
         proxima = self.respostas.pop(0) if self.respostas else RESPOSTA_BOA
         if isinstance(proxima, Exception):
             raise proxima
-        return RespostaLLM(texto=proxima, segundos=0.5)
+        return RespostaLLM(texto=proxima, segundos=0.5, tokens_prompt=self.tokens_prompt)

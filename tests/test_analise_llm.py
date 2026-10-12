@@ -72,3 +72,13 @@ def test_resposta_sem_conteudo_vira_erro_de_llm(monkeypatch):
     _instalar(monkeypatch, resposta={"done": True})
     with pytest.raises(ErroDeLLM, match="message"):
         ClienteOllama().gerar([], {})
+
+
+def test_gerar_devolve_os_tokens_do_prompt(monkeypatch):
+    _instalar(monkeypatch, resposta={"message": {"content": "{}"}, "prompt_eval_count": 1234})
+    assert ClienteOllama().gerar([], {}).tokens_prompt == 1234
+
+
+def test_sem_contagem_de_tokens_fica_none(monkeypatch):
+    _instalar(monkeypatch, resposta={"message": {"content": "{}"}})
+    assert ClienteOllama().gerar([], {}).tokens_prompt is None

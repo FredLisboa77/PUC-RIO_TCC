@@ -6,7 +6,7 @@ import logging
 from core.analise.base import AchadoEnriquecido
 from core.analise.contexto import montar_contexto
 from core.analise.fidelidade import verificar_fidelidade
-from core.analise.llm import ErroDeLLM, LLMClient
+from core.analise.llm import LIMITE_PROMPT, ErroDeLLM, LLMClient
 from core.analise.prompt import ESQUEMA, montar_mensagens
 from core.analise.validacao import validar
 from core.rules.base import Achado, RegraMeta
@@ -27,16 +27,19 @@ def enriquecer(
         logger.warning("LLM falhou no achado %s/%s: %s", achado.id_regra, achado.evidencia.objeto, erro)
         return AchadoEnriquecido(**comum, situacao="sem_fundamentacao", motivo_descarte="erro_llm")
 
+    if resposta.tokens_prompt is not None and resposta.tokens_prompt >= LIMITE_PROMPT:
+        logger.warning(
+            "prompt de %s tokens no achado %s/%s: pode ter sido truncado",
+            resposta.tokens_prompt, achado.id_regra, achado.evidencia.objeto,
+        )
+    comum.update(segundos=resposta.segundos, tokens_prompt=resposta.tokens_prompt)
     geracao, motivo = validar(resposta.texto, len(contexto))
     if geracao is None:
-        return AchadoEnriquecido(
-            **comum, situacao="sem_fundamentacao", motivo_descarte=motivo, segundos=resposta.segundos
-        )
+        return AchadoEnriquecido(**comum, situacao="sem_fundamentacao", motivo_descarte=motivo)
     return AchadoEnriquecido(
         **comum,
         geracao=geracao,
         situacao="gerado",
         cita_ancora=1 in geracao.citacoes,
         fidelidade=verificar_fidelidade(geracao, achado, contexto),
-        segundos=resposta.segundos,
     )

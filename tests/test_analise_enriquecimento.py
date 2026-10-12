@@ -46,3 +46,8 @@ def test_prompt_enviado_traz_a_ancora_como_trecho_1():
     llm = LLMFalso()
     _enriquecer(llm)
     assert "[1] T › Seção\nYou should disable the auto date time option" in llm.chamadas[0][1]["content"]
+
+
+def test_tokens_do_prompt_vao_para_o_achado_gerado_ou_descartado():
+    assert _enriquecer(LLMFalso(tokens_prompt=1500)).tokens_prompt == 1500
+    assert _enriquecer(LLMFalso(resposta(citacoes=(9,)), tokens_prompt=1500)).tokens_prompt == 1500

@@ -19,6 +19,12 @@ MODELO_PADRAO = "qwen2.5:7b-instruct-q4_K_M"
 NUM_CTX = 4096
 """O 7B em Q4_K_M ocupa ~5,3 GB dos 6 GB de VRAM com este contexto (spike de
 29/09); aumentá-lo empurraria camadas para a CPU."""
+RESERVA_RESPOSTA = 512
+LIMITE_PROMPT = NUM_CTX - RESERVA_RESPOSTA
+"""Prompt a partir deste tamanho pode ter sido truncado: o Ollama corta o que passa
+do `num_ctx` sem erro na API. O orçamento de contexto é em palavras, e trechos de
+código chegam a ~3,4 tokens por palavra (revisão final de 11/10), então o tamanho
+real só se sabe pela contagem que o Ollama devolve."""
 SEED = 42
 TIMEOUT_S = 120
 
@@ -30,6 +36,8 @@ class ErroDeLLM(Exception):
 class RespostaLLM(BaseModel):
     texto: str
     segundos: float
+    tokens_prompt: int | None = None
+    """O `prompt_eval_count` do Ollama, quando ele informa."""
 
 
 class LLMClient(Protocol):
@@ -87,4 +95,4 @@ class ClienteOllama:
             texto = dados["message"]["content"]
         except (KeyError, TypeError) as erro:
             raise ErroDeLLM("resposta do Ollama sem message.content") from erro
-        return RespostaLLM(texto=texto, segundos=round(segundos, 2))
+        return RespostaLLM(texto=texto, segundos=round(segundos, 2), tokens_prompt=dados.get("prompt_eval_count"))
