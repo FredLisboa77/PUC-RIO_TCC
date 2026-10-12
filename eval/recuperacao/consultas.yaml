@@ -103,20 +103,26 @@ consultas:
   tipo: achado
   projeto: P1
   id_regra: PERF-001
+  objeto: Date[Mth of year]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Mth of year]
+- id: P1/PERF-001/2
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-001
+  objeto: Date[Mth]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Mth]
+- id: P1/PERF-001/3
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-001
+  objeto: Date[Year]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Year]
+- id: P1/PERF-001/4
+  tipo: achado
+  projeto: P1
+  id_regra: PERF-001
   objeto: Product[Sorting]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Product[Sorting]
-- id: P1/MOD-003/1
-  tipo: achado
-  projeto: P1
-  id_regra: MOD-003
-  objeto: Date Role
-  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Date Role
-- id: P1/MOD-003/2
-  tipo: achado
-  projeto: P1
-  id_regra: MOD-003
-  objeto: Time Intelligence
-  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Time Intelligence
 - id: P1/MOD-006/1
   tipo: achado
   projeto: P1
@@ -159,18 +165,12 @@ consultas:
   id_regra: PERF-001
   objeto: Country Region[Country / Region]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Country Region[Country / Region]
-- id: P2/MOD-003/1
+- id: P2/PERF-001/2
   tipo: achado
   projeto: P2
-  id_regra: MOD-003
-  objeto: Toggle for breakdown
-  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Toggle for breakdown
-- id: P2/MOD-003/2
-  tipo: achado
-  projeto: P2
-  id_regra: MOD-003
-  objeto: Toggle for variance to plan
-  texto: star schema model relationships; dimension table fact table; table not related; filter propagation | table Toggle for variance to plan
+  id_regra: PERF-001
+  objeto: Date[Month]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Month]
 - id: P2/PERF-003/1
   tipo: achado
   projeto: P2
@@ -187,27 +187,33 @@ consultas:
   tipo: achado
   projeto: P3
   id_regra: PERF-001
+  objeto: Date[Month increment number]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Month increment number]
+- id: P3/PERF-001/3
+  tipo: achado
+  projeto: P3
+  id_regra: PERF-001
   objeto: Employee[AgeGroupID]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[AgeGroupID]
-- id: P3/PERF-001/3
+- id: P3/PERF-001/4
   tipo: achado
   projeto: P3
   id_regra: PERF-001
   objeto: Employee[BadHires]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[BadHires]
-- id: P3/PERF-001/4
+- id: P3/PERF-001/5
   tipo: achado
   projeto: P3
   id_regra: PERF-001
   objeto: Employee[TenureDays]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[TenureDays]
-- id: P3/PERF-001/5
+- id: P3/PERF-001/6
   tipo: achado
   projeto: P3
   id_regra: PERF-001
   objeto: Employee[TenureMonths]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Employee[TenureMonths]
-- id: P3/PERF-001/6
+- id: P3/PERF-001/7
   tipo: achado
   projeto: P3
   id_regra: PERF-001
@@ -229,15 +235,57 @@ consultas:
   tipo: achado
   projeto: P4
   id_regra: PERF-001
+  objeto: Date[MonthIndex]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[MonthIndex]
+- id: P4/PERF-001/2
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[Months]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Months]
+- id: P4/PERF-001/3
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[Rolling Period Sort]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Rolling Period Sort]
+- id: P4/PERF-001/4
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[Rolling Period]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Rolling Period]
+- id: P4/PERF-001/5
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[Running Months]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Running Months]
+- id: P4/PERF-001/6
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[Running Year]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[Running Year]
+- id: P4/PERF-001/7
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
+  objeto: Date[RunningMonths]
+  texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Date[RunningMonths]
+- id: P4/PERF-001/8
+  tipo: achado
+  projeto: P4
+  id_regra: PERF-001
   objeto: Manufacturer[MfgisVanArsdel]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Manufacturer[MfgisVanArsdel]
-- id: P4/PERF-001/2
+- id: P4/PERF-001/9
   tipo: achado
   projeto: P4
   id_regra: PERF-001
   objeto: Product[IsCompete]
   texto: preference for custom columns; calculated column versus Power Query computed column; VertiPaq compression calculated columns; data refresh time model size | column Product[IsCompete]
-- id: P4/PERF-001/3
+- id: P4/PERF-001/10
   tipo: achado
   projeto: P4
   id_regra: PERF-001

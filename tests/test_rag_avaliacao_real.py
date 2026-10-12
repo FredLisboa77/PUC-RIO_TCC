@@ -32,9 +32,10 @@ def test_consultas_versionadas_usam_as_frases_do_gabarito():
 def test_contagem_do_conjunto_versionado():
     conjunto = ler_conjunto(ARQUIVO_CONSULTAS)
     assert len(conjunto.gabaritos) == 9
-    assert len(conjunto.consultas) == 62
+    # 62 até a tag `regras-gt`; 70 depois da correção da MOD-003 (−4) e da PERF-001 (+12).
+    assert len(conjunto.consultas) == 70
     assert sum(c.tipo == "regra" for c in conjunto.consultas) == 9
-    assert len({c.id for c in conjunto.consultas}) == 62
+    assert len({c.id for c in conjunto.consultas}) == 70
 
 
 def test_mod003_e_mod006_caem_em_secoes_diferentes_da_mesma_pagina():
