@@ -1620,3 +1620,13 @@ PR #8 (saneamento) mergeado na `main` (`fb65863`); suíte: 670 testes.
   PERF-003; gatilho de 40).
 
 **Próximo passo:** decisão sobre o P9; subprojeto 2 (busca combinada).
+
+### Decisão sobre o P9 (mesmo dia)
+
+**P9 não acionado** (proposta aprovada pelo Fred). Pelo critério combinado do R-12 — menos de
+~40 achados aciona o P9 —, P1–P7 têm **46 achados confirmados** pelo gabarito. A dúvida era a
+PERF-003 (16 achados, precisão dependente de dado): saiu com precisão 1,00, e a conta "sem a
+PERF-003" (30) perde a razão de ser. O P9 fica reservado para a Fase 5, **só** se for preciso
+validar as correções da MOD-003 e da PERF-001 num projeto que as regras não viram — anotação
+reduzida às duas regras. A pequena amostra de algumas regras vai à monografia com intervalo
+de Wilson por regra (backlog). R-12 passa a **Mitigado**.

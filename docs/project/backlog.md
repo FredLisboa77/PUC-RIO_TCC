@@ -66,6 +66,7 @@ ficam aqui, para entrar quando a etapa correspondente chegar:
 |---|---|---|
 | Integração contínua: `pytest` a cada push e em todo PR, mais um linter (`ruff`) | Antes de integrar o PR #1, ou logo depois | Prática padrão; hoje o repositório não tem CI |
 | Precisão por regra com intervalo de confiança de Wilson, e por categoria, em vez de um número único | Fase 5 (semana 11) | Wilson (1927); n = 7 projetos |
+| P9 reduzido, **condicional**: anotar só os candidatos da MOD-003 e da PERF-001 num projeto novo, para validar as correções feitas depois da tag `regras-gt` (hoje análise de erros) | Fase 5, se a validação for necessária | Decisão de 12/10/2026 (R-12) |
 | Fidelidade das explicações: numa amostra, conferir se a citação sustenta o que o texto afirma, além de existir entre os trechos | Fase 5, na rubrica | Gao et al. (2023), ALCE; Es et al. (2023), RAGAS |
 | **Confirmado em 12/10/2026:** item próprio **"recomendação tecnicamente correta"** na rubrica humana, separado de citação válida, citação pertinente e fidelidade — no P8, 2 de 15 recomendações erradas passaram nos três critérios automáticos | Fase 5, na rubrica | Leitura à mão das 15 respostas do P8 (progress-log, 11/10/2026) |
 | Situar o gatilho de precisão do R-03 (0,7) diante da referência industrial de menos de 10% de falsos positivos efetivos | Monografia, capítulo de avaliação | Sadowski et al. (2018), CACM |
