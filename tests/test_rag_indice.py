@@ -111,3 +111,54 @@ def test_carregar_buscador_reproduz_a_busca_em_memoria(tmp_path, busca):
     )
     for consulta in ("auto date", "star schema", "divide"):
         assert do_indice(consulta, 3) == em_memoria(consulta, 3), (busca, consulta)
+
+
+from rag.indice import BaseRag
+
+
+def _t(id_pagina, texto, *, parte=1, ancora="s"):
+    return TrechoIndexado(
+        id=f"{id_pagina}#{ancora}/{parte}", id_pagina=id_pagina, url="u", titulo_pagina="T",
+        ancora=ancora, caminho="S", texto=texto, texto_indexado=texto,
+    )
+
+
+def _config(busca):
+    return Configuracao(chunking="secao", cabecalho=False, busca=busca, corpus="completo")
+
+
+def test_base_bm25_nao_carrega_embedder_nem_chroma(tmp_path, monkeypatch):
+    pasta = tmp_path / "i"
+    pasta.mkdir()
+    trechos = [_t("learn:p", "auto date time"), _t("learn:q", "divide by zero"), _t("learn:r", "star schema")]
+    (pasta / "trechos.jsonl").write_text("".join(t.model_dump_json() + "\n" for t in trechos), encoding="utf-8")
+    (pasta / "config.json").write_text(_config("bm25").model_dump_json(), encoding="utf-8")
+    monkeypatch.setattr(modulo_indice, "EmbedderBge", lambda: pytest.fail("BM25 não usa embedder"))
+    monkeypatch.setattr(modulo_indice, "_cliente", lambda pasta: pytest.fail("BM25 não usa o Chroma"))
+
+    base = BaseRag.carregar(pasta_indice=pasta, pasta_chroma=tmp_path / "c")
+
+    achados = base.buscar("divide", 1)
+    assert [t.id for t in achados] == ["learn:q#s/1"]
+    assert (achados[0].url, achados[0].titulo_pagina) == ("u", "T")
+
+
+def test_trecho_ancora_pega_a_parte_da_secao_com_a_frase_marca():
+    base = BaseRag(_config("bm25"), [
+        _t("learn:p", "intro text"),
+        _t("learn:p", "You should disable the Auto  date/time option.", parte=2),
+        _t("learn:q", "disable the auto date/time option"),
+    ])
+    assert base.trecho_ancora("learn:p", "s", "disable the auto date/time option").id == "learn:p#s/2"
+
+
+def test_trecho_ancora_de_secao_ausente_falha():
+    base = BaseRag(_config("bm25"), [_t("learn:p", "texto")])
+    with pytest.raises(ErroDeIndice, match="ausente"):
+        base.trecho_ancora("learn:sumiu", "s", "texto")
+
+
+def test_trecho_ancora_sem_a_frase_marca_falha():
+    base = BaseRag(_config("bm25"), [_t("learn:p", "outro texto")])
+    with pytest.raises(ErroDeIndice, match="frase-marca"):
+        base.trecho_ancora("learn:p", "s", "disable the option")
