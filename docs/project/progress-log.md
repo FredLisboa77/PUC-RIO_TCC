@@ -1724,3 +1724,13 @@ Emenda na ADR-002 com a tabela e as limitações.
 
 **Próximo passo:** PR da branch `fase3-busca-complementares`; depois o subprojeto 3
 (documento de meio de projeto).
+
+---
+
+## 12/10/2026 — PR #9 mergeado; página do orientador atualizada
+
+PR #9 (pertinência dos complementares) mergeado na `main` (`515040c`); suíte: 706 testes. A
+página do orientador ganhou a reavaliação da busca (seção 7: tabela, decisão e as duas
+limitações) e os próximos passos.
+
+**Próximo passo:** subprojeto 3 — documento da revisão de meio de projeto para o orientador.
