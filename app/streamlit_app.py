@@ -14,10 +14,11 @@ if str(RAIZ) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
-from app import consulta, execucao  # noqa: E402
-from app.consulta import Filtro  # noqa: E402
+from app import execucao  # noqa: E402
+from core import apresentacao as consulta  # noqa: E402
 from core.analise.base import AchadoEnriquecido  # noqa: E402
 from core.analise.llm import MODELO_PADRAO  # noqa: E402
+from core.apresentacao import Filtro  # noqa: E402
 from core.auditoria import ResultadoAuditoria  # noqa: E402
 from core.rules.todas import REGISTRO  # noqa: E402
 from rag.catalogo import url_em_portugues  # noqa: E402

@@ -1,4 +1,4 @@
-"""Consultas sobre um resultado de auditoria para a interface — sem Streamlit.
+"""Consultas sobre um resultado de auditoria, para a interface e o relatório — sem Streamlit.
 
 Tudo aqui é puro e testável: avisos de confiança de um achado, linhas da tabela,
 filtros, resumo e o painel "o que foi examinado". Desenho:

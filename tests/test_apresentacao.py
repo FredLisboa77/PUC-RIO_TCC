@@ -1,8 +1,8 @@
-"""Consultas puras da interface: avisos, tabela, filtros, resumo e painel."""
+"""Consultas puras de apresentação (interface e relatório): avisos, tabela, filtros, resumo e painel."""
 
-from app import consulta
-from app.consulta import Filtro
+from core import apresentacao as consulta
 from core.analise.base import AchadoEnriquecido, Fidelidade, Geracao
+from core.apresentacao import Filtro
 from core.auditoria import ResultadoAuditoria
 from core.rules.base import RegraMeta
 from core.rules.expressoes import LacunaDax
