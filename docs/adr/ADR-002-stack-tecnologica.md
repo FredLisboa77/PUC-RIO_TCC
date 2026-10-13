@@ -245,3 +245,13 @@ combinada +0,03). O índice não muda.
   posteriori.
 - (−) Anotador único, que já tinha visto os complementares fracos do P8; MOD-001, MOD-002,
   MOD-005 e MOD-007 com 1 ou 2 consultas cada.
+
+## Emenda de 13/10/2026 — PDF pelo Edge do sistema
+
+O Playwright gera o PDF controlando o **Microsoft Edge já instalado** (`channel="msedge"`), em vez
+do Chromium que `playwright install` baixaria. Motivos: o Norton intercepta TLS nesta máquina e o
+download (~150 MB) exigiria contornar o certificado de novo; o Edge vem em todo Windows 11. O
+controle do `page.pdf()` (A4, margens, fundo, rodapé "página X de Y") é o mesmo. Fora do Windows,
+a geração do PDF falha com mensagem clara e o HTML continua disponível (spec
+`2026-10-13-relatorio-e-cache-design.md`). Verificado em 13/10/2026 com o Edge 155: PDF gerado,
+inclusive chamado de dentro de um loop asyncio (a geração roda numa thread própria).
