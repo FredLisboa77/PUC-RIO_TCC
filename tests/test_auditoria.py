@@ -182,3 +182,41 @@ def test_resultado_com_modo_e_modelo_que_nao_batem_e_recusado():
         _resultado(modelo_llm="m")
     with pytest.raises(ValueError, match="incoerente"):
         _resultado(modo="completo")
+
+
+def test_so_regras_nao_toca_base_nem_llm_nem_gabaritos(tmp_path, monkeypatch):
+    def proibido(*args, **kwargs):
+        raise AssertionError("o modo só regras não pode carregar gabaritos")
+
+    monkeypatch.setattr(auditoria, "carregar_gabaritos", proibido)
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    assert (resultado.modo, resultado.modelo_llm) == ("so_regras", None)
+    assert [a.situacao for a in resultado.achados] == ["so_regras", "so_regras"]
+    assert all(a.contexto == [] for a in resultado.achados)
+
+
+def test_modo_ambiguo_e_erro_de_programacao(tmp_path):
+    pbip = _pbip(tmp_path)
+    with pytest.raises(ValueError, match="ambíguo"):
+        run_audit(pbip, llm=LLMFalso(), base=None, registro=_registro())
+    with pytest.raises(ValueError, match="ambíguo"):
+        run_audit(pbip, llm=None, base=base_padrao(), registro=_registro())
+
+
+@pytest.mark.parametrize("modo", ["completo", "so_regras"])
+def test_progresso_chamado_uma_vez_por_achado(tmp_path, modo):
+    chamadas = []
+    completo = modo == "completo"
+    run_audit(
+        _pbip(tmp_path), llm=LLMFalso() if completo else None, base=base_padrao() if completo else None,
+        registro=_registro(), gabaritos={"MOD-001": gabarito()},
+        ao_progredir=lambda feito, total, a: chamadas.append((feito, total, a.evidencia.objeto)),
+    )
+    assert chamadas == [(1, 2, "LocalDateTable_1"), (2, 2, "LocalDateTable_2")]
+
+
+def test_progresso_sem_achados_nao_e_chamado(tmp_path):
+    chamadas = []
+    run_audit(_pbip(tmp_path, tabelas=()), llm=None, base=None, registro=_registro(),
+              ao_progredir=lambda *a: chamadas.append(a))
+    assert chamadas == []

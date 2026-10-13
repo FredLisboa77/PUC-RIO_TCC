@@ -10,6 +10,7 @@ import argparse
 import sys
 import time
 from collections import Counter
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -22,6 +23,7 @@ from core.analise.enriquecimento import enriquecer
 from core.analise.llm import MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
 from core.ingest import ErroEstruturaPbip, abrir_pbip
 from core.parser_bim import ler_modelo
+from core.rules.base import Achado
 from core.rules.registry import Registro
 from core.rules.runner import ResultadoRegras, avaliar
 from core.rules.todas import REGISTRO
@@ -71,20 +73,28 @@ def nome_do_projeto(caminho: str | Path) -> str:
 def run_audit(
     pasta_pbip: str | Path,
     *,
-    llm: LLMClient,
-    base: BaseRag,
+    llm: LLMClient | None,
+    base: BaseRag | None,
     registro: Registro | None = None,
     gabaritos: dict[str, Gabarito] | None = None,
+    ao_progredir: Callable[[int, int, Achado], None] | None = None,
 ) -> ResultadoAuditoria:
+    """`llm` e `base` juntos: auditoria completa. Os dois `None`: só regras, sem
+    índice nem LLM, escolhida pelo usuário — nunca como queda por falha (ADR-003).
+    `ao_progredir(feito, total, achado)` é chamado depois de cada achado tratado."""
+    if (llm is None) != (base is None):
+        raise ValueError("modo ambíguo: passe llm e base juntos (completo) ou nenhum dos dois (só regras)")
+    so_regras = llm is None
     inicio = time.perf_counter()
     registro = REGISTRO if registro is None else registro
-    gabaritos = carregar_gabaritos() if gabaritos is None else gabaritos
-    # Partida: nenhuma chamada ao LLM se alguma regra não tiver âncora.
-    verificar_ancoras(registro.ids(), gabaritos, base)
+    if not so_regras:
+        gabaritos = carregar_gabaritos() if gabaritos is None else gabaritos
+        # Partida: nenhuma chamada ao LLM se alguma regra não tiver âncora.
+        verificar_ancoras(registro.ids(), gabaritos, base)
 
     projeto = abrir_pbip(pasta_pbip)
     resultado = avaliar(ler_modelo(projeto.model_bim), registro)
-    if resultado.achados:
+    if resultado.achados and not so_regras:
         try:
             llm.aquecer()
         except ErroDeLLM as erro:
@@ -92,13 +102,21 @@ def run_audit(
             # com tudo "sem fundamentação" pareceria resultado, e é falha de ambiente.
             raise ErroDeAuditoria(f"o LLM não respondeu no aquecimento: {erro}") from erro
 
-    enriquecidos = [
-        enriquecer(a, registro.meta(a.id_regra), base=base, gabarito=gabaritos[a.id_regra], llm=llm)
-        for a in resultado.achados
-    ]
+    enriquecidos: list[AchadoEnriquecido] = []
+    total = len(resultado.achados)
+    for feito, a in enumerate(resultado.achados, start=1):
+        if so_regras:
+            enriquecidos.append(AchadoEnriquecido.so_regras(a))
+        else:
+            enriquecidos.append(
+                enriquecer(a, registro.meta(a.id_regra), base=base, gabarito=gabaritos[a.id_regra], llm=llm)
+            )
+        if ao_progredir is not None:
+            ao_progredir(feito, total, a)
     return ResultadoAuditoria(
         projeto=nome_do_projeto(pasta_pbip),
-        modelo_llm=llm.nome,
+        modo="so_regras" if so_regras else "completo",
+        modelo_llm=None if so_regras else llm.nome,
         gerado_em=datetime.now().isoformat(timespec="seconds"),
         regras=resultado.model_copy(update={"achados": []}),
         achados=enriquecidos,
