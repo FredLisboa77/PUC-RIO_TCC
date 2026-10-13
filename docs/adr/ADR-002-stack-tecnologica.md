@@ -208,3 +208,40 @@ a medição continue valendo como evidência.
 - **A reavaliar:** se a geração da semana 7 mostrar trechos complementares fracos, a
   híbrida (melhor acerto@1 e MRR entre as simples) é a primeira alternativa, já medida e
   pronta em `rag.busca`.
+
+## Emenda de 12/10/2026 — busca escolhida pela pertinência dos complementares
+
+A régua de 11/10 (âncora entre os 5 primeiros) saturou e deixou de medir o que a busca
+decide: desde a semana 7 a âncora entra sempre como trecho [1], e a busca só escolhe os
+**complementares** (trechos 2 a 5). Uma régua nova mediu a **pertinência** deles: o Fred
+julgou, às cegas quanto à busca, as 89 seções (regra, seção) que BM25, densa e combinada
+entregam nas 70 consultas (*pooling*), e a precisão foi calculada sobre a mesma seleção que a
+geração usa (`escolher_complementares`). Regra fixada antes de medir: densa ou combinada
+substitui o BM25 só com macro ≥ macro do BM25 + 0,10. Spec:
+`docs/superpowers/specs/2026-10-12-pertinencia-dos-complementares-design.md`; resultado:
+`eval/results/complementares-2026-10-12.json`.
+
+| Precisão dos complementares | BM25 | Densa | Combinada |
+|---|---|---|---|
+| **Macro (70 consultas, decide)** | **0,62** | 0,67 | 0,65 |
+| Micro | 0,39 | 0,45 | 0,45 |
+| Macro só das consultas de achado (registro) | 0,49 | 0,62 | 0,54 |
+| Régua antiga: acerto@5 / MRR@10 (registro) | 1,000 / 0,613 | 0,889 / 0,613 | 1,000 / 0,687 |
+
+**Decisão: o BM25 fica.** Nenhuma alternativa supera a macro dele por 0,10 (densa +0,05;
+combinada +0,03). O índice não muda.
+
+### Limitações declaradas
+
+- (−) **A PERF-001 não tem complementar pertinente em nenhuma busca:** 31 das 32 seções
+  julgadas são não pertinentes (a outra, indeterminada), e a precisão é 0 nas três. A
+  consulta da PERF-001 carrega a expressão DAX da coluna, e as três buscas se agarram aos
+  nomes de função. **O defeito está na consulta, não no tipo de busca** — trocar a busca não
+  o resolveria. A âncora em [1] continua sendo o que sustenta a explicação desse achado.
+- (−) **A decisão muda conforme o conjunto de consultas.** Só com as consultas de achado (as
+  que o pipeline faz), a densa supera o BM25 por 0,13. A regra aprovada antes de medir usa as
+  70 consultas, em que as 9 consultas da regra pesam ~41% da macro; o Fred manteve essa regra
+  (decisão de 12/10, antes do julgamento). A divergência é declarada, não resolvida a
+  posteriori.
+- (−) Anotador único, que já tinha visto os complementares fracos do P8; MOD-001, MOD-002,
+  MOD-005 e MOD-007 com 1 ou 2 consultas cada.

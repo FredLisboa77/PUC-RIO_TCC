@@ -1,0 +1,368 @@
+{
+  "por_busca": {
+    "bm25": {
+      "macro": {
+        "principal": 0.6180555555555556,
+        "piso": 0.5902777777777778,
+        "teto": 0.6241319444444444
+      },
+      "micro": {
+        "principal": 0.3897058823529412,
+        "piso": 0.37857142857142856,
+        "teto": 0.40714285714285714
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-002": {
+          "principal": 1.0,
+          "piso": 0.75,
+          "teto": 1.0
+        },
+        "MOD-003": {
+          "principal": 0.5,
+          "piso": 0.5,
+          "teto": 0.5
+        },
+        "MOD-005": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-006": {
+          "principal": 0.1875,
+          "piso": 0.1875,
+          "teto": 0.1875
+        },
+        "MOD-007": {
+          "principal": 0.375,
+          "piso": 0.375,
+          "teto": 0.375
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.0546875
+        },
+        "PERF-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        }
+      },
+      "sem_complementar": 0
+    },
+    "densa": {
+      "macro": {
+        "principal": 0.6689620292561469,
+        "piso": 0.6365546218487395,
+        "teto": 0.705999066293184
+      },
+      "micro": {
+        "principal": 0.4489795918367347,
+        "piso": 0.39285714285714285,
+        "teto": 0.5178571428571429
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 0.7142857142857143,
+          "piso": 0.7142857142857143,
+          "teto": 0.7142857142857143
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-002": {
+          "principal": 1.0,
+          "piso": 0.75,
+          "teto": 1.0
+        },
+        "MOD-003": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-005": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-006": {
+          "principal": 0.29166666666666663,
+          "piso": 0.25,
+          "teto": 0.375
+        },
+        "MOD-007": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.25
+        },
+        "PERF-003": {
+          "principal": 0.7647058823529411,
+          "piso": 0.7647058823529411,
+          "teto": 0.7647058823529411
+        }
+      },
+      "sem_complementar": 0
+    },
+    "hibrida": {
+      "macro": {
+        "principal": 0.6494708994708994,
+        "piso": 0.6448412698412699,
+        "teto": 0.6873759920634921
+      },
+      "micro": {
+        "principal": 0.4489795918367347,
+        "piso": 0.39285714285714285,
+        "teto": 0.5178571428571429
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 0.9285714285714286,
+          "piso": 0.9285714285714286,
+          "teto": 0.9285714285714286
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-002": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-005": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-006": {
+          "principal": 0.29166666666666663,
+          "piso": 0.25,
+          "teto": 0.375
+        },
+        "MOD-007": {
+          "principal": 0.375,
+          "piso": 0.375,
+          "teto": 0.375
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.2578125
+        },
+        "PERF-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        }
+      },
+      "sem_complementar": 0
+    }
+  },
+  "por_busca_achados": {
+    "bm25": {
+      "macro": {
+        "principal": 0.4880952380952381,
+        "piso": 0.4880952380952381,
+        "teto": 0.49615975422427033
+      },
+      "micro": {
+        "principal": 0.35443037974683544,
+        "piso": 0.3442622950819672,
+        "teto": 0.3729508196721312
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-003": {
+          "principal": 0.5,
+          "piso": 0.5,
+          "teto": 0.5
+        },
+        "MOD-006": {
+          "principal": 0.16666666666666666,
+          "piso": 0.16666666666666666,
+          "teto": 0.16666666666666666
+        },
+        "MOD-007": {
+          "principal": 0.25,
+          "piso": 0.25,
+          "teto": 0.25
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.056451612903225805
+        },
+        "PERF-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        }
+      },
+      "sem_complementar": 0
+    },
+    "densa": {
+      "macro": {
+        "principal": 0.6173115079365079,
+        "piso": 0.609375,
+        "teto": 0.6688988095238095
+      },
+      "micro": {
+        "principal": 0.41706161137440756,
+        "piso": 0.36065573770491804,
+        "teto": 0.4959016393442623
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-003": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "MOD-006": {
+          "principal": 0.3055555555555555,
+          "piso": 0.25,
+          "teto": 0.4166666666666667
+        },
+        "MOD-007": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.25
+        },
+        "PERF-003": {
+          "principal": 0.765625,
+          "piso": 0.765625,
+          "teto": 0.765625
+        }
+      },
+      "sem_complementar": 0
+    },
+    "hibrida": {
+      "macro": {
+        "principal": 0.5376984126984127,
+        "piso": 0.5297619047619048,
+        "teto": 0.5904377880184332
+      },
+      "micro": {
+        "principal": 0.4142857142857143,
+        "piso": 0.35655737704918034,
+        "teto": 0.4959016393442623
+      },
+      "por_regra": {
+        "DAX-001": {
+          "principal": 0.9583333333333334,
+          "piso": 0.9583333333333334,
+          "teto": 0.9583333333333334
+        },
+        "MOD-001": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        },
+        "MOD-006": {
+          "principal": 0.3055555555555555,
+          "piso": 0.25,
+          "teto": 0.4166666666666667
+        },
+        "MOD-007": {
+          "principal": 0.25,
+          "piso": 0.25,
+          "teto": 0.25
+        },
+        "PERF-001": {
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.25806451612903225
+        },
+        "PERF-003": {
+          "principal": 0.75,
+          "piso": 0.75,
+          "teto": 0.75
+        }
+      },
+      "sem_complementar": 0
+    }
+  },
+  "decisao": {
+    "vencedora": "bm25",
+    "justificativa": "nenhuma alternativa supera a macro do bm25 (0.618) por 0.10; fica o bm25"
+  },
+  "regua_antiga": {
+    "bm25": {
+      "acerto5": 1.0,
+      "mrr": 0.6129629629629629
+    },
+    "densa": {
+      "acerto5": 0.8888888888888888,
+      "mrr": 0.613095238095238
+    },
+    "hibrida": {
+      "acerto5": 1.0,
+      "mrr": 0.6865079365079365
+    }
+  },
+  "ambiente": {
+    "data": "2026-10-12",
+    "modelo": "BAAI/bge-small-en-v1.5",
+    "versoes": {
+      "torch": "2.14.0+cpu",
+      "sentence-transformers": "6.1.0",
+      "rank-bm25": "0.2.2",
+      "chromadb": "1.5.9",
+      "numpy": "2.4.6"
+    },
+    "sha256_consultas": "9b8719cd8412be3d563a7f03c7e282e7e1f66a31d87c1f477654a6597dbe2c90",
+    "sha256_pertinencia": "0aafc3ce7ea378f6ba37a9d23b5958e33adda33096fd42f4452e2f79f486ac48",
+    "margem": 0.1
+  }
+}

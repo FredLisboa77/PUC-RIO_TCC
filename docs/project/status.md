@@ -299,8 +299,8 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Busca combinada para os trechos complementares (subprojeto 2 da semana 8)** — planilha de pertinência gerada (89 seções), aguardando julgamento | Os trechos complementares de PERF-001 e PERF-003 são fracos; a recuperação será medida de novo sobre o conjunto atual (70 consultas, regerado após a correção da MOD-003 e da PERF-001) |
-| 2 | **Documento da revisão de meio de projeto para o orientador (subprojeto 3)** | Leva o resultado oficial do gabarito (precisão 0,88 na tag `regras-gt`; R-03 disparou só para a MOD-003) e a decisão sobre o P9 (12/10): **não acionado** — 46 achados confirmados contra o gatilho de 40, com a PERF-003 confirmada (precisão 1,00); reservado para a Fase 5, só para validar as correções |
+| 1 | **Documento da revisão de meio de projeto para o orientador (subprojeto 3)** | Leva o resultado oficial do gabarito, as correções como análise de erros, as decisões de 12/10 e a escolha da busca: o BM25 ficou (pertinência dos complementares 0,62 contra 0,67 da densa, abaixo da margem de 0,10); a PERF-001 não tem complementar pertinente em nenhuma busca — defeito da consulta, não da busca |
+| 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
 ---

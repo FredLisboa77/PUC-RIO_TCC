@@ -1684,3 +1684,43 @@ testes**. A planilha gerada continua casando com o pool.
 **Decisão do Fred (antes de julgar):** a escolha da busca segue a **macro das 70 consultas**,
 como na spec aprovada (opção A). A macro só das consultas de achado fica registrada ao lado, e
 uma divergência entre as duas vai à monografia.
+
+---
+
+## 12/10/2026 — Pertinência dos complementares medida: o BM25 fica
+
+O Fred julgou as 89 seções; `importar` gravou `eval/recuperacao/pertinencia.csv` e `medir`
+gravou `eval/results/complementares-2026-10-12.json`.
+
+| Regra | BM25 | Densa | Combinada |
+|---|---|---|---|
+| DAX-001 | 1,00 | 0,71 | 0,93 |
+| MOD-001 | 0,75 | 0,75 | 0,75 |
+| MOD-002 | 1,00 | 1,00 | 1,00 |
+| MOD-003 | 0,50 | 1,00 | 0,75 |
+| MOD-005 | 1,00 | 0,75 | 1,00 |
+| MOD-006 | 0,19 | 0,29 | 0,29 |
+| MOD-007 | 0,38 | 0,75 | 0,38 |
+| PERF-001 | 0,00 | 0,00 | 0,00 |
+| PERF-003 | 0,75 | 0,76 | 0,75 |
+| **Macro (decide)** | **0,62** | 0,67 | 0,65 |
+| Só achados (registro) | 0,49 | 0,62 | 0,54 |
+
+**Decisão (regra fixada antes de medir): o BM25 fica** — densa +0,05 e combinada +0,03, abaixo
+da margem de 0,10. Índice inalterado; a Task 8 termina sem `construir --busca` nem nova
+rodada do P8.
+
+**O que a medição mostrou:**
+
+- **PERF-001: 31 de 32 seções não pertinentes, precisão 0 nas três buscas.** O problema não é
+  o tipo de busca, é a consulta, que carrega a expressão DAX da coluna e atrai páginas de
+  funções. Trocar a busca não resolveria; fica como trabalho futuro (consulta da PERF-001 sem a
+  expressão, por exemplo), fora do escopo desta spec.
+- **Divergência declarada:** só com as consultas de achado, a densa superaria o BM25 por 0,13.
+  A regra aprovada (macro das 70) foi mantida, por decisão do Fred anterior ao julgamento.
+- Vereditos: 39 pertinentes, 46 não pertinentes, 4 indeterminados.
+
+Emenda na ADR-002 com a tabela e as limitações.
+
+**Próximo passo:** PR da branch `fase3-busca-complementares`; depois o subprojeto 3
+(documento de meio de projeto).
