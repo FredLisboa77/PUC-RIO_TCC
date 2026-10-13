@@ -150,3 +150,9 @@ def test_traducao_que_falha_vira_mensagem(monkeypatch, falha):
     monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso(falha))
     with pytest.raises(ErroParaUsuario, match="Não consegui traduzir"):
         execucao.traduzir("Hello", "m")
+
+
+def test_resultado_com_citacao_fora_do_contexto_vira_mensagem():
+    texto = FIXTURE_FORMATO_ANTIGO.read_text(encoding="utf-8").replace('"citacoes": [1]', '"citacoes": [99]')
+    with pytest.raises(ErroParaUsuario, match="não é um resultado de auditoria"):
+        execucao.ler_resultado(texto)

@@ -99,3 +99,10 @@ def test_so_regras_nao_pode_ter_modelo_e_os_outros_precisam():
 def test_recomendacao_final_em_so_regras_e_a_padrao():
     item = AchadoEnriquecido.so_regras(achado())
     assert item.recomendacao_final(meta()) == meta().recomendacao_padrao
+
+
+@pytest.mark.parametrize("citacoes", [[99], [], [1, 1]])
+def test_gerado_com_citacao_fora_do_contexto_vazia_ou_repetida_e_recusado(citacoes):
+    """ADR-003: um JSON de fora não pode trazer explicação sem fonte válida."""
+    with pytest.raises(ValidationError, match="citações"):
+        _gerado(geracao=Geracao(explicacao="e", recomendacao="Use DIVIDE.", citacoes=citacoes))

@@ -92,6 +92,16 @@ class AchadoEnriquecido(BaseModel):
                 f"achado enriquecido incoerente: situação {self.situacao} com geração, motivo, "
                 "cita_ancora, fidelidade e modelo que não batem"
             )
+        if self.geracao is not None:
+            # O pipeline já descarta isso na validação; aqui protege o JSON que vem de
+            # fora: explicação sem fonte válida não pode aparecer como resultado (ADR-003).
+            citacoes = self.geracao.citacoes
+            numeros = {t.numero for t in self.contexto}
+            if not citacoes or len(set(citacoes)) != len(citacoes) or not set(citacoes) <= numeros:
+                raise ValueError(
+                    f"achado enriquecido incoerente: citações {citacoes} vazias, repetidas ou fora do "
+                    f"contexto {sorted(numeros)}"
+                )
         return self
 
     @classmethod
