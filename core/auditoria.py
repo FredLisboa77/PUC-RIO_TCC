@@ -18,6 +18,7 @@ from typing import Literal
 from pydantic import BaseModel, model_validator
 
 from core.analise.base import AchadoEnriquecido
+from core.analise.cache import PASTA_CACHE, ClienteComCache
 from core.analise.contexto import ErroDeContexto, carregar_gabaritos, verificar_ancoras
 from core.analise.enriquecimento import enriquecer
 from core.analise.llm import MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
@@ -185,12 +186,19 @@ def main(argv: list[str] | None = None) -> int:
         "--so-regras", action="store_true",
         help="so a deteccao, sem indice nem LLM; a recomendacao e a padrao da regra",
     )
+    parser.add_argument(
+        "--cache", action="store_true",
+        help="reusa respostas guardadas do LLM (outputs/cache-llm); o resultado marca o que veio do cache",
+    )
     args = parser.parse_args(argv)
     try:
         if args.so_regras:
             resultado = run_audit(args.pasta_pbip, llm=None, base=None)
         else:
-            resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
+            llm = ClienteOllama(args.modelo)
+            if args.cache:
+                llm = ClienteComCache(llm, PASTA_CACHE)
+            resultado = run_audit(args.pasta_pbip, llm=llm, base=BaseRag.carregar())
     except (ErroDeAuditoria, ErroDeContexto, ErroDeIndice, ErroEstruturaPbip) as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1

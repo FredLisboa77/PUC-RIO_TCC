@@ -38,7 +38,7 @@ def enriquecer(
             logger.warning("LLM falhou no achado %s/%s: %s", achado.id_regra, achado.evidencia.objeto, erro)
             return AchadoEnriquecido(**comum, situacao="sem_fundamentacao", motivo_descarte="erro_llm")
 
-    comum.update(segundos=resposta.segundos, tokens_prompt=resposta.tokens_prompt)
+    comum.update(segundos=resposta.segundos, tokens_prompt=resposta.tokens_prompt, do_cache=resposta.do_cache)
     geracao, motivo = validar(resposta.texto, len(contexto))
     if geracao is None:
         return AchadoEnriquecido(**comum, situacao="sem_fundamentacao", motivo_descarte=motivo)

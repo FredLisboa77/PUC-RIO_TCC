@@ -273,3 +273,28 @@ def test_resumo_conta_o_cache_e_tira_do_tempo_medio(tmp_path):
 def test_resumo_sem_cache_nao_menciona(tmp_path):
     resultado, _ = _auditar(tmp_path)
     assert "cache" not in resumir(resultado).lower()
+
+
+def test_auditoria_repetida_com_cache_da_textos_iguais_sem_chamar_o_llm(tmp_path):
+    from core.analise.cache import ClienteComCache
+
+    pasta_cache = tmp_path / "cache"
+    pbip = _pbip(tmp_path)
+    primeira_llm = LLMFalso()
+    primeira = run_audit(pbip, llm=ClienteComCache(primeira_llm, pasta_cache), base=base_padrao(),
+                         registro=_registro(), gabaritos={"MOD-001": gabarito()})
+    segunda_llm = LLMFalso()
+    segunda = run_audit(pbip, llm=ClienteComCache(segunda_llm, pasta_cache), base=base_padrao(),
+                        registro=_registro(), gabaritos={"MOD-001": gabarito()})
+    assert [a.geracao for a in segunda.achados] == [a.geracao for a in primeira.achados]
+    assert [a.do_cache for a in primeira.achados] == [False, False]
+    assert [a.do_cache for a in segunda.achados] == [True, True]
+    assert (len(segunda_llm.chamadas), segunda_llm.aquecimentos) == (0, 1)
+
+
+def test_comando_com_cache_envolve_o_cliente(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+    monkeypatch.setattr(auditoria, "PASTA_CACHE", tmp_path / "cache")
+    assert auditoria.main([str(_pbip(tmp_path)), "--cache"]) == 0
+    assert auditoria.main([str(_pbip(tmp_path / "de-novo")), "--cache"]) == 0
+    assert "Do cache: 2" in capsys.readouterr().out
