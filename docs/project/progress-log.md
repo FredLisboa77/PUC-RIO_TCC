@@ -1807,7 +1807,15 @@ mudança do pipeline: a geração não foi tocada.
 **Falha do Ollama simulada com nome de modelo inexistente**, e não parando o serviço: o caminho
 de código é o mesmo (`aquecer` → `ErroDeLLM` → `ErroDeAuditoria`).
 
-Suíte: 770 testes passando.
+**Revisão final do branch (revisor novo):** nenhum crítico; dois importantes corrigidos com teste
+que falhou antes — (1) JSON aberto de fora com citação fora do contexto, vazia ou repetida derrubava
+a tela ou mostrava explicação sem fonte como resultado: o contrato agora recusa (ADR-003); (2) o
+resultado anterior ficava clicável durante a auditoria, e um clique a matava sem mensagem: agora é
+redesenhado desabilitado. Oito menores adiados (arquivo listado que some, pastas `envio-*` em
+%TEMP%, mensagem de erro de programação, modelo da tradução, colisão no mesmo minuto, escape de
+markdown, mensagem de zero achados, JSON com BOM, placeholders em inglês).
+
+Suíte: 775 testes passando.
 
 **Próximo passo:** revisão final do branch e PR da `fase4-interface`; depois o subprojeto 2 da F4
 (relatório HTML/PDF e cache da demo, semana 10).

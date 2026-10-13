@@ -76,7 +76,7 @@ regras de M, depois abrir mão do PDF (R-07).
 | Recuperação escolhida por medição (`python -m rag.medicao`, `python -m rag.indice construir`) | 24 combinações medidas com a régua; vence, pela regra fixada antes, **seção + BM25 sobre o corpus completo** (macro acerto@5 = 1,000); índice construído e conferido contra a medição. Efeito teto e decisão por uma consulta declarados (emenda de 11/10 da ADR-002) |
 | Geração com o LLM e citação obrigatória (`python -m core.auditoria <pasta-pbip>`) | No P8, com o `qwen2.5:7b`: **15 de 15** achados com explicação gerada e citação válida, **14 de 15** citando a seção âncora da regra, 1 com divergência de fidelidade; 8,1 s por achado em média (pior 10,5 s), 123 s a auditoria inteira. Os totais se repetem entre rodadas, mas os textos e algumas citações variam: temperatura 0 não torna o Ollama determinístico. A leitura à mão achou 2 erros de conteúdo que os critérios automáticos não pegam (progress-log de 11/10) |
 | Interface Streamlit (`streamlit run app/streamlit_app.py`) | Aceita em 13/10/2026: P8 completo pela interface em 155,1 s e 134,4 s (15 de 15 gerados, 13 de 15 citando a âncora, 3 com aviso), progresso por achado, tradução sob demanda de trecho citado, abertura do JSON de 11/10; só regras no P8 em 0,3 s; Ollama sem o modelo vira mensagem e nada é gravado. Só regras em P1–P7 pela CLI: **61** achados, iguais aos marcados no resultado pós-correção |
-| Suíte de testes | **770 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Suíte de testes | **775 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
