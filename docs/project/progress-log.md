@@ -1734,3 +1734,20 @@ página do orientador ganhou a reavaliação da busca (seção 7: tabela, decis�
 limitações) e os próximos passos.
 
 **Próximo passo:** subprojeto 3 — documento da revisão de meio de projeto para o orientador.
+
+---
+
+## 12/10/2026 — Documento da revisão de meio de projeto (rascunho para o Fred)
+
+Subprojeto 3. Sem o conector do Claude Docs nesta sessão, o documento foi feito como página
+privada (https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1), com a identidade da página de
+andamento: resumo, cronograma, o que a ferramenta faz, avaliação das regras (resultado oficial
+na tag e correções como análise de erros), avaliação da recuperação, decisões para validação,
+pedidos ao orientador, riscos, limitações consolidadas e plano das semanas 9 a 13.
+
+**Ponto novo levantado no documento:** com as regras congeladas na tag `regras-gt`, uma regra
+de Power Query M (grupo 4, nunca iniciado) só entraria na avaliação com anotação própria. O
+documento propõe tirar o grupo 4 do MVP — pendente de decisão do Fred antes de compartilhar.
+
+**Próximo passo:** o Fred revisa o documento e decide sobre o grupo 4; depois compartilha com
+o orientador e a página de andamento passa a apontar para ele.
