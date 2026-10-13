@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core import apresentacao, auditoria
+from core.analise.cache import PASTA_CACHE, ClienteComCache
 from core.analise.contexto import ErroDeContexto
 from core.analise.llm import ClienteOllama, ErroDeLLM, LLMClient
 from core.analise.traducao import ErroDeTraducao, traduzir_trecho
@@ -20,6 +21,8 @@ from core.ingest import ErroEstruturaPbip
 from core.rules.base import Achado
 from core.rules.registry import Registro
 from rag.indice import BaseRag, ErroDeIndice
+from reports.html import gerar_html
+from reports.pdf import ErroDePdf, gerar_pdf
 
 COMANDO_INDICE = "python -m rag.indice construir"
 
@@ -35,8 +38,9 @@ class Execucao:
     aviso_gravacao: str | None
 
 
-def criar_llm(modelo: str) -> LLMClient:
-    return ClienteOllama(modelo)
+def criar_llm(modelo: str, *, cache: bool = False) -> LLMClient:
+    llm = ClienteOllama(modelo)
+    return ClienteComCache(llm, PASTA_CACHE) if cache else llm
 
 
 def carregar_base() -> BaseRag:
@@ -64,6 +68,7 @@ def executar(
     *,
     ao_progredir: Callable[[int, int, Achado], None] | None = None,
     obter_base: Callable[[], BaseRag] | None = None,
+    cache: bool = False,
 ) -> Execucao:
     try:
         if modo == "so_regras":
@@ -71,7 +76,7 @@ def executar(
         else:
             base = _base_pronta(obter_base or carregar_base)
             resultado = auditoria.run_audit(
-                entrada, llm=criar_llm(modelo), base=base, ao_progredir=ao_progredir
+                entrada, llm=criar_llm(modelo, cache=cache), base=base, ao_progredir=ao_progredir
             )
     except ErroEstruturaPbip as erro:
         raise ErroParaUsuario(f"Isto não é um projeto PBIP válido: {erro}") from erro
@@ -133,8 +138,18 @@ def ler_salvo(caminho: Path) -> ResultadoAuditoria:
     return ler_resultado(conteudo)
 
 
-def traduzir(texto: str, modelo: str) -> str:
+def traduzir(texto: str, modelo: str, *, cache: bool = False) -> str:
     try:
-        return traduzir_trecho(texto, criar_llm(modelo))
+        return traduzir_trecho(texto, criar_llm(modelo, cache=cache))
     except (ErroDeLLM, ErroDeTraducao) as erro:
         raise ErroParaUsuario(f"Não consegui traduzir o trecho: {erro}") from erro
+
+
+def relatorio_pdf(resultado: ResultadoAuditoria, *, tecnico: bool) -> bytes:
+    with tempfile.TemporaryDirectory(prefix="relatorio-") as pasta:
+        destino = Path(pasta) / "relatorio.pdf"
+        try:
+            gerar_pdf(gerar_html(resultado, tecnico=tecnico), destino)
+        except ErroDePdf as erro:
+            raise ErroParaUsuario(str(erro)) from erro
+        return destino.read_bytes()

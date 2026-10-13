@@ -23,7 +23,7 @@ ARQUIVO_APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_ap
 def app(tmp_path, monkeypatch):
     monkeypatch.setattr(auditoria, "PASTA_SAIDA", tmp_path / "saida")
     monkeypatch.setattr(execucao, "carregar_base", base_padrao)
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso())
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: LLMFalso())
     st.cache_resource.clear()
     return AppTest.from_file(ARQUIVO_APP, default_timeout=60)
 
@@ -140,3 +140,31 @@ def test_durante_a_auditoria_o_resultado_anterior_fica_desabilitado(app, tmp_pat
     assert app.multiselect and all(m.disabled for m in app.multiselect)
     traducao = [b for b in app.button if (b.key or "").startswith("traduzir")]
     assert traducao and all(b.disabled for b in traducao)
+
+
+def test_resultado_aberto_oferece_html_e_pdf(app, tmp_path, monkeypatch):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+    assert not app.exception
+    assert app.get("download_button")  # "Baixar relatório HTML"
+    monkeypatch.setattr(execucao, "relatorio_pdf", lambda resultado, tecnico: b"%PDF-ok")
+    app.button(key="gerar_pdf").click().run()
+    assert not app.exception
+    assert app.session_state["pdf"][1] == b"%PDF-ok"
+
+
+def test_falha_do_pdf_vira_mensagem(app, tmp_path, monkeypatch):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+
+    def falha(resultado, tecnico):
+        raise execucao.ErroParaUsuario("PDF indisponível: Edge ausente")
+
+    monkeypatch.setattr(execucao, "relatorio_pdf", falha)
+    app.button(key="gerar_pdf").click().run()
+    assert not app.exception
+    assert any("Edge ausente" in e.value for e in app.error)

@@ -19,9 +19,10 @@ from core import apresentacao as consulta  # noqa: E402
 from core.analise.base import AchadoEnriquecido  # noqa: E402
 from core.analise.llm import MODELO_PADRAO  # noqa: E402
 from core.apresentacao import Filtro  # noqa: E402
-from core.auditoria import ResultadoAuditoria  # noqa: E402
+from core.auditoria import ResultadoAuditoria, nome_base  # noqa: E402
 from core.rules.todas import REGISTRO  # noqa: E402
 from rag.catalogo import url_em_portugues  # noqa: E402
+from reports.html import gerar_html  # noqa: E402
 
 ROTULOS_SEVERIDADE = {"alta": "🔴 alta", "media": "🟠 média", "baixa": "🟡 baixa"}
 ROTULOS_MODO = {"completo": "completo (com explicação do LLM)", "so_regras": "só regras"}
@@ -70,11 +71,15 @@ def _barra_lateral() -> None:
     modelo = lateral.text_input(
         "Modelo do Ollama", value=MODELO_PADRAO, disabled=bloqueado or modo == "so_regras", key="modelo"
     )
+    cache = lateral.checkbox(
+        "reusar respostas guardadas do LLM (cache)", value=False,
+        disabled=bloqueado or modo == "so_regras", key="cache",
+    )
     if lateral.button("Auditar", type="primary", disabled=bloqueado or not (enviado or pasta.strip()), key="auditar"):
         entrada = (
             execucao.salvar_envio(enviado.name, enviado.getvalue()) if enviado is not None else Path(pasta.strip())
         )
-        estado.pedido = {"entrada": entrada, "modo": modo, "modelo": modelo}
+        estado.pedido = {"entrada": entrada, "modo": modo, "modelo": modelo, "cache": cache}
         estado.executando = True
         estado.mensagem = None
         st.rerun()
@@ -109,7 +114,8 @@ def _executar(pedido: dict, topo) -> None:
 
             try:
                 feito = execucao.executar(
-                    pedido["entrada"], pedido["modo"], pedido["modelo"], ao_progredir=ao_progredir, obter_base=_base
+                    pedido["entrada"], pedido["modo"], pedido["modelo"], ao_progredir=ao_progredir, obter_base=_base,
+                    cache=pedido.get("cache", False),
                 )
             except execucao.ErroParaUsuario as erro:
                 estado.mensagem = ("error", str(erro))
@@ -117,6 +123,7 @@ def _executar(pedido: dict, topo) -> None:
             else:
                 estado.resultado = feito.resultado
                 estado.traducoes = {}
+                estado.pdf = None
                 estado.mensagem = (
                     ("warning", feito.aviso_gravacao) if feito.aviso_gravacao
                     else ("success", f"Resultado gravado em {feito.gravado_em}")
@@ -144,6 +151,32 @@ def _cabecalho(resultado: ResultadoAuditoria) -> None:
                 "cada regra e sem explicação do LLM.")
 
 
+def _relatorio(resultado: ResultadoAuditoria, bloqueado: bool) -> None:
+    with st.container(border=True):
+        st.markdown("**Relatório**")
+        tecnico = st.checkbox("incluir seção técnica", key="rel_tecnico", disabled=bloqueado)
+        nome = nome_base(resultado) + ("-tecnico" if tecnico else "")
+        c1, c2 = st.columns(2)
+        c1.download_button(
+            "Baixar relatório HTML", gerar_html(resultado, tecnico=tecnico), file_name=f"{nome}.html",
+            mime="text/html", key="baixar_html", disabled=bloqueado,
+        )
+        chave = (resultado.gerado_em, tecnico)
+        if estado.pdf is not None and estado.pdf[0] == chave:
+            c2.download_button(
+                "Baixar relatório PDF", estado.pdf[1], file_name=f"{nome}.pdf",
+                mime="application/pdf", key="baixar_pdf", disabled=bloqueado,
+            )
+        elif c2.button("Gerar PDF", key="gerar_pdf", disabled=bloqueado):
+            with st.spinner("Gerando o PDF pelo Edge..."):
+                try:
+                    estado.pdf = (chave, execucao.relatorio_pdf(resultado, tecnico=tecnico))
+                except execucao.ErroParaUsuario as erro:
+                    c2.error(str(erro))
+                else:
+                    st.rerun()
+
+
 def _examinado(resultado: ResultadoAuditoria) -> None:
     examinado = consulta.examinado(resultado)
     with st.container(border=True):
@@ -166,6 +199,8 @@ def _resumo(linhas: list[consulta.Linha]) -> None:
     colunas[4].metric("Com aviso", resumo.com_aviso)
     if resumo.por_categoria:
         st.caption(" · ".join(f"{categoria}: {n}" for categoria, n in resumo.por_categoria.items()))
+    if resumo.do_cache:
+        st.caption(f"{resumo.do_cache} explicação(ões) vieram do cache de respostas do LLM, não de uma chamada nova.")
 
 
 def _filtros(linhas: list[consulta.Linha], bloqueado: bool) -> Filtro:
@@ -226,7 +261,7 @@ def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditori
             elif traducao.button("Traduzir trecho", key=f"traduzir|{chave}", disabled=bloqueado):
                 with st.spinner("Traduzindo..."):
                     try:
-                        estado.traducoes[chave] = execucao.traduzir(trecho.texto, modelo)
+                        estado.traducoes[chave] = execucao.traduzir(trecho.texto, modelo, cache=bool(estado.get("cache")))
                     except execucao.ErroParaUsuario as erro:
                         traducao.error(str(erro))
                     else:
@@ -276,6 +311,7 @@ def _resultado(resultado: ResultadoAuditoria, bloqueado: bool = False) -> None:
     """`bloqueado` durante a auditoria: o resultado anterior continua na tela, mas
     um clique nele reexecutaria o script e mataria a auditoria em andamento."""
     _cabecalho(resultado)
+    _relatorio(resultado, bloqueado)
     _examinado(resultado)
     linhas = consulta.linhas(resultado, REGISTRO)
     _resumo(linhas)

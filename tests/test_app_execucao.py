@@ -28,7 +28,7 @@ def ambiente(tmp_path, monkeypatch):
     monkeypatch.setattr(auditoria, "PASTA_SAIDA", tmp_path / "saida")
     monkeypatch.setattr(auditoria, "REGISTRO", _registro())
     monkeypatch.setattr(auditoria, "carregar_gabaritos", lambda: {"MOD-001": gabarito()})
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso())
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: LLMFalso())
     return tmp_path
 
 
@@ -68,7 +68,7 @@ def test_model_bim_corrompido_vira_mensagem(ambiente):
 
 
 def test_ollama_fora_do_ar_sugere_so_regras(ambiente, monkeypatch):
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso(falha_no_aquecimento=True))
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: LLMFalso(falha_no_aquecimento=True))
     with pytest.raises(ErroParaUsuario, match="só regras"):
         execucao.executar(_pbip(ambiente), "completo", "m", obter_base=base_padrao)
 
@@ -140,14 +140,14 @@ def test_resultado_com_regra_desconhecida_vira_mensagem():
 
 def test_traduz_pelo_modelo_indicado(monkeypatch):
     usados = []
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: usados.append(modelo) or LLMFalso('{"traducao": "Olá"}'))
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: usados.append(modelo) or LLMFalso('{"traducao": "Olá"}'))
     assert execucao.traduzir("Hello", "qwen") == "Olá"
     assert usados == ["qwen"]
 
 
 @pytest.mark.parametrize("falha", [ContextoExcedido("longo demais"), "não é json"])
 def test_traducao_que_falha_vira_mensagem(monkeypatch, falha):
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso(falha))
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: LLMFalso(falha))
     with pytest.raises(ErroParaUsuario, match="Não consegui traduzir"):
         execucao.traduzir("Hello", "m")
 
@@ -165,3 +165,41 @@ def test_ler_salvo_que_sumiu_vira_mensagem(tmp_path):
 
 def test_ler_salvo_le_o_arquivo():
     assert execucao.ler_salvo(FIXTURE_FORMATO_ANTIGO).modo == "completo"
+
+
+def test_criar_llm_com_cache_envolve(monkeypatch, tmp_path):
+    from core.analise.cache import ClienteComCache
+
+    monkeypatch.setattr(execucao, "PASTA_CACHE", tmp_path)
+    sem = execucao.criar_llm("m")
+    com = execucao.criar_llm("m", cache=True)
+    assert not isinstance(sem, ClienteComCache)
+    assert isinstance(com, ClienteComCache) and com.pasta == tmp_path and com.nome == "m"
+
+
+def test_executar_repassa_o_cache(ambiente, monkeypatch):
+    pedidos = []
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: pedidos.append(cache) or LLMFalso())
+    execucao.executar(_pbip(ambiente), "completo", "m", obter_base=base_padrao, cache=True)
+    assert pedidos == [True]
+
+
+def test_relatorio_pdf_devolve_bytes_e_erro_vira_mensagem(monkeypatch):
+    from reports.pdf import ErroDePdf
+
+    resultado = execucao.ler_resultado(FIXTURE_FORMATO_ANTIGO.read_bytes())
+
+    def falso(html, destino, **kwargs):
+        assert "Formato-antigo" in html
+        destino.write_bytes(b"%PDF-ok")
+        return destino
+
+    monkeypatch.setattr(execucao, "gerar_pdf", falso)
+    assert execucao.relatorio_pdf(resultado, tecnico=False) == b"%PDF-ok"
+
+    def falha(html, destino, **kwargs):
+        raise ErroDePdf("PDF indisponível: Edge ausente")
+
+    monkeypatch.setattr(execucao, "gerar_pdf", falha)
+    with pytest.raises(ErroParaUsuario, match="Edge ausente"):
+        execucao.relatorio_pdf(resultado, tecnico=False)
