@@ -12,6 +12,7 @@ import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -306,6 +307,23 @@ def ler_leituras_sqlbi(caminho: Path) -> list[LeituraSqlbi]:
         return [LeituraSqlbi.model_validate(item) for item in dados]
     except ValidationError as erro:
         raise ErroDeCatalogo(f"{caminho}: entrada inválida\n{erro}") from erro
+
+
+@lru_cache(maxsize=4)
+def _portugues_por_url(caminho: Path) -> dict[str, str]:
+    fontes = _ler_yaml(caminho) or []
+    return {
+        normalizar_url(f["url"]): f["url_pt_br"]
+        for f in fontes
+        if isinstance(f, dict) and f.get("url") and f.get("url_pt_br")
+    }
+
+
+def url_em_portugues(url: str, caminho: Path = ARQUIVO_FONTES) -> str | None:
+    """A versão pt-BR de uma página do Learn, para o leitor da interface e do
+    relatório. Sem o fragmento: as âncoras das páginas traduzidas mudam com o
+    idioma. O texto indexado continua em inglês (ADR-002)."""
+    return _portugues_por_url(caminho).get(normalizar_url(url))
 
 
 def como_yaml(fontes: list[Fonte]) -> str:
