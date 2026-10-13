@@ -18,3 +18,6 @@ chromadb==1.5.9
 
 # Fase 3 - gabarito das regras (planilha de anotacao)
 openpyxl==3.1.5
+
+# Fase 4 - interface
+streamlit==1.64.0
