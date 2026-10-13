@@ -156,3 +156,12 @@ def test_resultado_com_citacao_fora_do_contexto_vira_mensagem():
     texto = FIXTURE_FORMATO_ANTIGO.read_text(encoding="utf-8").replace('"citacoes": [1]', '"citacoes": [99]')
     with pytest.raises(ErroParaUsuario, match="não é um resultado de auditoria"):
         execucao.ler_resultado(texto)
+
+
+def test_ler_salvo_que_sumiu_vira_mensagem(tmp_path):
+    with pytest.raises(ErroParaUsuario, match="Não consegui abrir"):
+        execucao.ler_salvo(tmp_path / "sumiu.json")
+
+
+def test_ler_salvo_le_o_arquivo():
+    assert execucao.ler_salvo(FIXTURE_FORMATO_ANTIGO).modo == "completo"

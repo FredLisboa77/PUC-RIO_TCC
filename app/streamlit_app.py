@@ -34,6 +34,7 @@ estado.setdefault("executando", False)
 estado.setdefault("pedido", None)
 estado.setdefault("mensagem", None)
 estado.setdefault("traducoes", {})
+estado.setdefault("pdf", None)
 
 
 def _md(texto: str) -> str:
@@ -46,13 +47,14 @@ def _base():
     return execucao.carregar_base()
 
 
-def _abrir(conteudo: bytes) -> None:
+def _abrir(ler) -> None:
     try:
-        estado.resultado = execucao.ler_resultado(conteudo)
+        estado.resultado = ler()
     except execucao.ErroParaUsuario as erro:
         estado.mensagem = ("error", str(erro))  # o resultado anterior continua
     else:
         estado.traducoes = {}
+        estado.pdf = None
         estado.mensagem = None
 
 
@@ -84,10 +86,10 @@ def _barra_lateral() -> None:
         placeholder="escolha um resultado", disabled=bloqueado, key="salvo",
     )
     if lateral.button("Abrir", disabled=bloqueado or escolhido is None, key="abrir"):
-        _abrir(Path(escolhido).read_bytes())
+        _abrir(lambda: execucao.ler_salvo(Path(escolhido)))
     externo = lateral.file_uploader("ou envie um JSON", type=["json"], disabled=bloqueado, key="json_externo")
     if lateral.button("Abrir JSON enviado", disabled=bloqueado or externo is None, key="abrir_externo"):
-        _abrir(externo.getvalue())
+        _abrir(lambda: execucao.ler_resultado(externo.getvalue()))
 
 
 # --- execução ----------------------------------------------------------------

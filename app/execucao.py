@@ -11,9 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from pydantic import ValidationError
-
-from core import auditoria
+from core import apresentacao, auditoria
 from core.analise.contexto import ErroDeContexto
 from core.analise.llm import ClienteOllama, ErroDeLLM, LLMClient
 from core.analise.traducao import ErroDeTraducao, traduzir_trecho
@@ -121,19 +119,18 @@ def listar_salvos(pasta: Path | None = None) -> list[Salvo]:
 
 def ler_resultado(conteudo: bytes | str, registro: Registro | None = None) -> ResultadoAuditoria:
     try:
-        resultado = ResultadoAuditoria.model_validate_json(conteudo)
-    except ValidationError as erro:
-        raise ErroParaUsuario(
-            "O arquivo não é um resultado de auditoria desta ferramenta "
-            f"({erro.error_count()} problema(s) no formato)."
-        ) from erro
-    registro = auditoria.REGISTRO if registro is None else registro
-    desconhecidas = sorted({a.achado.id_regra for a in resultado.achados} - set(registro.ids()))
-    if desconhecidas:
-        raise ErroParaUsuario(
-            f"O resultado tem regras que esta versão da ferramenta não conhece: {', '.join(desconhecidas)}."
-        )
-    return resultado
+        return apresentacao.ler_resultado(conteudo, auditoria.REGISTRO if registro is None else registro)
+    except apresentacao.ErroDeLeitura as erro:
+        raise ErroParaUsuario(str(erro)) from erro
+
+
+def ler_salvo(caminho: Path) -> ResultadoAuditoria:
+    """O arquivo listado pode ter sumido entre a listagem e o clique."""
+    try:
+        conteudo = caminho.read_bytes()
+    except OSError as erro:
+        raise ErroParaUsuario(f"Não consegui abrir {caminho.name}: {erro}") from erro
+    return ler_resultado(conteudo)
 
 
 def traduzir(texto: str, modelo: str) -> str:
