@@ -1756,3 +1756,16 @@ o orientador e a página de andamento passa a apontar para ele.
 futuros; o MVP fecha com as 9 regras da tag `regras-gt`. Registrado no backlog, no `status.md`,
 no R-07 (o corte 2 foi feito; restam PDF e filtros avançados) e em `eval/dataset.md`. No
 documento da revisão, a proposta passa a decisão para validação do orientador.
+
+---
+
+## 13/10/2026 — Revisão de meio de projeto aprovada; Fase 3 encerrada
+
+O Fred compartilhou com o orientador o documento da revisão de meio de projeto
+(https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1), e o orientador deu o OK. Com isso ficam
+validadas as decisões que o documento levava: resultado oficial das regras na tag `regras-gt`
+(precisão 0,88), correções da MOD-003 e da PERF-001 como análise de erros, BM25 mantido, grupo 4
+(regras de M) fora do MVP e anotador único como limitação declarada. A Fase 3 está encerrada.
+
+**Próximo passo:** Fase 4 — desenho da interface Streamlit (semana 9): upload, status,
+resultados, filtros e detalhe do achado; depois relatório HTML/PDF e cache da demo (semana 10).

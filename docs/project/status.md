@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 8 de 13 — Fase 2 encerrada; Fase 3: revisão de meio de projeto, gabarito das regras medido · **Atualizado em:** 12/10/2026
+**Posição:** semana 9 de 13 — Fase 3 encerrada (revisão de meio de projeto aprovada pelo orientador); Fase 4 a iniciar · **Atualizado em:** 13/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -40,7 +40,7 @@ uma das 9 regras foi conferida no texto extraído.
 |---|---|---|---|
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
-| F3 — RAG e análise com LLM | 6–8 | **Em andamento** | Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
+| F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
 | F4 — Interface e relatório | 9–10 | Não iniciada | — |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
@@ -299,7 +299,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Documento da revisão de meio de projeto para o orientador (subprojeto 3)** | Leva o resultado oficial do gabarito, as correções como análise de erros, as decisões de 12/10 e a escolha da busca: o BM25 ficou (pertinência dos complementares 0,62 contra 0,67 da densa, abaixo da margem de 0,10); a PERF-001 não tem complementar pertinente em nenhuma busca — defeito da consulta, não da busca |
+| 1 | **Fase 4 — interface Streamlit (semana 9) e relatório HTML/PDF com cache para a demo (semana 10)** | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
 | 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
