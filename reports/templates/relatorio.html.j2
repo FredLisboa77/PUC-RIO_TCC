@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoria — {{ resultado.projeto }}</title>
+<style>
+  :root { --tinta: #1f2328; --suave: #59636e; --linha: #d1d9e0; --fundo: #f6f8fa;
+          --alta: #b42318; --media: #b54708; --baixa: #8a6d00; --aviso: #fff4e5; --info: #eef4ff; }
+  * { box-sizing: border-box; }
+  body { font: 14px/1.5 "Segoe UI", system-ui, sans-serif; color: var(--tinta); margin: 0 auto;
+         max-width: 960px; padding: 32px 24px; background: #fff; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 32px 0 8px; border-bottom: 1px solid var(--linha); padding-bottom: 4px; }
+  h3 { font-size: 16px; margin: 0 0 4px; }
+  .suave { color: var(--suave); }
+  .selo { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; background: var(--info); }
+  .caixa { border: 1px solid var(--linha); border-radius: 6px; padding: 12px 16px; margin: 12px 0; background: var(--fundo); }
+  .aviso { border-left: 4px solid var(--media); background: var(--aviso); padding: 8px 12px; margin: 8px 0; }
+  .falha { border-left: 4px solid var(--alta); background: #fdecea; padding: 8px 12px; margin: 8px 0; }
+  .sev-alta { color: var(--alta); font-weight: 600; }
+  .sev-media { color: var(--media); font-weight: 600; }
+  .sev-baixa { color: var(--baixa); font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--linha); padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: var(--fundo); }
+  .numeros { display: flex; gap: 24px; flex-wrap: wrap; }
+  .numeros div { min-width: 90px; }
+  .numeros strong { display: block; font-size: 22px; }
+  .achado { border: 1px solid var(--linha); border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
+  pre { background: var(--fundo); border: 1px solid var(--linha); padding: 8px; white-space: pre-wrap;
+        word-break: break-word; font-size: 12px; }
+  blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--linha); color: var(--suave); }
+  a { color: #0b5cad; }
+  .quebra { word-break: break-all; }
+  @media print {
+    body { padding: 0; max-width: none; }
+    .achado, .caixa, tr { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="suave">Relatório de auditoria de modelo semântico do Power BI (PBIP)</p>
+  <h1>{{ resultado.projeto }}</h1>
+  <p class="suave">
+    Auditado em {{ resultado.gerado_em | replace("T", " ") }} ·
+    {% if resultado.modo == "so_regras" %}<span class="selo">só regras (sem LLM)</span>
+    {% else %}completo — modelo {{ resultado.modelo_llm }}{% endif %}
+    · {{ "%.1f" | format(resultado.segundos_total) }} s
+  </p>
+  <p>
+    A ferramenta lê o modelo semântico salvo no projeto (tabelas, colunas, medidas, relacionamentos),
+    aplica regras determinísticas ancoradas na documentação oficial e, no modo completo, pede ao modelo
+    de linguagem uma explicação que cite essa documentação. Ela não lê a camada de relatório (visuais e
+    páginas) nem os dados.
+  </p>
+  {% if resultado.modo == "so_regras" %}
+  <p class="caixa">Resultado só regras: os achados vêm da detecção determinística, com a recomendação
+    padrão de cada regra e sem explicação do modelo de linguagem.</p>
+  {% endif %}
+</header>
+
+<section>
+  <h2>O que foi examinado</h2>
+  <ul>
+    <li>{{ examinado.regras }}</li>
+    <li>{{ examinado.expressoes }}</li>
+  </ul>
+  {% for falha in examinado.falhas %}<div class="falha">Regra com falha — {{ falha }}</div>{% endfor %}
+  {% if examinado.lacunas %}
+  <div class="aviso">{{ examinado.lacunas | length }} expressão(ões) DAX não analisada(s) pelo leitor de DAX:
+    <ul>{% for lacuna in examinado.lacunas %}<li>{{ lacuna }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Resumo</h2>
+  <div class="numeros">
+    <div><strong>{{ resumo.total }}</strong>achados</div>
+    {% for sev, n in resumo.por_severidade.items() %}
+    <div><strong class="sev-{{ sev }}">{{ n }}</strong>{{ severidade[sev] }}</div>
+    {% endfor %}
+    <div><strong>{{ resumo.com_aviso }}</strong>com aviso</div>
+  </div>
+  {% if resumo.por_categoria %}
+  <p class="suave">{% for cat, n in resumo.por_categoria.items() %}{{ cat }}: {{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  {% endif %}
+  {% if resumo.do_cache %}
+  <p class="suave">{{ resumo.do_cache }} explicação(ões) vieram do cache de respostas do modelo, não de uma chamada nova.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Achados</h2>
+  {% if not blocos %}
+  <p>Nenhum achado.</p>
+  {% else %}
+  <table>
+    <thead><tr><th>#</th><th>Severidade</th><th>Regra</th><th>Objeto</th><th>Tabela</th><th>Aviso</th></tr></thead>
+    <tbody>
+    {% for b in blocos %}
+      <tr>
+        <td><a href="#achado-{{ b.numero }}">{{ b.numero }}</a></td>
+        <td class="sev-{{ b.linha.severidade }}">{{ severidade[b.linha.severidade] }}</td>
+        <td>{{ b.linha.regra }}</td>
+        <td class="quebra">{{ b.linha.objeto }}</td>
+        <td class="quebra">{{ b.linha.tabela }}</td>
+        <td>{% if b.linha.aviso %}⚠{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% for b in blocos %}
+  {% if loop.changed(b.linha.regra) %}<h2>{{ b.meta.id }} — {{ b.meta.titulo }}</h2>{% endif %}
+  <article class="achado" id="achado-{{ b.numero }}">
+    <h3>{{ b.numero }}. <span class="quebra">{{ b.item.achado.evidencia.objeto }}</span></h3>
+    <p class="suave"><span class="sev-{{ b.meta.severidade }}">{{ severidade[b.meta.severidade] }}</span>
+      · {{ b.meta.categoria }} · {{ b.item.achado.evidencia.tipo_objeto }}</p>
+    <p>{{ b.item.achado.mensagem }}</p>
+    {% for aviso in b.avisos %}<div class="aviso"><strong>{{ aviso.titulo }}</strong> — {{ aviso.explicacao }}</div>{% endfor %}
+    {% if b.item.achado.evidencia.trecho %}<pre>{{ b.item.achado.evidencia.trecho }}</pre>{% endif %}
+    {% if b.item.achado.evidencia.detalhe %}
+    <p class="suave">Valores lidos pela regra:
+      {% for chave, valor in b.item.achado.evidencia.detalhe.items() %}{{ chave }} = {{ valor }}{% if not loop.last %}; {% endif %}{% endfor %}</p>
+    {% endif %}
+    {% if b.item.geracao %}<p><strong>Explicação.</strong> {{ b.item.geracao.explicacao }}</p>{% endif %}
+    <p><strong>Recomendação.</strong> {{ b.recomendacao }}</p>
+    {% if b.citacoes %}
+    <p><strong>Fontes citadas</strong></p>
+    {% for c in b.citacoes %}
+    <p>[{{ c.trecho.numero }}] <a href="{{ c.url }}">{{ c.trecho.titulo }} — {{ c.trecho.caminho }}</a>
+      {% if c.url_pt %} · <a href="{{ c.url_pt }}">ler em português</a>{% endif %}</p>
+    <blockquote>{{ c.trecho.texto }}</blockquote>
+    {% endfor %}
+    {% endif %}
+  </article>
+  {% endfor %}
+  {% endif %}
+</section>
+
+<section>
+  <h2>Regras aplicadas</h2>
+  <table>
+    <thead><tr><th>Regra</th><th>Título</th><th>Severidade</th><th>Categoria</th><th>Fundamentação</th></tr></thead>
+    <tbody>
+    {% for r in regras %}
+      <tr>
+        <td>{{ r.meta.id }}</td><td>{{ r.meta.titulo }}</td>
+        <td class="sev-{{ r.meta.severidade }}">{{ severidade[r.meta.severidade] }}</td><td>{{ r.meta.categoria }}</td>
+        <td><a href="{{ r.meta.url_canonica }}">Microsoft Learn</a>{% if r.url_pt %} · <a href="{{ r.url_pt }}">em português</a>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% if tecnico %}
+<section>
+  <h2>Seção técnica</h2>
+  <p class="suave">O que o modelo de linguagem leu em cada achado, para julgar a citação.</p>
+  {% for b in blocos %}
+  <div class="caixa">
+    <h3>{{ b.numero }}. {{ b.linha.regra }} — <span class="quebra">{{ b.linha.objeto }}</span></h3>
+    <p class="suave">Situação: {{ b.item.situacao }}{% if b.item.motivo_descarte %} ({{ b.item.motivo_descarte }}){% endif %}
+      · modelo: {{ b.item.modelo or "—" }}
+      · tempo: {{ b.item.segundos if b.item.segundos is not none else "—" }} s
+      · tokens do prompt: {{ b.item.tokens_prompt if b.item.tokens_prompt is not none else "—" }}
+      · trechos retirados para caber: {{ b.item.reducoes_de_contexto }}
+      {% if b.item.do_cache %}· <strong>do cache</strong>{% endif %}</p>
+    {% for t in b.item.contexto %}
+    <p><strong>[{{ t.numero }}] {{ t.titulo }} — {{ t.caminho }}</strong>
+      ({{ "âncora da regra" if t.origem == "ancora" else "busca" }})</p>
+    <blockquote>{{ t.texto }}</blockquote>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+</body>
+</html>

@@ -21,3 +21,7 @@ openpyxl==3.1.5
 
 # Fase 4 - interface
 streamlit==1.64.0
+
+# Fase 4 - relatorio (o PDF usa o Edge do sistema: sem `playwright install`)
+jinja2==3.1.6
+playwright==1.62.0
