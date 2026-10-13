@@ -157,10 +157,12 @@ Roda com `streamlit run app/streamlit_app.py`. Textos em português do Brasil.
 ### 3.4 Divisão do código
 
 - `app/consulta.py` — puro, sem Streamlit: avisos de um achado, linhas da tabela, filtros,
-  resumos por severidade e categoria, painel "o que foi examinado", listagem e leitura dos
-  resultados salvos.
-- `app/streamlit_app.py` — só a renderização e o estado da sessão; chama `run_audit`,
-  `gravar`, `traduzir_trecho` e as funções de `consulta`.
+  resumos por severidade e categoria, painel "o que foi examinado", escolha do achado
+  selecionado.
+- `app/execucao.py` — também sem Streamlit: roda a auditoria (`run_audit` + `gravar`),
+  grava o `.zip` enviado, lista e lê os resultados salvos, traduz um trecho, e converte
+  cada erro da seção 4 em `ErroParaUsuario`, com a mensagem pronta para a tela.
+- `app/streamlit_app.py` — só a renderização e o estado da sessão.
 
 ## 4. Erros
 
@@ -189,8 +191,13 @@ Toda falha vira mensagem na tela, nunca traceback.
 - **Interface** (`streamlit.testing.v1.AppTest`, LLM falso, PBIP sintético de `escrever_pbip` em `tests/conftest.py`): abrir resultado
   salvo mostra painel e tabela; só regras roda ponta a ponta; erro de PBIP vira mensagem.
 - **Aceite manual, registrado no progress-log:** auditoria completa do P8 pela interface com
-  o `qwen2.5:7b` (tempo e número de achados); auditoria só regras de P1–P7 conferindo os 53
-  achados.
+  o `qwen2.5:7b` (tempo e número de achados); auditoria só regras de P1–P7 conferindo os
+  **61** achados das regras atuais (52 VP + 4 FP + 5 indeterminados marcados em
+  `eval/results/regras-2026-10-12-pos-correcao.json`; os 53 de 09/10 são de antes da
+  correção da MOD-003 e da PERF-001).
+- **Listagem de `outputs/`:** pelo nome do arquivo e pela data de modificação, sem abrir
+  cada JSON a cada interação (o Streamlit reexecuta o script a cada clique). O nome já
+  traz projeto, data e modo; um JSON inválido aparece na lista e vira mensagem ao abrir.
 
 ## 6. Dependência
 
