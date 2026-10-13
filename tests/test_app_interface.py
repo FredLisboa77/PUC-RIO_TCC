@@ -118,3 +118,25 @@ def test_json_invalido_mantem_o_resultado_anterior(app, tmp_path):
     assert not app.exception
     assert any("não é um resultado de auditoria" in e.value for e in app.error)
     assert app.session_state["resultado"].projeto == "Minimal"
+
+
+def test_durante_a_auditoria_o_resultado_anterior_fica_desabilitado(app, tmp_path, monkeypatch):
+    """Revisão final: um clique num filtro do resultado anterior durante a auditoria
+    reexecutaria o script e mataria a auditoria em silêncio (spec 3.1)."""
+    caminho = _gravar_resultado_salvo(tmp_path)
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+
+    def falha(*args, **kwargs):
+        raise execucao.ErroParaUsuario("parou")
+
+    # Sem o rerun, o run de execução termina com a tela que o usuário vê durante a auditoria.
+    monkeypatch.setattr(st, "rerun", lambda *args, **kwargs: None)
+    monkeypatch.setattr(execucao, "executar", falha)
+    app.text_input(key="pasta").input(str(tmp_path)).run()
+    app.button(key="auditar").click().run()
+    assert not app.exception
+    assert app.multiselect and all(m.disabled for m in app.multiselect)
+    traducao = [b for b in app.button if (b.key or "").startswith("traduzir")]
+    assert traducao and all(b.disabled for b in traducao)

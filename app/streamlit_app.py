@@ -91,9 +91,9 @@ def _barra_lateral() -> None:
 
 # --- execução ----------------------------------------------------------------
 
-def _executar(pedido: dict) -> None:
+def _executar(pedido: dict, topo) -> None:
     try:
-        with st.status("Auditando...", expanded=True) as status:
+        with topo, st.status("Auditando...", expanded=True) as status:
             st.write("Lendo o projeto e rodando as regras.")
             barra = st.progress(0.0)
 
@@ -165,19 +165,20 @@ def _resumo(linhas: list[consulta.Linha]) -> None:
         st.caption(" · ".join(f"{categoria}: {n}" for categoria, n in resumo.por_categoria.items()))
 
 
-def _filtros(linhas: list[consulta.Linha]) -> Filtro:
+def _filtros(linhas: list[consulta.Linha], bloqueado: bool) -> Filtro:
     opcoes = consulta.opcoes_de_filtro(linhas)
     c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 1])
+    comum = dict(disabled=bloqueado)
     return Filtro(
-        severidades=frozenset(c1.multiselect("Severidade", opcoes["severidades"], key="f_severidade")),
-        categorias=frozenset(c2.multiselect("Categoria", opcoes["categorias"], key="f_categoria")),
-        regras=frozenset(c3.multiselect("Regra", opcoes["regras"], key="f_regra")),
-        tabelas=frozenset(c4.multiselect("Tabela", opcoes["tabelas"], key="f_tabela")),
-        so_com_aviso=c5.checkbox("Só com aviso", key="f_aviso"),
+        severidades=frozenset(c1.multiselect("Severidade", opcoes["severidades"], key="f_severidade", **comum)),
+        categorias=frozenset(c2.multiselect("Categoria", opcoes["categorias"], key="f_categoria", **comum)),
+        regras=frozenset(c3.multiselect("Regra", opcoes["regras"], key="f_regra", **comum)),
+        tabelas=frozenset(c4.multiselect("Tabela", opcoes["tabelas"], key="f_tabela", **comum)),
+        so_com_aviso=c5.checkbox("Só com aviso", key="f_aviso", **comum),
     )
 
 
-def _tabela(visiveis: list[consulta.Linha]) -> consulta.Linha | None:
+def _tabela(visiveis: list[consulta.Linha], bloqueado: bool) -> consulta.Linha | None:
     if not visiveis:
         st.info("Nenhum achado com estes filtros.")
         return None
@@ -187,7 +188,7 @@ def _tabela(visiveis: list[consulta.Linha]) -> consulta.Linha | None:
         for l in visiveis
     ]
     evento = st.dataframe(
-        dados, on_select="rerun", selection_mode="single-row", hide_index=True, width="stretch", key="tabela"
+        dados, on_select="ignore" if bloqueado else "rerun", selection_mode="single-row", hide_index=True, width="stretch", key="tabela"
     )
     try:
         selecionadas = list(evento.selection.rows)
@@ -202,7 +203,7 @@ def _link(rotulo: str, url: str) -> str:
     return f"{texto} · [ler em português]({portugues})" if portugues else texto
 
 
-def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditoria) -> None:
+def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditoria, bloqueado: bool) -> None:
     if item.geracao is None:
         return
     st.markdown("**Fontes citadas**")
@@ -219,7 +220,7 @@ def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditori
             if chave in estado.traducoes:
                 traducao.caption("Tradução automática — o texto citado é o original")
                 traducao.markdown(_md(estado.traducoes[chave]))
-            elif traducao.button("Traduzir trecho", key=f"traduzir|{chave}"):
+            elif traducao.button("Traduzir trecho", key=f"traduzir|{chave}", disabled=bloqueado):
                 with st.spinner("Traduzindo..."):
                     try:
                         estado.traducoes[chave] = execucao.traduzir(trecho.texto, modelo)
@@ -243,7 +244,7 @@ def _detalhes_tecnicos(item: AchadoEnriquecido) -> None:
             st.markdown(_md(trecho.texto))
 
 
-def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha) -> None:
+def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha, bloqueado: bool) -> None:
     item = resultado.achados[linha.indice]
     meta = REGISTRO.meta(item.achado.id_regra)
     evidencia = item.achado.evidencia
@@ -263,20 +264,22 @@ def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha) -> None:
         st.markdown(_md(item.geracao.explicacao))
     st.markdown("**Recomendação**")
     st.markdown(_md(item.recomendacao_final(meta)))
-    _citacoes(item, linha.indice, resultado)
+    _citacoes(item, linha.indice, resultado, bloqueado)
     st.markdown("Fonte da regra: " + _link(meta.titulo, meta.url_canonica))
     _detalhes_tecnicos(item)
 
 
-def _resultado(resultado: ResultadoAuditoria) -> None:
+def _resultado(resultado: ResultadoAuditoria, bloqueado: bool = False) -> None:
+    """`bloqueado` durante a auditoria: o resultado anterior continua na tela, mas
+    um clique nele reexecutaria o script e mataria a auditoria em andamento."""
     _cabecalho(resultado)
     _examinado(resultado)
     linhas = consulta.linhas(resultado, REGISTRO)
     _resumo(linhas)
-    visiveis = consulta.filtrar(linhas, _filtros(linhas))
-    linha = _tabela(visiveis)
+    visiveis = consulta.filtrar(linhas, _filtros(linhas, bloqueado))
+    linha = _tabela(visiveis, bloqueado)
     if linha is not None:
-        _detalhe(resultado, linha)
+        _detalhe(resultado, linha, bloqueado)
 
 
 # --- página ------------------------------------------------------------------
@@ -286,7 +289,12 @@ if estado.mensagem:
     tipo, texto = estado.mensagem
     getattr(st, tipo)(texto)
 if estado.executando and estado.pedido is not None:
-    _executar(estado.pedido)
+    # O status vai para o topo; o resultado anterior é redesenhado desabilitado logo
+    # abaixo, para não sobrar na tela um elemento antigo ainda clicável.
+    topo = st.container()
+    if estado.resultado is not None:
+        _resultado(estado.resultado, bloqueado=True)
+    _executar(estado.pedido, topo)
 elif estado.resultado is not None:
     _resultado(estado.resultado)
 else:
