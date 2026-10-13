@@ -1630,3 +1630,97 @@ PERF-003" (30) perde a razão de ser. O P9 fica reservado para a Fase 5, **só**
 validar as correções da MOD-003 e da PERF-001 num projeto que as regras não viram — anotação
 reduzida às duas regras. A pequena amostra de algumas regras vai à monografia com intervalo
 de Wilson por regra (backlog). R-12 passa a **Mitigado**.
+
+---
+
+## 12/10/2026 — Pertinência dos complementares: ferramentas prontas, planilha gerada
+
+Subprojeto 2 da revisão de meio de projeto. Spec
+`docs/superpowers/specs/2026-10-12-pertinencia-dos-complementares-design.md`, plano de 8
+tarefas, branch `fase3-busca-complementares`; tarefas 1 a 7 executadas na sessão.
+
+**Por que uma régua nova.** A régua de 11/10 mede se a âncora aparece entre os 5 primeiros:
+saturou (7 de 12 combinações com 9 em 9) e, desde a semana 7, a âncora entra no contexto sem
+depender da busca. O que a busca ainda decide são os complementares (trechos 2 a 5), e é a
+pertinência deles que esta etapa mede.
+
+**Construído:**
+
+- `escolher_complementares` (`core/analise/contexto.py`): a seleção da geração como função
+  pura, usada também pela medição — a régua mede o que o modelo recebe.
+- `rag/complementares.py`: BM25, densa e combinada sobre os trechos do índice (vetores do
+  cache de 11/10), o *pool* por (regra, seção), a precisão dos complementares (por consulta,
+  por regra, macro, micro, piso e teto) e a regra de decisão;
+  `python -m rag.complementares gerar | importar [--parcial] | medir`.
+- `rag/pertinencia.py`: planilha cega (nenhuma célula diz qual busca trouxe a seção), com a
+  âncora da regra no topo de cada aba; CSV em `eval/recuperacao/pertinencia.csv`.
+- `python -m rag.indice construir --busca`: troca só o tipo de busca, e só se casar com a
+  decisão mais recente da medição; grava `origem-da-busca.json`.
+
+**Planilha gerada:** `eval/gabarito/pertinencia-complementares.xlsx` (fora do Git), **89
+seções** — PERF-001 32, DAX-001 9, MOD-006 9, MOD-007 9, PERF-003 9, MOD-002 6, MOD-003 6,
+MOD-005 5, MOD-001 4.
+
+**Regra de decisão, fixada antes de medir:** densa ou combinada substitui o BM25 só com
+macro ≥ macro do BM25 + 0,10; se as duas passarem, a de maior macro; empate pela mais
+simples (BM25, densa, combinada).
+
+Suíte: **704 testes passando**.
+
+**Próximo passo:** o Fred julga `eval/gabarito/pertinencia-complementares.xlsx`; depois
+`python -m rag.complementares importar` e `medir` (com `HF_HUB_OFFLINE=1` e
+`HF_HOME=D:\dev\hf-cache`).
+
+**Revisão final da branch (revisor independente), antes do julgamento:** nenhum crítico; pool
+determinístico (89 seções, iguais em duas montagens), planilha cega, consultas idênticas às
+da geração. Corrigidos, com teste: a coleção do Chroma passa a ser criada em cosseno com
+`ef` 200 (com os padrões, depois de uma troca para densa ou combinada, o top-10 divergia da
+busca medida em 5 a 7 das 70 consultas); o resultado registra a **macro só das consultas de
+achado** ao lado da macro da spec — as 9 consultas da regra pesam ~41% da macro e o pipeline
+nunca as faz —; e o JSON grava modelo e versões. O teste do índice real passa a comparar com
+a configuração gravada no índice. Sete menores adiados (ledger da branch). Suíte: **706
+testes**. A planilha gerada continua casando com o pool.
+
+**Decisão do Fred (antes de julgar):** a escolha da busca segue a **macro das 70 consultas**,
+como na spec aprovada (opção A). A macro só das consultas de achado fica registrada ao lado, e
+uma divergência entre as duas vai à monografia.
+
+---
+
+## 12/10/2026 — Pertinência dos complementares medida: o BM25 fica
+
+O Fred julgou as 89 seções; `importar` gravou `eval/recuperacao/pertinencia.csv` e `medir`
+gravou `eval/results/complementares-2026-10-12.json`.
+
+| Regra | BM25 | Densa | Combinada |
+|---|---|---|---|
+| DAX-001 | 1,00 | 0,71 | 0,93 |
+| MOD-001 | 0,75 | 0,75 | 0,75 |
+| MOD-002 | 1,00 | 1,00 | 1,00 |
+| MOD-003 | 0,50 | 1,00 | 0,75 |
+| MOD-005 | 1,00 | 0,75 | 1,00 |
+| MOD-006 | 0,19 | 0,29 | 0,29 |
+| MOD-007 | 0,38 | 0,75 | 0,38 |
+| PERF-001 | 0,00 | 0,00 | 0,00 |
+| PERF-003 | 0,75 | 0,76 | 0,75 |
+| **Macro (decide)** | **0,62** | 0,67 | 0,65 |
+| Só achados (registro) | 0,49 | 0,62 | 0,54 |
+
+**Decisão (regra fixada antes de medir): o BM25 fica** — densa +0,05 e combinada +0,03, abaixo
+da margem de 0,10. Índice inalterado; a Task 8 termina sem `construir --busca` nem nova
+rodada do P8.
+
+**O que a medição mostrou:**
+
+- **PERF-001: 31 de 32 seções não pertinentes, precisão 0 nas três buscas.** O problema não é
+  o tipo de busca, é a consulta, que carrega a expressão DAX da coluna e atrai páginas de
+  funções. Trocar a busca não resolveria; fica como trabalho futuro (consulta da PERF-001 sem a
+  expressão, por exemplo), fora do escopo desta spec.
+- **Divergência declarada:** só com as consultas de achado, a densa superaria o BM25 por 0,13.
+  A regra aprovada (macro das 70) foi mantida, por decisão do Fred anterior ao julgamento.
+- Vereditos: 39 pertinentes, 46 não pertinentes, 4 indeterminados.
+
+Emenda na ADR-002 com a tabela e as limitações.
+
+**Próximo passo:** PR da branch `fase3-busca-complementares`; depois o subprojeto 3
+(documento de meio de projeto).

@@ -22,6 +22,7 @@ from rag.texto import normalizar
 PASTA_INDICE = PASTA_STORE / "indice"
 ARQUIVO_TRECHOS = PASTA_INDICE / "trechos.jsonl"
 ARQUIVO_CONFIG = PASTA_INDICE / "config.json"
+ARQUIVO_ORIGEM = PASTA_INDICE / "origem-da-busca.json"
 PASTA_CHROMA = PASTA_STORE / "chroma"
 COLECAO = "base_rag"
 LOTE_CHROMA = 1000
@@ -49,11 +50,36 @@ def _exigir_corpus_completo(configuracao: Configuracao) -> None:
         )
 
 
-def resultado_mais_recente(pasta: Path) -> Path:
-    arquivos = sorted(pasta.glob("recuperacao-*.json")) if pasta.is_dir() else []
+def resultado_mais_recente(pasta: Path, padrao: str = "recuperacao-*.json") -> Path:
+    arquivos = sorted(pasta.glob(padrao)) if pasta.is_dir() else []
     if not arquivos:
         raise ErroDeIndice(f"nenhum resultado em {pasta} — rode `python -m rag.medicao`")
     return arquivos[-1]
+
+
+def configuracao_do_indice(pasta_resultados: Path, busca: str | None) -> tuple[Configuracao, str | None]:
+    """A vencedora da medição de 11/10; com `busca`, só o tipo de busca muda, e só se casar
+    com a decisão mais recente da medição dos complementares."""
+    _, decisao = ler_resultado(resultado_mais_recente(pasta_resultados))
+    configuracao = decisao.vencedora
+    if busca is None:
+        return configuracao, None
+    arquivos = sorted(pasta_resultados.glob("complementares-*.json")) if pasta_resultados.is_dir() else []
+    if not arquivos:
+        raise ErroDeIndice("sem resultado de complementares — rode `python -m rag.complementares medir`")
+    vencedora = json.loads(arquivos[-1].read_text(encoding="utf-8"))["decisao"]["vencedora"]
+    if vencedora != busca:
+        raise ErroDeIndice(f"--busca {busca} não casa com a decisão mais recente ({arquivos[-1].name}: {vencedora})")
+    return configuracao.model_copy(update={"busca": busca}), arquivos[-1].name
+
+
+def criar_colecao(cliente):
+    """A coleção do índice: espaço cosseno e HNSW com busca ampla, para que a busca densa
+    pelo Chroma reproduza a medida em memória (produto escalar exato sobre vetores
+    normalizados). Com os padrões (l2, ef 100), o top-10 divergia em 5 das 70 consultas."""
+    return cliente.create_collection(
+        COLECAO, configuration={"hnsw": {"space": "cosine", "ef_search": 200, "ef_construction": 200}}
+    )
 
 
 def construir(
@@ -62,9 +88,9 @@ def construir(
     pasta_indice: Path = PASTA_INDICE,
     pasta_chroma: Path = PASTA_CHROMA,
     pasta_embeddings: Path = PASTA_EMBEDDINGS,
+    busca: str | None = None,
 ) -> Configuracao:
-    _, decisao = ler_resultado(resultado_mais_recente(pasta_resultados))
-    configuracao = decisao.vencedora
+    configuracao, origem = configuracao_do_indice(pasta_resultados, busca)
     _exigir_corpus_completo(configuracao)
     embedder = EmbedderBge()
     # Os trechos são montados como na medição — com o contador de tokens do modelo —
@@ -89,7 +115,7 @@ def construir(
         cliente.delete_collection(COLECAO)
     except Exception:  # coleção ainda não existe: o tipo da exceção muda entre versões do Chroma
         pass
-    colecao = cliente.create_collection(COLECAO)
+    colecao = criar_colecao(cliente)
     for inicio in range(0, len(trechos), LOTE_CHROMA):
         lote = trechos[inicio : inicio + LOTE_CHROMA]
         colecao.add(
@@ -103,6 +129,15 @@ def construir(
     (pasta_indice / ARQUIVO_CONFIG.name).write_text(
         configuracao.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n"
     )
+    arquivo_origem = pasta_indice / ARQUIVO_ORIGEM.name
+    if origem is None:
+        arquivo_origem.unlink(missing_ok=True)
+    else:
+        arquivo_origem.write_text(
+            json.dumps({"busca": busca, "decidida_por": origem}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
     return configuracao
 
 
@@ -203,10 +238,14 @@ def carregar_buscador(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m rag.indice", description="Índice da base RAG.")
     sub = parser.add_subparsers(dest="comando", required=True)
-    sub.add_parser("construir", help="constrói o índice da configuração vencedora da medição")
-    parser.parse_args(argv)
+    construir_ = sub.add_parser("construir", help="constrói o índice da configuração vencedora da medição")
+    construir_.add_argument(
+        "--busca", choices=("bm25", "densa", "hibrida"),
+        help="troca só o tipo de busca; precisa casar com a decisão de `python -m rag.complementares medir`",
+    )
+    args = parser.parse_args(argv)
     try:
-        configuracao = construir()
+        configuracao = construir(busca=args.busca)
     except ErroDeIndice as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1

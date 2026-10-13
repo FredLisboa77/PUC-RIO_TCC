@@ -66,17 +66,25 @@ def _para_contexto(trecho: TrechoIndexado, numero: int, origem: Origem) -> Trech
     )
 
 
-def montar_contexto(meta: RegraMeta, achado: Achado, base: BaseRag, gabarito: Gabarito) -> list[TrechoDeContexto]:
-    ancora = _trecho_ancora(base, gabarito)
-    escolhidos = [ancora]
+def escolher_complementares(ancora: TrechoIndexado, resultados: list[TrechoIndexado]) -> list[TrechoIndexado]:
+    """Os complementares que entram no contexto, na ordem da busca: sem a âncora, até
+    `MAX_COMPLEMENTARES`, e só os que cabem no orçamento junto com ela. É a mesma função
+    que a medição dos complementares usa — a régua mede o que o modelo recebe."""
+    escolhidos: list[TrechoIndexado] = []
     total = _palavras(ancora)
-    for trecho in base.buscar(montar_consulta(meta, achado), K_BUSCA):
-        if len(escolhidos) > MAX_COMPLEMENTARES:
+    for trecho in resultados:
+        if len(escolhidos) >= MAX_COMPLEMENTARES:
             break
         if trecho.id == ancora.id or total + _palavras(trecho) > ORCAMENTO_PALAVRAS:
             continue
         escolhidos.append(trecho)
         total += _palavras(trecho)
+    return escolhidos
+
+
+def montar_contexto(meta: RegraMeta, achado: Achado, base: BaseRag, gabarito: Gabarito) -> list[TrechoDeContexto]:
+    ancora = _trecho_ancora(base, gabarito)
+    escolhidos = [ancora, *escolher_complementares(ancora, base.buscar(montar_consulta(meta, achado), K_BUSCA))]
     return [
         _para_contexto(t, numero, "ancora" if numero == 1 else "busca")
         for numero, t in enumerate(escolhidos, start=1)
