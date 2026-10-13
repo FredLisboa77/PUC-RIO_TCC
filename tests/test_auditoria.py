@@ -1,5 +1,7 @@
 """Auditoria de ponta a ponta com LLM falso e base sintética."""
 
+from pathlib import Path
+
 import pytest
 
 from conftest import escrever_pbip, modelo_tmsl, tabela
@@ -146,3 +148,37 @@ def test_falha_ao_gravar_sai_com_mensagem_e_ainda_mostra_o_resumo(tmp_path, monk
     saida = capsys.readouterr()
     assert "Achados: 2" in saida.out
     assert "erro:" in saida.err
+
+
+FIXTURE_FORMATO_ANTIGO = Path(__file__).parent / "fixtures" / "resultado-formato-2026-10-11.json"
+
+
+def test_json_no_formato_de_11_10_abre_como_completo():
+    resultado = ResultadoAuditoria.model_validate_json(FIXTURE_FORMATO_ANTIGO.read_text(encoding="utf-8"))
+    assert (resultado.modo, resultado.modelo_llm) == ("completo", "qwen2.5:7b-instruct-q4_K_M")
+    assert [a.situacao for a in resultado.achados] == ["gerado", "sem_fundamentacao"]
+
+
+def _resultado(**extra) -> ResultadoAuditoria:
+    from core.analise.base import AchadoEnriquecido
+    from core.rules.runner import ResultadoRegras
+    from fabricas_analise import achado as fabrica_achado
+
+    campos = dict(
+        projeto="P", modo="so_regras", modelo_llm=None, gerado_em="2026-10-13T15:30:00",
+        regras=ResultadoRegras(regras_executadas=1),
+        achados=[AchadoEnriquecido.so_regras(fabrica_achado())], segundos_total=0.1,
+    )
+    campos.update(extra)
+    return ResultadoAuditoria(**campos)
+
+
+def test_resultado_so_regras_coerente_e_aceito():
+    assert _resultado().modo == "so_regras"
+
+
+def test_resultado_com_modo_e_modelo_que_nao_batem_e_recusado():
+    with pytest.raises(ValueError, match="incoerente"):
+        _resultado(modelo_llm="m")
+    with pytest.raises(ValueError, match="incoerente"):
+        _resultado(modo="completo")

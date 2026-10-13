@@ -12,8 +12,9 @@ import time
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from core.analise.base import AchadoEnriquecido
 from core.analise.contexto import ErroDeContexto, carregar_gabaritos, verificar_ancoras
@@ -34,15 +35,32 @@ class ErroDeAuditoria(Exception):
     """A auditoria não pode seguir sem produzir um resultado enganoso."""
 
 
+ModoAuditoria = Literal["completo", "so_regras"]
+
+
 class ResultadoAuditoria(BaseModel):
     projeto: str
-    modelo_llm: str
+    modo: ModoAuditoria = "completo"
+    """O padrão lê como completos os JSONs gravados antes de existir o modo só regras."""
+    modelo_llm: str | None
     gerado_em: str
     regras: ResultadoRegras
     """Sem os achados, que estão enriquecidos em `achados`: falhas de regra,
     lacunas de DAX e cobertura continuam visíveis."""
     achados: list[AchadoEnriquecido]
     segundos_total: float
+
+    @model_validator(mode="after")
+    def _modo_coerente(self) -> "ResultadoAuditoria":
+        so_regras = self.modo == "so_regras"
+        coerente = (self.modelo_llm is None) == so_regras and all(
+            (a.situacao == "so_regras") == so_regras for a in self.achados
+        )
+        if not coerente:
+            raise ValueError(
+                f"resultado incoerente: modo {self.modo} com modelo_llm e situações dos achados que não batem"
+            )
+        return self
 
 
 def nome_do_projeto(caminho: str | Path) -> str:

@@ -1,0 +1,54 @@
+{
+  "projeto": "Formato-antigo",
+  "modelo_llm": "qwen2.5:7b-instruct-q4_K_M",
+  "gerado_em": "2026-10-11T21:40:12",
+  "regras": {
+    "achados": [],
+    "regras_com_falha": [],
+    "regras_executadas": 9,
+    "lacunas_de_expressao": [],
+    "expressoes_analisadas": 105,
+    "falha_na_varredura": null
+  },
+  "achados": [
+    {
+      "achado": {
+        "id_regra": "MOD-001",
+        "evidencia": {"tipo_objeto": "tabela", "objeto": "LocalDateTable_1", "tabela": "LocalDateTable_1", "trecho": null, "detalhe": {}},
+        "mensagem": "A tabela oculta 'LocalDateTable_1' foi gerada pelo Tempo automático de data/hora."
+      },
+      "contexto": [
+        {"numero": 1, "id_pagina": "learn:power-bi/guidance/auto-date-time", "url": "https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time", "titulo": "Auto date/time guidance in Power BI Desktop", "ancora": "recommendations", "caminho": "Recommendations", "texto": "Keep the Auto date/time option enabled only when you work with calendar time periods.", "origem": "ancora"}
+      ],
+      "geracao": {"explicacao": "A tabela automática aumenta o modelo.", "recomendacao": "Desative a opção Auto date/time.", "citacoes": [1]},
+      "situacao": "gerado",
+      "motivo_descarte": null,
+      "cita_ancora": true,
+      "fidelidade": {"divergencias": []},
+      "modelo": "qwen2.5:7b-instruct-q4_K_M",
+      "segundos": 8.1,
+      "tokens_prompt": 1200,
+      "reducoes_de_contexto": 0
+    },
+    {
+      "achado": {
+        "id_regra": "MOD-001",
+        "evidencia": {"tipo_objeto": "tabela", "objeto": "LocalDateTable_2", "tabela": "LocalDateTable_2", "trecho": null, "detalhe": {}},
+        "mensagem": "A tabela oculta 'LocalDateTable_2' foi gerada pelo Tempo automático de data/hora."
+      },
+      "contexto": [
+        {"numero": 1, "id_pagina": "learn:power-bi/guidance/auto-date-time", "url": "https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time", "titulo": "Auto date/time guidance in Power BI Desktop", "ancora": "recommendations", "caminho": "Recommendations", "texto": "Keep the Auto date/time option enabled only when you work with calendar time periods.", "origem": "ancora"}
+      ],
+      "geracao": null,
+      "situacao": "sem_fundamentacao",
+      "motivo_descarte": "json_invalido",
+      "cita_ancora": null,
+      "fidelidade": null,
+      "modelo": "qwen2.5:7b-instruct-q4_K_M",
+      "segundos": 7.9,
+      "tokens_prompt": 1180,
+      "reducoes_de_contexto": 0
+    }
+  ],
+  "segundos_total": 20.3
+}
