@@ -63,6 +63,9 @@ class AchadoEnriquecido(BaseModel):
     reducoes_de_contexto: int = 0
     """Quantos trechos complementares saíram para o prompt caber no `num_ctx`. O
     `contexto` gravado é o que o modelo de fato leu, já reduzido."""
+    do_cache: bool = False
+    """A resposta veio do cache de respostas (`core/analise/cache.py`), não de uma
+    chamada nova; `segundos` é o tempo desta leitura."""
 
     @model_validator(mode="after")
     def _situacao_coerente(self) -> "AchadoEnriquecido":
@@ -77,6 +80,7 @@ class AchadoEnriquecido(BaseModel):
                 and self.modelo is None
                 and self.segundos is None
                 and self.tokens_prompt is None
+                and not self.do_cache
             )
         else:
             gerado = self.situacao == "gerado"

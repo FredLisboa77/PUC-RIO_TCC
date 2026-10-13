@@ -138,7 +138,8 @@ def resumir(resultado: ResultadoAuditoria) -> str:
         ]))
     gerados = [a for a in achados if a.situacao == "gerado"]
     motivos = Counter(a.motivo_descarte for a in achados if a.motivo_descarte)
-    tempos = [a.segundos for a in achados if a.segundos is not None]
+    tempos = [a.segundos for a in achados if a.segundos is not None and not a.do_cache]
+    do_cache = sum(1 for a in achados if a.do_cache)
     linhas = [
         f"Projeto {resultado.projeto} - modelo {resultado.modelo_llm}",
         f"Achados: {len(achados)} | gerados: {len(gerados)} | sem fundamentacao: {len(achados) - len(gerados)}",
@@ -152,20 +153,26 @@ def resumir(resultado: ResultadoAuditoria) -> str:
     reduzidos = sum(1 for a in achados if a.reducoes_de_contexto)
     if reduzidos:
         linhas.append(f"Contexto reduzido para caber: {reduzidos}")
+    if do_cache:
+        linhas.append(f"Do cache: {do_cache} (tempo medio so das chamadas reais)")
     if tempos:
         linhas.append(f"Tempo por achado: medio {sum(tempos) / len(tempos):.1f}s, pior {max(tempos):.1f}s")
     linhas.append(f"Tempo total: {resultado.segundos_total:.1f}s")
     return _ascii("\n".join(linhas))
 
 
+def nome_base(resultado: ResultadoAuditoria) -> str:
+    """`<projeto>-<AAAA-MM-DDTHHMMSS>[-so-regras]`: com segundos, duas auditorias do
+    mesmo projeto no mesmo minuto não se sobrescrevem (só regras leva 0,3 s)."""
+    carimbo = resultado.gerado_em[:19].replace(":", "")
+    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
+    return f"{resultado.projeto}-{carimbo}{sufixo}"
+
+
 def gravar(resultado: ResultadoAuditoria, pasta: Path | None = None) -> Path:
     pasta = PASTA_SAIDA if pasta is None else pasta
     pasta.mkdir(parents=True, exist_ok=True)
-    # Hora no nome: quem audita, corrige e audita de novo no mesmo dia não perde
-    # o resultado anterior.
-    carimbo = resultado.gerado_em[:16].replace(":", "")
-    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
-    caminho = pasta / f"{resultado.projeto}-{carimbo}{sufixo}.json"
+    caminho = pasta / f"{nome_base(resultado)}.json"
     caminho.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     return caminho
 
