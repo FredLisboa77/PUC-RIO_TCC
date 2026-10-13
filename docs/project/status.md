@@ -117,7 +117,7 @@ Essa pendência está **resolvida — por decisão, não por chegar ao número**
 | 1 | Regras estruturais (modelagem, performance estática) | **Completo — 8 regras** |
 | 2 | Regras de DAX com padrão textual inequívoco | **Fechado nesta etapa — 1 regra (DAX-001)** |
 | 3 | Regras de DAX dependentes de contexto | Fora do MVP (sem parser sintático, a heurística erra muito) |
-| 4 | Regras de M | Segue no MVP, primeiro corte sob pressão de prazo (R-07) |
+| 4 | Regras de M | **Fora do MVP** (12/10/2026): regras congeladas na tag `regras-gt`; vai para trabalhos futuros |
 
 Em 06/10/2026 passou a valer uma segunda condição, anterior à detectabilidade —
 âncora citável do Microsoft Learn, verificada antes do código — que eliminou 3 das

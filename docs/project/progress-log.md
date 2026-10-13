@@ -1751,3 +1751,8 @@ documento propõe tirar o grupo 4 do MVP — pendente de decisão do Fred antes 
 
 **Próximo passo:** o Fred revisa o documento e decide sobre o grupo 4; depois compartilha com
 o orientador e a página de andamento passa a apontar para ele.
+
+**Decisão do Fred:** o grupo 4 (regras de Power Query M) **sai do MVP** e vai para trabalhos
+futuros; o MVP fecha com as 9 regras da tag `regras-gt`. Registrado no backlog, no `status.md`,
+no R-07 (o corte 2 foi feito; restam PDF e filtros avançados) e em `eval/dataset.md`. No
+documento da revisão, a proposta passa a decisão para validação do orientador.

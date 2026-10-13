@@ -159,6 +159,8 @@ só, sem medida de concordância (Fase 1, limitações declaradas). O protocolo 
   fica com um anotador só, sem kappa; o viés de anotador único é **limitação declarada**
   (§11.4 do planejamento), mitigada pela justificativa obrigatória em `viola` e
   `indeterminado` e pela revisão dos julgamentos contra a documentação.
+- **Grupo 4 (regras de M):** a tag foi criada antes dele; o grupo saiu do MVP em 12/10/2026
+  (decisão do Fred), e o conjunto avaliado são as 9 regras da tag.
 - **Item 3 — anotação cega:** a planilha não mostrava o que a ferramenta marcou.
 - **Formato:** o formato abaixo foi substituído pelo da spec do gabarito —
   `id,projeto,id_regra,objeto,veredito,justificativa,referencia`.

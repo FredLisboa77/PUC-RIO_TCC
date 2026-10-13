@@ -14,7 +14,7 @@ Ordem de prioridade que isso implica:
 1. **Regras estruturais** (modelagem e performance estática) — leem propriedades explícitas do JSON: relacionamentos bidirecionais, tabelas de data automáticas, colunas calculadas, tipos de dados, colunas sem uso, cardinalidade inferida. A detecção é praticamente determinística e o falso positivo é raro.
 2. **Regras de DAX com padrão textual inequívoco** — divisão com `/` em vez de `DIVIDE`, `FILTER` sobre tabela inteira, iteração desnecessária. O padrão é reconhecível por expressão regular sem interpretar semântica.
 3. **Regras de DAX dependentes de contexto** — transição de contexto, `CALCULATE` aninhado, escopo de variáveis. Entram apenas se sobrar orçamento, porque sem um parser sintático a heurística erra com frequência.
-4. **Regras de M** — mantidas no MVP, mas são as primeiras a ser cortadas sob pressão de prazo (R-07).
+4. **Regras de M** — **fora do MVP desde 12/10/2026** (decisão do Fred): com as regras congeladas na tag `regras-gt`, uma regra nova só entraria na avaliação com anotação própria; o grupo, nunca iniciado, vai para trabalhos futuros, com as candidatas registradas abaixo.
 
 Consequência prática: se a contagem final ficar perto de 20 em vez de 25, a diferença sai do grupo 3, não do grupo 1. Uma regra com precisão baixa é pior que uma regra ausente, porque mina a confiança no relatório inteiro.
 
