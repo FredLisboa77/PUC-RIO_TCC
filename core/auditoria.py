@@ -130,6 +130,12 @@ def _ascii(texto: str) -> str:
 
 def resumir(resultado: ResultadoAuditoria) -> str:
     achados = resultado.achados
+    if resultado.modo == "so_regras":
+        return _ascii("\n".join([
+            f"Projeto {resultado.projeto} - modo so regras (sem LLM)",
+            f"Achados: {len(achados)}",
+            f"Tempo total: {resultado.segundos_total:.1f}s",
+        ]))
     gerados = [a for a in achados if a.situacao == "gerado"]
     motivos = Counter(a.motivo_descarte for a in achados if a.motivo_descarte)
     tempos = [a.segundos for a in achados if a.segundos is not None]
@@ -155,7 +161,11 @@ def resumir(resultado: ResultadoAuditoria) -> str:
 def gravar(resultado: ResultadoAuditoria, pasta: Path | None = None) -> Path:
     pasta = PASTA_SAIDA if pasta is None else pasta
     pasta.mkdir(parents=True, exist_ok=True)
-    caminho = pasta / f"{resultado.projeto}-{resultado.gerado_em[:10]}.json"
+    # Hora no nome: quem audita, corrige e audita de novo no mesmo dia não perde
+    # o resultado anterior.
+    carimbo = resultado.gerado_em[:16].replace(":", "")
+    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
+    caminho = pasta / f"{resultado.projeto}-{carimbo}{sufixo}.json"
     caminho.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     return caminho
 
@@ -164,9 +174,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m core.auditoria", description="Audita um projeto PBIP.")
     parser.add_argument("pasta_pbip", help="pasta do projeto PBIP ou arquivo .zip")
     parser.add_argument("--modelo", default=MODELO_PADRAO, help="modelo do Ollama")
+    parser.add_argument(
+        "--so-regras", action="store_true",
+        help="so a deteccao, sem indice nem LLM; a recomendacao e a padrao da regra",
+    )
     args = parser.parse_args(argv)
     try:
-        resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
+        if args.so_regras:
+            resultado = run_audit(args.pasta_pbip, llm=None, base=None)
+        else:
+            resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
     except (ErroDeAuditoria, ErroDeContexto, ErroDeIndice, ErroEstruturaPbip) as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1

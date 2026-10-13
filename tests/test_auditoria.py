@@ -77,11 +77,46 @@ def test_nome_do_projeto_de_pasta_com_espaco_e_de_zip(tmp_path):
     assert auditoria.nome_do_projeto(tmp_path / "projeto.zip") == "projeto"
 
 
-def test_gravar_usa_projeto_e_data_e_relê_igual(tmp_path):
+def test_gravar_usa_projeto_data_e_hora_e_relê_igual(tmp_path):
     resultado, _ = _auditar(tmp_path)
     caminho = gravar(resultado, tmp_path / "saida")
-    assert caminho.name == f"Minimal-{resultado.gerado_em[:10]}.json"
+    carimbo = resultado.gerado_em[:16].replace(":", "")
+    assert caminho.name == f"Minimal-{carimbo}.json"
     assert ResultadoAuditoria.model_validate_json(caminho.read_text(encoding="utf-8")) == resultado
+
+
+def test_gravar_so_regras_leva_sufixo(tmp_path):
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    assert gravar(resultado, tmp_path / "saida").name.endswith("-so-regras.json")
+
+
+def test_duas_auditorias_no_mesmo_dia_nao_se_sobrescrevem(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "23:59:00"})
+    if outra.gerado_em[:16] == resultado.gerado_em[:16]:
+        outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "00:00:00"})
+    assert gravar(resultado, tmp_path / "saida") != gravar(outra, tmp_path / "saida")
+
+
+def test_resumo_so_regras_diz_o_modo_e_nao_fala_de_geracao(tmp_path):
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    texto = resumir(resultado)
+    assert "so regras" in texto
+    assert "Achados: 2" in texto
+    assert "gerados" not in texto
+    texto.encode("ascii")
+
+
+def test_comando_so_regras_nao_carrega_a_base(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+
+    def proibido():
+        raise AssertionError("--so-regras não pode carregar a base")
+
+    monkeypatch.setattr(auditoria.BaseRag, "carregar", staticmethod(proibido))
+    assert auditoria.main([str(_pbip(tmp_path)), "--so-regras"]) == 0
+    assert len(list((tmp_path / "saida").glob("Minimal-*-so-regras.json"))) == 1
+    assert "so regras" in capsys.readouterr().out
 
 
 def test_resumo_conta_motivos_e_e_ascii(tmp_path):
