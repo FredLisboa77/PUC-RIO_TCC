@@ -29,6 +29,7 @@ from rag.catalogo import (
     main,
     montar_catalogo,
     resumo,
+    url_em_portugues,
 )
 from rag.tocs import SECOES, ItemToc, Retrato, caminho_do_retrato, serializar_retrato
 from rag.urls import FORA_DO_LEARN, NAO_DOCUMENTAL
@@ -496,3 +497,25 @@ def test_arquivo_mantido_a_mao_ilegivel_vira_erro_que_nomeia_o_arquivo(
         caminho.write_text(conteudo, encoding="utf-8")
     with pytest.raises(ErroDeCatalogo, match=nome):
         leitor(caminho)
+
+
+def test_url_em_portugues_ignora_fragmento_barra_e_caixa():
+    esperado = "https://learn.microsoft.com/pt-br/power-bi/guidance/auto-date-time"
+    assert url_em_portugues("https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time") == esperado
+    assert url_em_portugues("https://learn.microsoft.com/en-us/power-bi/guidance/auto-date-time#recommendations") == esperado
+    assert url_em_portugues("https://learn.microsoft.com/en-us/Power-BI/guidance/auto-date-time/") == esperado
+
+
+def test_url_fora_do_catalogo_nao_tem_portugues():
+    assert url_em_portugues("https://www.sqlbi.com/articles/qualquer") is None
+
+
+def test_url_em_portugues_le_o_arquivo_indicado(tmp_path):
+    arquivo = tmp_path / "sources.yaml"
+    arquivo.write_text(
+        "- url: https://learn.microsoft.com/en-us/x\n  url_pt_br: https://learn.microsoft.com/pt-br/x\n"
+        "- url: https://learn.microsoft.com/en-us/y\n  url_pt_br: null\n",
+        encoding="utf-8",
+    )
+    assert url_em_portugues("https://learn.microsoft.com/en-us/x", arquivo) == "https://learn.microsoft.com/pt-br/x"
+    assert url_em_portugues("https://learn.microsoft.com/en-us/y", arquivo) is None

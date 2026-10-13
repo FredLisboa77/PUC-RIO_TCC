@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 from core.rules.base import Achado, RegraMeta
 
 Origem = Literal["ancora", "busca"]
-Situacao = Literal["gerado", "sem_fundamentacao"]
+Situacao = Literal["gerado", "sem_fundamentacao", "so_regras"]
 MotivoDescarte = Literal[
     "json_invalido", "campo_vazio", "citacoes_fora_do_limite", "citacao_inexistente", "erro_llm",
     "contexto_excedido",
@@ -54,7 +54,8 @@ class AchadoEnriquecido(BaseModel):
     cita_ancora: bool | None = None
     """Pertinência automática: o trecho âncora está entre as citações."""
     fidelidade: Fidelidade | None = None
-    modelo: str
+    modelo: str | None
+    """`None` só em `so_regras`, quando nenhum LLM foi chamado."""
     segundos: float | None = None
     """Tempo da chamada, sem a carga do modelo. `None` quando o LLM não respondeu."""
     tokens_prompt: int | None = None
@@ -65,19 +66,49 @@ class AchadoEnriquecido(BaseModel):
 
     @model_validator(mode="after")
     def _situacao_coerente(self) -> "AchadoEnriquecido":
-        gerado = self.situacao == "gerado"
-        coerentes = (
-            (self.geracao is not None) == gerado
-            and (self.motivo_descarte is None) == gerado
-            and (self.cita_ancora is not None) == gerado
-            and (self.fidelidade is not None) == gerado
-        )
+        if self.situacao == "so_regras":
+            # Auditoria sem LLM: só a detecção, sem nada que pareça geração.
+            coerentes = (
+                not self.contexto
+                and self.geracao is None
+                and self.motivo_descarte is None
+                and self.cita_ancora is None
+                and self.fidelidade is None
+                and self.modelo is None
+                and self.segundos is None
+                and self.tokens_prompt is None
+            )
+        else:
+            gerado = self.situacao == "gerado"
+            coerentes = (
+                (self.geracao is not None) == gerado
+                and (self.motivo_descarte is None) == gerado
+                and (self.cita_ancora is not None) == gerado
+                and (self.fidelidade is not None) == gerado
+                and self.modelo is not None
+            )
         if not coerentes:
             raise ValueError(
                 f"achado enriquecido incoerente: situação {self.situacao} com geração, motivo, "
-                "cita_ancora e fidelidade que não batem"
+                "cita_ancora, fidelidade e modelo que não batem"
             )
+        if self.geracao is not None:
+            # O pipeline já descarta isso na validação; aqui protege o JSON que vem de
+            # fora: explicação sem fonte válida não pode aparecer como resultado (ADR-003).
+            citacoes = self.geracao.citacoes
+            numeros = {t.numero for t in self.contexto}
+            if not citacoes or len(set(citacoes)) != len(citacoes) or not set(citacoes) <= numeros:
+                raise ValueError(
+                    f"achado enriquecido incoerente: citações {citacoes} vazias, repetidas ou fora do "
+                    f"contexto {sorted(numeros)}"
+                )
         return self
+
+    @classmethod
+    def so_regras(cls, achado: Achado) -> "AchadoEnriquecido":
+        """O achado de uma auditoria sem LLM, escolhida pelo usuário: a recomendação
+        que sai é a padrão do catálogo, e o resultado é rotulado assim (spec de 13/10)."""
+        return cls(achado=achado, contexto=[], situacao="so_regras", modelo=None)
 
     def recomendacao_final(self, meta: RegraMeta) -> str:
         """A recomendação que o relatório mostra. Método e não propriedade porque o

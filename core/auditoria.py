@@ -10,10 +10,12 @@ import argparse
 import sys
 import time
 from collections import Counter
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from core.analise.base import AchadoEnriquecido
 from core.analise.contexto import ErroDeContexto, carregar_gabaritos, verificar_ancoras
@@ -21,6 +23,7 @@ from core.analise.enriquecimento import enriquecer
 from core.analise.llm import MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
 from core.ingest import ErroEstruturaPbip, abrir_pbip
 from core.parser_bim import ler_modelo
+from core.rules.base import Achado
 from core.rules.registry import Registro
 from core.rules.runner import ResultadoRegras, avaliar
 from core.rules.todas import REGISTRO
@@ -34,15 +37,32 @@ class ErroDeAuditoria(Exception):
     """A auditoria não pode seguir sem produzir um resultado enganoso."""
 
 
+ModoAuditoria = Literal["completo", "so_regras"]
+
+
 class ResultadoAuditoria(BaseModel):
     projeto: str
-    modelo_llm: str
+    modo: ModoAuditoria = "completo"
+    """O padrão lê como completos os JSONs gravados antes de existir o modo só regras."""
+    modelo_llm: str | None
     gerado_em: str
     regras: ResultadoRegras
     """Sem os achados, que estão enriquecidos em `achados`: falhas de regra,
     lacunas de DAX e cobertura continuam visíveis."""
     achados: list[AchadoEnriquecido]
     segundos_total: float
+
+    @model_validator(mode="after")
+    def _modo_coerente(self) -> "ResultadoAuditoria":
+        so_regras = self.modo == "so_regras"
+        coerente = (self.modelo_llm is None) == so_regras and all(
+            (a.situacao == "so_regras") == so_regras for a in self.achados
+        )
+        if not coerente:
+            raise ValueError(
+                f"resultado incoerente: modo {self.modo} com modelo_llm e situações dos achados que não batem"
+            )
+        return self
 
 
 def nome_do_projeto(caminho: str | Path) -> str:
@@ -53,20 +73,28 @@ def nome_do_projeto(caminho: str | Path) -> str:
 def run_audit(
     pasta_pbip: str | Path,
     *,
-    llm: LLMClient,
-    base: BaseRag,
+    llm: LLMClient | None,
+    base: BaseRag | None,
     registro: Registro | None = None,
     gabaritos: dict[str, Gabarito] | None = None,
+    ao_progredir: Callable[[int, int, Achado], None] | None = None,
 ) -> ResultadoAuditoria:
+    """`llm` e `base` juntos: auditoria completa. Os dois `None`: só regras, sem
+    índice nem LLM, escolhida pelo usuário — nunca como queda por falha (ADR-003).
+    `ao_progredir(feito, total, achado)` é chamado depois de cada achado tratado."""
+    if (llm is None) != (base is None):
+        raise ValueError("modo ambíguo: passe llm e base juntos (completo) ou nenhum dos dois (só regras)")
+    so_regras = llm is None
     inicio = time.perf_counter()
     registro = REGISTRO if registro is None else registro
-    gabaritos = carregar_gabaritos() if gabaritos is None else gabaritos
-    # Partida: nenhuma chamada ao LLM se alguma regra não tiver âncora.
-    verificar_ancoras(registro.ids(), gabaritos, base)
+    if not so_regras:
+        gabaritos = carregar_gabaritos() if gabaritos is None else gabaritos
+        # Partida: nenhuma chamada ao LLM se alguma regra não tiver âncora.
+        verificar_ancoras(registro.ids(), gabaritos, base)
 
     projeto = abrir_pbip(pasta_pbip)
     resultado = avaliar(ler_modelo(projeto.model_bim), registro)
-    if resultado.achados:
+    if resultado.achados and not so_regras:
         try:
             llm.aquecer()
         except ErroDeLLM as erro:
@@ -74,13 +102,21 @@ def run_audit(
             # com tudo "sem fundamentação" pareceria resultado, e é falha de ambiente.
             raise ErroDeAuditoria(f"o LLM não respondeu no aquecimento: {erro}") from erro
 
-    enriquecidos = [
-        enriquecer(a, registro.meta(a.id_regra), base=base, gabarito=gabaritos[a.id_regra], llm=llm)
-        for a in resultado.achados
-    ]
+    enriquecidos: list[AchadoEnriquecido] = []
+    total = len(resultado.achados)
+    for feito, a in enumerate(resultado.achados, start=1):
+        if so_regras:
+            enriquecidos.append(AchadoEnriquecido.so_regras(a))
+        else:
+            enriquecidos.append(
+                enriquecer(a, registro.meta(a.id_regra), base=base, gabarito=gabaritos[a.id_regra], llm=llm)
+            )
+        if ao_progredir is not None:
+            ao_progredir(feito, total, a)
     return ResultadoAuditoria(
         projeto=nome_do_projeto(pasta_pbip),
-        modelo_llm=llm.nome,
+        modo="so_regras" if so_regras else "completo",
+        modelo_llm=None if so_regras else llm.nome,
         gerado_em=datetime.now().isoformat(timespec="seconds"),
         regras=resultado.model_copy(update={"achados": []}),
         achados=enriquecidos,
@@ -94,6 +130,12 @@ def _ascii(texto: str) -> str:
 
 def resumir(resultado: ResultadoAuditoria) -> str:
     achados = resultado.achados
+    if resultado.modo == "so_regras":
+        return _ascii("\n".join([
+            f"Projeto {resultado.projeto} - modo so regras (sem LLM)",
+            f"Achados: {len(achados)}",
+            f"Tempo total: {resultado.segundos_total:.1f}s",
+        ]))
     gerados = [a for a in achados if a.situacao == "gerado"]
     motivos = Counter(a.motivo_descarte for a in achados if a.motivo_descarte)
     tempos = [a.segundos for a in achados if a.segundos is not None]
@@ -119,7 +161,11 @@ def resumir(resultado: ResultadoAuditoria) -> str:
 def gravar(resultado: ResultadoAuditoria, pasta: Path | None = None) -> Path:
     pasta = PASTA_SAIDA if pasta is None else pasta
     pasta.mkdir(parents=True, exist_ok=True)
-    caminho = pasta / f"{resultado.projeto}-{resultado.gerado_em[:10]}.json"
+    # Hora no nome: quem audita, corrige e audita de novo no mesmo dia não perde
+    # o resultado anterior.
+    carimbo = resultado.gerado_em[:16].replace(":", "")
+    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
+    caminho = pasta / f"{resultado.projeto}-{carimbo}{sufixo}.json"
     caminho.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     return caminho
 
@@ -128,9 +174,16 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m core.auditoria", description="Audita um projeto PBIP.")
     parser.add_argument("pasta_pbip", help="pasta do projeto PBIP ou arquivo .zip")
     parser.add_argument("--modelo", default=MODELO_PADRAO, help="modelo do Ollama")
+    parser.add_argument(
+        "--so-regras", action="store_true",
+        help="so a deteccao, sem indice nem LLM; a recomendacao e a padrao da regra",
+    )
     args = parser.parse_args(argv)
     try:
-        resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
+        if args.so_regras:
+            resultado = run_audit(args.pasta_pbip, llm=None, base=None)
+        else:
+            resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
     except (ErroDeAuditoria, ErroDeContexto, ErroDeIndice, ErroEstruturaPbip) as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1

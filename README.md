@@ -121,6 +121,17 @@ Para repetir o spike:
 python eval/spike_llm.py qwen2.5:3b qwen2.5:7b-instruct-q4_K_M
 ```
 
+### Interface
+
+```powershell
+streamlit run app/streamlit_app.py
+```
+
+Na barra lateral: nova auditoria (pasta do projeto ou `.zip`), no modo **completo** (com o
+Ollama e o índice da RAG) ou **só regras** (só a detecção, em segundos, com a recomendação padrão
+de cada regra); ou abrir um resultado salvo em `outputs/`. Pela linha de comando, o mesmo modo
+é `python -m core.auditoria <pasta-pbip> --so-regras`.
+
 ## Testes
 
 ```powershell

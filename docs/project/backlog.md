@@ -97,6 +97,9 @@ ficam aqui, para entrar quando a etapa correspondente chegar:
 | F23 | Métricas em runtime (VertiPaq, DAX Studio, XMLA) | Fora do escopo do MVP |
 | F24 | Entrada em PBIX e conversão automática | Fora do escopo do MVP |
 | F25 | Recusar-se a declarar o grupo de DAX completo enquanto houver lacuna aberta (`lacunas_de_expressao`) | D-7 (spec de 08/10/2026): projeto acadêmico, avisar a lacuna no resultado já basta. Interromper a auditoria por lacuna exigiria lógica de bloqueio fora do MVP, e nenhum corpus do dataset hoje exerce lacuna real para desenhar o refinamento contra arquivo observado |
+| F26 | Cancelar uma auditoria em andamento na interface (thread em segundo plano) | Spec de 13/10/2026 (interface): execução síncrona basta para um usuário local; o modo só regras cobre quem não quer esperar |
+| F27 | Texto oficial em pt-BR dos trechos citados (coleta das páginas pt-BR e alinhamento de seções) | Spec de 13/10/2026: as âncoras das páginas traduzidas mudam com o idioma e o alinhamento é frágil; a interface oferece o link "ler em português" e tradução automática sob demanda |
+| F28 | Comparar duas auditorias do mesmo projeto | Spec de 13/10/2026: fora do escopo da semana 9 |
 
 ## Log de alertas de escopo
 | Data | Sugestão | Decisão |

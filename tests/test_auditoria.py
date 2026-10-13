@@ -1,5 +1,7 @@
 """Auditoria de ponta a ponta com LLM falso e base sintética."""
 
+from pathlib import Path
+
 import pytest
 
 from conftest import escrever_pbip, modelo_tmsl, tabela
@@ -75,11 +77,46 @@ def test_nome_do_projeto_de_pasta_com_espaco_e_de_zip(tmp_path):
     assert auditoria.nome_do_projeto(tmp_path / "projeto.zip") == "projeto"
 
 
-def test_gravar_usa_projeto_e_data_e_relê_igual(tmp_path):
+def test_gravar_usa_projeto_data_e_hora_e_relê_igual(tmp_path):
     resultado, _ = _auditar(tmp_path)
     caminho = gravar(resultado, tmp_path / "saida")
-    assert caminho.name == f"Minimal-{resultado.gerado_em[:10]}.json"
+    carimbo = resultado.gerado_em[:16].replace(":", "")
+    assert caminho.name == f"Minimal-{carimbo}.json"
     assert ResultadoAuditoria.model_validate_json(caminho.read_text(encoding="utf-8")) == resultado
+
+
+def test_gravar_so_regras_leva_sufixo(tmp_path):
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    assert gravar(resultado, tmp_path / "saida").name.endswith("-so-regras.json")
+
+
+def test_duas_auditorias_no_mesmo_dia_nao_se_sobrescrevem(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "23:59:00"})
+    if outra.gerado_em[:16] == resultado.gerado_em[:16]:
+        outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "00:00:00"})
+    assert gravar(resultado, tmp_path / "saida") != gravar(outra, tmp_path / "saida")
+
+
+def test_resumo_so_regras_diz_o_modo_e_nao_fala_de_geracao(tmp_path):
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    texto = resumir(resultado)
+    assert "so regras" in texto
+    assert "Achados: 2" in texto
+    assert "gerados" not in texto
+    texto.encode("ascii")
+
+
+def test_comando_so_regras_nao_carrega_a_base(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+
+    def proibido():
+        raise AssertionError("--so-regras não pode carregar a base")
+
+    monkeypatch.setattr(auditoria.BaseRag, "carregar", staticmethod(proibido))
+    assert auditoria.main([str(_pbip(tmp_path)), "--so-regras"]) == 0
+    assert len(list((tmp_path / "saida").glob("Minimal-*-so-regras.json"))) == 1
+    assert "so regras" in capsys.readouterr().out
 
 
 def test_resumo_conta_motivos_e_e_ascii(tmp_path):
@@ -146,3 +183,75 @@ def test_falha_ao_gravar_sai_com_mensagem_e_ainda_mostra_o_resumo(tmp_path, monk
     saida = capsys.readouterr()
     assert "Achados: 2" in saida.out
     assert "erro:" in saida.err
+
+
+FIXTURE_FORMATO_ANTIGO = Path(__file__).parent / "fixtures" / "resultado-formato-2026-10-11.json"
+
+
+def test_json_no_formato_de_11_10_abre_como_completo():
+    resultado = ResultadoAuditoria.model_validate_json(FIXTURE_FORMATO_ANTIGO.read_text(encoding="utf-8"))
+    assert (resultado.modo, resultado.modelo_llm) == ("completo", "qwen2.5:7b-instruct-q4_K_M")
+    assert [a.situacao for a in resultado.achados] == ["gerado", "sem_fundamentacao"]
+
+
+def _resultado(**extra) -> ResultadoAuditoria:
+    from core.analise.base import AchadoEnriquecido
+    from core.rules.runner import ResultadoRegras
+    from fabricas_analise import achado as fabrica_achado
+
+    campos = dict(
+        projeto="P", modo="so_regras", modelo_llm=None, gerado_em="2026-10-13T15:30:00",
+        regras=ResultadoRegras(regras_executadas=1),
+        achados=[AchadoEnriquecido.so_regras(fabrica_achado())], segundos_total=0.1,
+    )
+    campos.update(extra)
+    return ResultadoAuditoria(**campos)
+
+
+def test_resultado_so_regras_coerente_e_aceito():
+    assert _resultado().modo == "so_regras"
+
+
+def test_resultado_com_modo_e_modelo_que_nao_batem_e_recusado():
+    with pytest.raises(ValueError, match="incoerente"):
+        _resultado(modelo_llm="m")
+    with pytest.raises(ValueError, match="incoerente"):
+        _resultado(modo="completo")
+
+
+def test_so_regras_nao_toca_base_nem_llm_nem_gabaritos(tmp_path, monkeypatch):
+    def proibido(*args, **kwargs):
+        raise AssertionError("o modo só regras não pode carregar gabaritos")
+
+    monkeypatch.setattr(auditoria, "carregar_gabaritos", proibido)
+    resultado = run_audit(_pbip(tmp_path), llm=None, base=None, registro=_registro())
+    assert (resultado.modo, resultado.modelo_llm) == ("so_regras", None)
+    assert [a.situacao for a in resultado.achados] == ["so_regras", "so_regras"]
+    assert all(a.contexto == [] for a in resultado.achados)
+
+
+def test_modo_ambiguo_e_erro_de_programacao(tmp_path):
+    pbip = _pbip(tmp_path)
+    with pytest.raises(ValueError, match="ambíguo"):
+        run_audit(pbip, llm=LLMFalso(), base=None, registro=_registro())
+    with pytest.raises(ValueError, match="ambíguo"):
+        run_audit(pbip, llm=None, base=base_padrao(), registro=_registro())
+
+
+@pytest.mark.parametrize("modo", ["completo", "so_regras"])
+def test_progresso_chamado_uma_vez_por_achado(tmp_path, modo):
+    chamadas = []
+    completo = modo == "completo"
+    run_audit(
+        _pbip(tmp_path), llm=LLMFalso() if completo else None, base=base_padrao() if completo else None,
+        registro=_registro(), gabaritos={"MOD-001": gabarito()},
+        ao_progredir=lambda feito, total, a: chamadas.append((feito, total, a.evidencia.objeto)),
+    )
+    assert chamadas == [(1, 2, "LocalDateTable_1"), (2, 2, "LocalDateTable_2")]
+
+
+def test_progresso_sem_achados_nao_e_chamado(tmp_path):
+    chamadas = []
+    run_audit(_pbip(tmp_path, tabelas=()), llm=None, base=None, registro=_registro(),
+              ao_progredir=lambda *a: chamadas.append(a))
+    assert chamadas == []

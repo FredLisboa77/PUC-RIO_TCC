@@ -1769,3 +1769,53 @@ validadas as decisões que o documento levava: resultado oficial das regras na t
 
 **Próximo passo:** Fase 4 — desenho da interface Streamlit (semana 9): upload, status,
 resultados, filtros e detalhe do achado; depois relatório HTML/PDF e cache da demo (semana 10).
+
+---
+
+## 13/10/2026 — F4, subprojeto 1: interface Streamlit
+
+Spec `docs/superpowers/specs/2026-10-13-interface-streamlit-design.md`, plano
+`docs/superpowers/plans/2026-10-13-interface-streamlit.md`, branch `fase4-interface`.
+
+**Decisões do Fred:** a interface é ferramenta para um analista de BI (abrir resultado salvo é
+entrada de primeira classe, o que já cobre a demo); sinais de confiança como aviso visível no
+achado, detalhes recolhidos; modo **só regras** escolhido e rotulado, nunca queda automática
+(ADR-003 intacta); execução síncrona com barra de progresso; trechos citados com link "ler em
+português" e tradução sob demanda pelo mesmo Ollama, ao lado do original.
+
+**O que mudou no pipeline:** situação `so_regras` no contrato (JSONs antigos continuam abrindo,
+travado por fixture); `run_audit` com `llm=None, base=None` e `ao_progredir`; `--so-regras` na CLI;
+o nome do resultado gravado passa a ter a hora (`P8_contoso-vendas-2026-10-13T1945.json`), porque
+duas auditorias no mesmo dia se sobrescreviam.
+
+**Aceite medido:**
+
+| Verificação | Resultado |
+|---|---|
+| Só regras em P1–P7 (CLI) | 11, 3, 9, 13, 18, 7, 0 = **61** — iguais aos marcados (VP + FP + indeterminados) do resultado pós-correção. Os 53 de 09/10 são de antes da correção da MOD-003 e da PERF-001 |
+| P8 completo pela interface, 1ª rodada | 15 achados, 155,1 s; 15 de 15 gerados, 13 de 15 citando a âncora, 3 com aviso |
+| P8 completo, 2ª rodada | 15 achados, 134,4 s; mesmos totais |
+| P8 só regras | 15 achados em 0,3 s, selo "só regras", arquivo `-so-regras.json` |
+| Tradução de trecho citado | Tradução ao lado do original, rótulo de tradução automática |
+| JSON de 11/10 | Abre como resultado completo |
+| Ollama sem o modelo pedido | Mensagem sugerindo só regras; nada gravado; resultado anterior continua na tela |
+
+**Divergência registrada:** em 11/10 o P8 teve 14 de 15 citando a âncora; hoje, 13 de 15 nas duas
+rodadas. É a não determinação do Ollama já declarada em 11/10 (temperatura 0 não basta), não
+mudança do pipeline: a geração não foi tocada.
+
+**Falha do Ollama simulada com nome de modelo inexistente**, e não parando o serviço: o caminho
+de código é o mesmo (`aquecer` → `ErroDeLLM` → `ErroDeAuditoria`).
+
+**Revisão final do branch (revisor novo):** nenhum crítico; dois importantes corrigidos com teste
+que falhou antes — (1) JSON aberto de fora com citação fora do contexto, vazia ou repetida derrubava
+a tela ou mostrava explicação sem fonte como resultado: o contrato agora recusa (ADR-003); (2) o
+resultado anterior ficava clicável durante a auditoria, e um clique a matava sem mensagem: agora é
+redesenhado desabilitado. Oito menores adiados (arquivo listado que some, pastas `envio-*` em
+%TEMP%, mensagem de erro de programação, modelo da tradução, colisão no mesmo minuto, escape de
+markdown, mensagem de zero achados, JSON com BOM, placeholders em inglês).
+
+Suíte: 775 testes passando.
+
+**Próximo passo:** revisão final do branch e PR da `fase4-interface`; depois o subprojeto 2 da F4
+(relatório HTML/PDF e cache da demo, semana 10).
