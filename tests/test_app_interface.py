@@ -197,7 +197,7 @@ def test_traducao_usa_o_modelo_do_resultado(app, tmp_path, monkeypatch):
 
 def test_objeto_com_markdown_aparece_escapado(app, tmp_path):
     _abrir_salvo(app, _gravar_resultado(tmp_path, ["Tabela_*a*"]))
-    assert any("Tabela\_\*a\*" in c.value for c in app.caption)
+    assert any(r"Tabela\_\*a\*" in c.value for c in app.caption)
 
 
 def test_resultado_sem_achados_diz_nenhum_achado(app, tmp_path):
