@@ -1882,3 +1882,54 @@ Spec `docs/superpowers/specs/2026-10-13-avaliacao-da-geracao-design.md`, plano
 
 **Próximo passo:** o Fred escolhe o modo de execução do plano (sessão direta ou subagentes) e
 a implementação começa pela Task 1; a Task 7 termina com a planilha pronta para a anotação dele.
+
+---
+
+## 14/10/2026 — Avaliação da geração: ferramenta pronta, rodada de P1–P7 feita, planilha para anotar
+
+Plano `docs/superpowers/plans/2026-10-13-avaliacao-da-geracao.md` executado com subagentes
+(Tasks 1–7), uma revisão por tarefa e uma revisão final do branch. Pacote `avaliacao_geracao/`:
+`python -m avaliacao_geracao auditar|gerar|importar|medir|consolidar` (`2deb58b`..`55fdec1`).
+
+**Rodada avaliada (P1–P7, `main` atual das regras, `qwen2.5:7b-instruct-q4_K_M`, BM25):**
+
+| Medida | Valor |
+|---|---|
+| Projetos | 7 (P7 sem achados) |
+| Achados | 61 |
+| Explicações geradas | 61 (nenhum descarte por `sem_fundamentacao`) |
+| Tempo da primeira rodada | 8 min 53 s |
+| Segunda rodada | 6,5 s, **0 respostas fora do cache** — a rodada é reproduzível nesta máquina |
+
+Por regra: PERF-001 31, PERF-003 16, DAX-001 6, MOD-003 3, MOD-006 3, MOD-001 1, MOD-007 1.
+Por projeto: P5 18, P4 13, P1 11, P3 9, P6 7, P2 3.
+
+**Planilha:** `eval/gabarito/rubrica-geracao-P1-P7.xlsx` (fora do git), 61 linhas, aba de
+instruções, colunas de leitura protegidas, lista sim/não/indeterminado nas três colunas da
+rubrica; conferido que não aparece `cita_ancora`, divergência, cache nem tokens, e que todo
+achado tem o trecho âncora na referência.
+
+**Decisões tomadas na execução (registrar na monografia onde couber):**
+- A **impressão digital** cobre explicação, recomendação, as citações e o texto de cada trecho
+  citado (a spec previa só explicação + recomendação): o veredito de pertinência julga a
+  evidência, e um índice reconstruído com o mesmo texto do LLM não pode herdar o veredito. Feito
+  antes de gerar a planilha, sem custo.
+- **`importar` sem `--parcial` e `medir` exigem cobertura completa:** todo achado gerado da rodada
+  precisa de linha com os três vereditos; o `medir` revalida o CSV contra a rodada e recusa CSV
+  parcial (achado da revisão final — sem isso, um número da monografia podia sair de uma anotação
+  pela metade). `importar --parcial` continua servindo para conferir o andamento.
+- **"Utilizável como está":** um "não" em qualquer item decide "não", mesmo com indeterminado nos
+  outros; o denominador difere da letra da spec só nessas linhas.
+- `medir` registra o denominador (`ambiente.gerados`); `consolidar` só aceita
+  `geracao-AAAA-MM-DD.json`.
+
+Revisão final: um importante (o da cobertura) e quatro menores, todos corrigidos e re-revisados.
+Menores adiados (não bloqueiam): testes da planilha que ainda usam o registro real; sem teste
+da lista suspensa; sem teste travando a regra do "utilizável" com indeterminado; fixture do
+teste da CLI repetitivo.
+
+Suíte: 874 testes passando.
+
+**Próximo passo:** o Fred anota `eval/gabarito/rubrica-geracao-P1-P7.xlsx` (~3,5–4 h;
+`python -m avaliacao_geracao importar --parcial` para conferir o andamento); depois `importar`,
+`medir`, `consolidar` (Task 8 do plano) e o registro dos números aqui e no status.

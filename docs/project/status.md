@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 9 de 13 — Fase 3 encerrada (revisão de meio de projeto aprovada pelo orientador); Fase 4 a iniciar · **Atualizado em:** 13/10/2026
+**Posição:** semana 11 de 13 — Fase 5 em andamento: rodada da avaliação da geração feita, planilha da rubrica pronta para anotação · **Atualizado em:** 14/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -42,7 +42,7 @@ uma das 9 regras foi conferida no texto extraído.
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
 | F4 — Interface e relatório | 9–10 | **Concluída** | 13/10/2026 — interface Streamlit (mergeada em `5fce01f`), relatório HTML/PDF e cache das respostas do LLM (branch `fase4-relatorio`) |
-| F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
+| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); planilha cega da rubrica aguardando anotação. Depois: monografia (semana 12) e demonstração (semana 13) |
 
 **Posição no calendário, e o uso da folga que a atualização anterior reportou:**
 o projeto começou em 22/09/2026. Na atualização de 06/10/2026 estávamos cerca de
@@ -302,7 +302,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Fase 5 — avaliação, documentação e banca (semanas 11–13)** — a F4 fechou em 13/10/2026 | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
+| 1 | **Anotar a rubrica da geração** (`eval/gabarito/rubrica-geracao-P1-P7.xlsx`, 61 linhas, ~3,5–4 h); depois `importar`, `medir`, `consolidar` — Fase 5, subprojeto 1 | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
 | 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
