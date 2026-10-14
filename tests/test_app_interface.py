@@ -168,3 +168,43 @@ def test_falha_do_pdf_vira_mensagem(app, tmp_path, monkeypatch):
     app.button(key="gerar_pdf").click().run()
     assert not app.exception
     assert any("Edge ausente" in e.value for e in app.error)
+
+
+def _gravar_resultado(raiz, objetos) -> Path:
+    registro = Registro()
+    registro.registrar(meta(), lambda modelo: [achado(objeto=o) for o in objetos])
+    pbip = escrever_pbip(raiz / "origem", model_bim=modelo_tmsl([tabela("T")]))
+    resultado = auditoria.run_audit(
+        pbip, llm=LLMFalso(), base=base_padrao(), registro=registro, gabaritos={"MOD-001": gabarito()},
+    )
+    return auditoria.gravar(resultado)
+
+
+def _abrir_salvo(app, caminho):
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+
+
+def test_traducao_usa_o_modelo_do_resultado(app, tmp_path, monkeypatch):
+    usados = []
+    monkeypatch.setattr(execucao, "traduzir", lambda texto, modelo, cache=False: usados.append(modelo) or "ok")
+    _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
+    app.text_input(key="modelo").input("outro-modelo").run()
+    next(b for b in app.button if (b.key or "").startswith("traduzir")).click().run()
+    assert usados == ["llm-falso"]
+
+
+def test_objeto_com_markdown_aparece_escapado(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado(tmp_path, ["Tabela_*a*"]))
+    assert any("Tabela\_\*a\*" in c.value for c in app.caption)
+
+
+def test_resultado_sem_achados_diz_nenhum_achado(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado(tmp_path, []))
+    assert any(i.value == "Nenhum achado." for i in app.info)
+
+
+def test_filtros_com_placeholder_em_portugues(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
+    assert app.multiselect and all(m.placeholder == "todas" for m in app.multiselect)

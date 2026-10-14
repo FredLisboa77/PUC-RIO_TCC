@@ -6,10 +6,13 @@ mensagem vai direto para a tela. `criar_llm` e `carregar_base` são os pontos
 de troca dos testes.
 """
 
+import shutil
 import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+
+from pydantic import ValidationError
 
 from core import apresentacao, auditoria
 from core.analise.cache import PASTA_CACHE, ClienteComCache
@@ -78,6 +81,9 @@ def executar(
             resultado = auditoria.run_audit(
                 entrada, llm=criar_llm(modelo, cache=cache), base=base, ao_progredir=ao_progredir
             )
+    except ValidationError as erro:
+        # É `ValueError`, mas aqui é bug do pipeline, não projeto ilegível.
+        raise ErroParaUsuario(f"Erro inesperado na auditoria: {type(erro).__name__}: {erro}") from erro
     except ErroEstruturaPbip as erro:
         raise ErroParaUsuario(f"Isto não é um projeto PBIP válido: {erro}") from erro
     except ErroDeAuditoria as erro:
@@ -95,6 +101,18 @@ def executar(
     except OSError as erro:
         # A geração já custou minutos: mostra o resultado mesmo sem gravar.
         return Execucao(resultado, None, f"O resultado não foi gravado em outputs/: {erro}")
+
+
+def executar_envio(nome: str, conteudo: bytes, modo: ModoAuditoria, modelo: str, **kwargs) -> Execucao:
+    """O `.zip` enviado vive só durante a auditoria: a pasta `envio-*` é apagada ao fim."""
+    try:
+        caminho = salvar_envio(nome, conteudo)
+    except OSError as erro:
+        raise ErroParaUsuario(f"Não consegui guardar o arquivo enviado: {erro}") from erro
+    try:
+        return executar(caminho, modo, modelo, **kwargs)
+    finally:
+        shutil.rmtree(caminho.parent, ignore_errors=True)
 
 
 def salvar_envio(nome: str, conteudo: bytes) -> Path:

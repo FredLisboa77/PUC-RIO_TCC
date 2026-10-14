@@ -203,3 +203,45 @@ def test_relatorio_pdf_devolve_bytes_e_erro_vira_mensagem(monkeypatch):
     monkeypatch.setattr(execucao, "gerar_pdf", falha)
     with pytest.raises(ErroParaUsuario, match="Edge ausente"):
         execucao.relatorio_pdf(resultado, tecnico=False)
+
+
+def test_envio_executa_e_apaga_a_pasta_temporaria(ambiente, monkeypatch):
+    import io
+    import zipfile
+
+    pbip = _pbip(ambiente / "origem")
+    memoria = io.BytesIO()
+    with zipfile.ZipFile(memoria, "w") as arquivo:
+        for caminho in pbip.rglob("*"):
+            arquivo.write(caminho, caminho.relative_to(pbip.parent))
+    gravados = []
+    original = execucao.salvar_envio
+
+    def gravar_e_lembrar(nome, conteudo):
+        gravados.append(original(nome, conteudo))
+        return gravados[-1]
+
+    monkeypatch.setattr(execucao, "salvar_envio", gravar_e_lembrar)
+    feito = execucao.executar_envio("Minimal.zip", memoria.getvalue(), "so_regras", "m")
+    assert feito.resultado.projeto == "Minimal"
+    assert not gravados[0].parent.exists()
+
+
+def test_envio_que_nao_grava_vira_mensagem(monkeypatch):
+    def cheio(*args, **kwargs):
+        raise OSError("disco cheio")
+
+    monkeypatch.setattr(execucao.tempfile, "mkdtemp", cheio)
+    with pytest.raises(ErroParaUsuario, match="disco cheio"):
+        execucao.executar_envio("P.zip", b"PK", "so_regras", "m")
+
+
+def test_erro_de_validacao_do_pipeline_e_erro_inesperado(ambiente, monkeypatch):
+    from core.auditoria import ResultadoAuditoria
+
+    def quebra(*args, **kwargs):
+        ResultadoAuditoria.model_validate({})
+
+    monkeypatch.setattr(auditoria, "run_audit", quebra)
+    with pytest.raises(ErroParaUsuario, match="Erro inesperado"):
+        execucao.executar(_pbip(ambiente), "so_regras", "m")
