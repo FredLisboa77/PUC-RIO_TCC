@@ -130,11 +130,12 @@
       {% for chave, valor in b.item.achado.evidencia.detalhe.items() %}{{ chave }} = {{ valor }}{% if not loop.last %}; {% endif %}{% endfor %}</p>
     {% endif %}
     {% if b.item.geracao %}<p><strong>Explicação.</strong> {{ b.item.geracao.explicacao }}</p>{% endif %}
+    {% if b.item.do_cache %}<p class="suave">Resposta guardada no cache de respostas do modelo, não gerada nesta auditoria.</p>{% endif %}
     <p><strong>Recomendação.</strong> {{ b.recomendacao }}</p>
     {% if b.citacoes %}
     <p><strong>Fontes citadas</strong></p>
     {% for c in b.citacoes %}
-    <p>[{{ c.trecho.numero }}] <a href="{{ c.url }}">{{ c.trecho.titulo }} — {{ c.trecho.caminho }}</a>
+    <p>[{{ c.trecho.numero }}] {% if c.url %}<a href="{{ c.url }}">{{ c.trecho.titulo }} — {{ c.trecho.caminho }}</a>{% else %}{{ c.trecho.titulo }} — {{ c.trecho.caminho }}{% endif %}
       {% if c.url_pt %} · <a href="{{ c.url_pt }}">ler em português</a>{% endif %}</p>
     <blockquote>{{ c.trecho.texto }}</blockquote>
     {% endfor %}

@@ -208,3 +208,13 @@ def test_resultado_sem_achados_diz_nenhum_achado(app, tmp_path):
 def test_filtros_com_placeholder_em_portugues(app, tmp_path):
     _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
     assert app.multiselect and all(m.placeholder == "todas" for m in app.multiselect)
+
+
+def test_detalhe_do_achado_do_cache_diz_que_veio_do_cache(app, tmp_path):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    resultado = auditoria.ResultadoAuditoria.model_validate_json(caminho.read_text(encoding="utf-8"))
+    do_cache = resultado.model_copy(update={"achados": [a.model_copy(update={"do_cache": True}) for a in resultado.achados]})
+    caminho.write_text(do_cache.model_dump_json(), encoding="utf-8")
+    _abrir_salvo(app, caminho)
+    textos = " ".join(m.value for m in app.markdown) + " ".join(c.value for c in app.caption)
+    assert "resposta guardada no cache" in textos

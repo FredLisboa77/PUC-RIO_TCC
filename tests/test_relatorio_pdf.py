@@ -64,3 +64,40 @@ def test_falha_ao_abrir_o_edge_vira_erro_claro(tmp_path, monkeypatch):
     monkeypatch.setattr(pdf, "sync_playwright", lambda: Contexto())
     with pytest.raises(ErroDePdf, match="PDF indisponível.*msedge"):
         gerar_pdf(HTML, tmp_path / "r.pdf")
+
+
+def test_falha_ao_gravar_o_pdf_vira_erro_claro(tmp_path, monkeypatch):
+    """Revisão final: PDF anterior aberto no leitor (bloqueado) dava traceback."""
+    class Pagina:
+        def set_default_timeout(self, ms):
+            pass
+
+        def set_content(self, html, **kwargs):
+            pass
+
+        def pdf(self, **kwargs):
+            raise PermissionError(13, "Permission denied", kwargs["path"])
+
+    class Navegador:
+        def new_page(self):
+            return Pagina()
+
+        def close(self):
+            pass
+
+    class Chromium:
+        def launch(self, **kwargs):
+            return Navegador()
+
+    class Contexto:
+        chromium = Chromium()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(pdf, "sync_playwright", lambda: Contexto())
+    with pytest.raises(ErroDePdf, match="PDF indisponível.*Permission denied"):
+        gerar_pdf(HTML, tmp_path / "r.pdf")

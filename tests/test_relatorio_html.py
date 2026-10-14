@@ -113,3 +113,17 @@ def test_links_em_portugues_e_nada_externo_alem_do_learn():
     assert "https://learn.microsoft.com/pt-br/power-bi/guidance/auto-date-time" in html
     externos = re.findall(r'(?:src|href)="(?!#)([^"]+)"', html)
     assert externos and all(u.startswith("https://learn.microsoft.com/") for u in externos)
+
+
+def test_achado_do_cache_e_rotulado_no_detalhe_mesmo_sem_secao_tecnica():
+    """Revisão final: resposta do cache nunca pode parecer geração nova."""
+    html = gerar_html(_resultado([_gerado(do_cache=True)]), registro=_registro())
+    assert "resposta guardada no cache" in html.lower()
+
+
+def test_link_que_nao_e_do_learn_nao_vira_href():
+    """Revisão final: JSON forjado com `javascript:` na URL do trecho."""
+    trechos = contexto(2)
+    trechos[0] = trechos[0].model_copy(update={"url": "javascript:alert(4)//"})
+    html = gerar_html(_resultado([_gerado(contexto=trechos)]), registro=_registro())
+    assert "javascript:" not in html

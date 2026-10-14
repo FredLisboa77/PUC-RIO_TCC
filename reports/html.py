@@ -25,6 +25,13 @@ _ambiente = Environment(
 )
 
 ROTULOS_SEVERIDADE = {"alta": "alta", "media": "média", "baixa": "baixa"}
+ORIGEM_DOS_LINKS = "https://learn.microsoft.com/"
+"""Só vira link o que aponta para o Learn: um JSON aberto de fora pode trazer
+`javascript:` na URL de um trecho."""
+
+
+def _link_seguro(url: str) -> str | None:
+    return url if url.startswith(ORIGEM_DOS_LINKS) else None
 
 
 def _bloco(resultado: ResultadoAuditoria, linha: apresentacao.Linha, numero: int, registro: Registro) -> dict:
@@ -32,8 +39,8 @@ def _bloco(resultado: ResultadoAuditoria, linha: apresentacao.Linha, numero: int
     meta = registro.meta(item.achado.id_regra)
     por_numero = {t.numero: t for t in item.contexto}
     citacoes = [
-        {"trecho": por_numero[n], "url": f"{por_numero[n].url}#{por_numero[n].ancora}",
-         "url_pt": url_em_portugues(por_numero[n].url)}
+        {"trecho": por_numero[n], "url": _link_seguro(f"{por_numero[n].url}#{por_numero[n].ancora}"),
+         "url_pt": _link_seguro(url_em_portugues(por_numero[n].url) or "")}
         for n in (item.geracao.citacoes if item.geracao else [])
     ]
     return {

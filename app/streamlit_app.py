@@ -281,6 +281,7 @@ def _detalhes_tecnicos(item: AchadoEnriquecido) -> None:
             f"- Tempo da chamada: {item.segundos if item.segundos is not None else '—'} s\n"
             f"- Tokens do prompt: {item.tokens_prompt if item.tokens_prompt is not None else '—'}\n"
             f"- Trechos retirados para caber: {item.reducoes_de_contexto}"
+            + ("\n- Origem: resposta guardada no cache (o tempo é de leitura, não de geração)" if item.do_cache else "")
         )
         for trecho in item.contexto:
             origem = "âncora da regra" if trecho.origem == "ancora" else "busca"
@@ -306,6 +307,8 @@ def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha, bloqueado: bo
     if item.geracao is not None:
         st.markdown("**Explicação**")
         st.markdown(_md(item.geracao.explicacao))
+    if item.do_cache:
+        st.caption("Resposta guardada no cache de respostas do LLM, não gerada nesta auditoria.")
     st.markdown("**Recomendação**")
     st.markdown(_md(item.recomendacao_final(meta)))
     _citacoes(item, linha.indice, resultado, bloqueado)

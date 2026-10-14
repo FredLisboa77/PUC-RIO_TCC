@@ -51,6 +51,7 @@ def gerar_pdf(html: str, destino: Path, *, timeout_s: float = 60) -> Path:
     try:
         with ThreadPoolExecutor(max_workers=1) as executor:
             executor.submit(_imprimir, html, destino, timeout_s).result()
-    except ErroPlaywright as erro:
+    except (ErroPlaywright, OSError) as erro:
+        # OSError: o PDF anterior aberto no leitor bloqueia a gravação.
         raise ErroDePdf(f"PDF indisponível: {erro}") from erro
     return destino
