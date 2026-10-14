@@ -41,7 +41,7 @@ uma das 9 regras foi conferida no texto extraído.
 | F1 — Viabilidade e planejamento | 1–2 | **Concluída** | 29/09/2026 — gate aprovado, spike de LLM validado |
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
-| F4 — Interface e relatório | 9–10 | **Em andamento** | Interface Streamlit concluída em 13/10/2026 (branch `fase4-interface`); falta o relatório HTML/PDF e o cache da demo (semana 10) |
+| F4 — Interface e relatório | 9–10 | **Concluída** | 13/10/2026 — interface Streamlit (mergeada em `5fce01f`), relatório HTML/PDF e cache das respostas do LLM (branch `fase4-relatorio`) |
 | F5 — Avaliação, documentação e banca | 11–13 | Não iniciada | — |
 
 **Posição no calendário, e o uso da folga que a atualização anterior reportou:**
@@ -76,7 +76,9 @@ regras de M, depois abrir mão do PDF (R-07).
 | Recuperação escolhida por medição (`python -m rag.medicao`, `python -m rag.indice construir`) | 24 combinações medidas com a régua; vence, pela regra fixada antes, **seção + BM25 sobre o corpus completo** (macro acerto@5 = 1,000); índice construído e conferido contra a medição. Efeito teto e decisão por uma consulta declarados (emenda de 11/10 da ADR-002) |
 | Geração com o LLM e citação obrigatória (`python -m core.auditoria <pasta-pbip>`) | No P8, com o `qwen2.5:7b`: **15 de 15** achados com explicação gerada e citação válida, **14 de 15** citando a seção âncora da regra, 1 com divergência de fidelidade; 8,1 s por achado em média (pior 10,5 s), 123 s a auditoria inteira. Os totais se repetem entre rodadas, mas os textos e algumas citações variam: temperatura 0 não torna o Ollama determinístico. A leitura à mão achou 2 erros de conteúdo que os critérios automáticos não pegam (progress-log de 11/10) |
 | Interface Streamlit (`streamlit run app/streamlit_app.py`) | Aceita em 13/10/2026: P8 completo pela interface em 155,1 s e 134,4 s (15 de 15 gerados, 13 de 15 citando a âncora, 3 com aviso), progresso por achado, tradução sob demanda de trecho citado, abertura do JSON de 11/10; só regras no P8 em 0,3 s; Ollama sem o modelo vira mensagem e nada é gravado. Só regras em P1–P7 pela CLI: **61** achados, iguais aos marcados no resultado pós-correção |
-| Suíte de testes | **775 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Relatório HTML/PDF (`python -m reports <resultado.json> --pdf [--tecnico]`, e botões na interface) | Aceito em 13/10/2026: HTML autocontido e PDF pelo Edge do sistema (Playwright, `channel="msedge"`); P8 completo em 33 páginas (68 com a seção técnica), P5 só regras em 14; rodapé com número de página |
+| Cache das respostas do LLM (`--cache`, e caixa na interface) | Aceito em 13/10/2026: P8 auditado duas vezes — 165,6 s e **1,5 s**, gerações idênticas, "Do cache: 15"; desligado por padrão e rotulado no resultado, na interface e no relatório |
+| Suíte de testes | **822 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -300,7 +302,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Fase 4 — PR da interface Streamlit (pronta) e relatório HTML/PDF com cache para a demo (semana 10)** | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
+| 1 | **Fase 5 — avaliação, documentação e banca (semanas 11–13)** — a F4 fechou em 13/10/2026 | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
 | 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 

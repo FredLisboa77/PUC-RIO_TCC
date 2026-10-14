@@ -132,6 +132,17 @@ Ollama e o índice da RAG) ou **só regras** (só a detecção, em segundos, com
 de cada regra); ou abrir um resultado salvo em `outputs/`. Pela linha de comando, o mesmo modo
 é `python -m core.auditoria <pasta-pbip> --so-regras`.
 
+### Relatório
+
+```powershell
+python -m reports outputs\<resultado>.json --pdf             # HTML e PDF ao lado do JSON
+python -m reports outputs\<resultado>.json --pdf --tecnico   # com a seção técnica
+python -m core.auditoria <pasta-pbip> --cache                 # reusa respostas guardadas do LLM
+```
+
+O PDF usa o Microsoft Edge instalado (Playwright, `channel="msedge"`); não é preciso rodar
+`playwright install`. O cache das respostas fica em `outputs/cache-llm/` — apagar a pasta o limpa.
+
 ## Testes
 
 ```powershell

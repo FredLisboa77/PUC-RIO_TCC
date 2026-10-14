@@ -1819,3 +1819,40 @@ Suíte: 775 testes passando.
 
 **Próximo passo:** revisão final do branch e PR da `fase4-interface`; depois o subprojeto 2 da F4
 (relatório HTML/PDF e cache da demo, semana 10).
+
+---
+
+## 13/10/2026 — F4, subprojeto 2: relatório HTML/PDF e cache das respostas do LLM
+
+Spec `docs/superpowers/specs/2026-10-13-relatorio-e-cache-design.md`, plano
+`docs/superpowers/plans/2026-10-13-relatorio-e-cache.md`, branch `fase4-relatorio`.
+
+**Decisões do Fred:** um relatório para os dois públicos (dono do modelo e banca), com seção
+técnica opcional; F16 como cache das **respostas do LLM**, desligado por padrão e rotulado; PDF
+pelo **Edge do sistema** (Playwright, `channel="msedge"`, emenda na ADR-002), sem baixar o
+Chromium atrás do Norton; os menores adiados da interface entram nesta etapa.
+
+**O que entrou:** `core/apresentacao.py` (as consultas saíram de `app/` para servir também ao
+relatório); `reports/html.py` + template Jinja2 autocontido; `reports/pdf.py` (Edge numa thread
+própria, porque a API síncrona do Playwright recusa rodar dentro de um loop asyncio);
+`python -m reports`; `core/analise/cache.py` (um arquivo por chave sha256 de modelo, mensagens,
+esquema e opções; só sucesso entra; `aquecer()` vai sempre ao modelo real, ADR-003); `do_cache` no
+contrato; nome do resultado com segundos. Mascaramento de M declarado sem objeto: nenhuma
+evidência de P1–P8 carrega M, string de conexão ou caminho.
+
+**Aceite medido:**
+
+| Verificação | Resultado |
+|---|---|
+| Relatório do P8 (completo) | HTML 99 KB, PDF 219 KB, 33 páginas; com seção técnica, 208 KB / 348 KB, 68 páginas |
+| Relatório do P5 (só regras) | HTML 40 KB, PDF 140 KB, 14 páginas; selo "só regras", 18 achados |
+| P8 com `--cache`, duas vezes | 165,6 s e **1,5 s**; 15 gerações idênticas; "Do cache: 15" |
+| Interface | PDF gerado pelo botão; legenda "15 explicação(ões) vieram do cache"; filtros em português |
+
+O PDF é longo porque cada fonte citada traz a seção inteira do Learn, no original — é o que
+permite à banca julgar a citação. O 13 de 15 citando a âncora se repetiu (3 rodadas hoje).
+
+Suíte: 822 testes passando.
+
+**Próximo passo:** revisão final e merge da `fase4-relatorio`; depois a Fase 5 (avaliação,
+documentação e banca, semanas 11–13).

@@ -33,6 +33,7 @@
   blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--linha); color: var(--suave); }
   a { color: #0b5cad; }
   .quebra { word-break: break-all; }
+  .regra { white-space: nowrap; }
   @media print {
     body { padding: 0; max-width: none; }
     .achado, .caixa, tr { break-inside: avoid; }
@@ -106,7 +107,7 @@
       <tr>
         <td><a href="#achado-{{ b.numero }}">{{ b.numero }}</a></td>
         <td class="sev-{{ b.linha.severidade }}">{{ severidade[b.linha.severidade] }}</td>
-        <td>{{ b.linha.regra }}</td>
+        <td class="regra">{{ b.linha.regra }}</td>
         <td class="quebra">{{ b.linha.objeto }}</td>
         <td class="quebra">{{ b.linha.tabela }}</td>
         <td>{% if b.linha.aviso %}⚠{% endif %}</td>
@@ -150,7 +151,7 @@
     <tbody>
     {% for r in regras %}
       <tr>
-        <td>{{ r.meta.id }}</td><td>{{ r.meta.titulo }}</td>
+        <td class="regra">{{ r.meta.id }}</td><td>{{ r.meta.titulo }}</td>
         <td class="sev-{{ r.meta.severidade }}">{{ severidade[r.meta.severidade] }}</td><td>{{ r.meta.categoria }}</td>
         <td><a href="{{ r.meta.url_canonica }}">Microsoft Learn</a>{% if r.url_pt %} · <a href="{{ r.url_pt }}">em português</a>{% endif %}</td>
       </tr>
