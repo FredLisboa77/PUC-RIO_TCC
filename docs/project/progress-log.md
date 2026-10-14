@@ -1865,3 +1865,20 @@ Suíte: 826 testes passando.
 
 **Próximo passo:** revisão final e merge da `fase4-relatorio`; depois a Fase 5 (avaliação,
 documentação e banca, semanas 11–13).
+
+---
+
+## 13/10/2026 — Fase 5 iniciada: spec e plano da avaliação da geração
+
+Fase 5 dividida em três subprojetos (decisão do Fred): (1) avaliação final, semana 11; (2)
+monografia, semana 12; (3) demonstração, semana 13. Subprojeto 1 desenhado e aprovado:
+rubrica humana das explicações nos **61 achados de P1–P7** (main atual, versão das regras
+declarada), três vereditos sim/não/indeterminado (pertinente, fiel, recomendação correta),
+planilha cega aos sinais automáticos, pacote `avaliacao_geracao/` no molde do `gabarito/`,
+consolidado como fonte única das tabelas da monografia (com Wilson nas regras).
+
+Spec `docs/superpowers/specs/2026-10-13-avaliacao-da-geracao-design.md`, plano
+`docs/superpowers/plans/2026-10-13-avaliacao-da-geracao.md`, branch `fase5-avaliacao`.
+
+**Próximo passo:** o Fred escolhe o modo de execução do plano (sessão direta ou subagentes) e
+a implementação começa pela Task 1; a Task 7 termina com a planilha pronta para a anotação dele.
