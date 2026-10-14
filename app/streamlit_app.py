@@ -14,13 +14,15 @@ if str(RAIZ) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
-from app import consulta, execucao  # noqa: E402
-from app.consulta import Filtro  # noqa: E402
+from app import execucao  # noqa: E402
+from core import apresentacao as consulta  # noqa: E402
 from core.analise.base import AchadoEnriquecido  # noqa: E402
 from core.analise.llm import MODELO_PADRAO  # noqa: E402
-from core.auditoria import ResultadoAuditoria  # noqa: E402
+from core.apresentacao import Filtro  # noqa: E402
+from core.auditoria import ResultadoAuditoria, nome_base  # noqa: E402
 from core.rules.todas import REGISTRO  # noqa: E402
 from rag.catalogo import url_em_portugues  # noqa: E402
+from reports.html import gerar_html  # noqa: E402
 
 ROTULOS_SEVERIDADE = {"alta": "🔴 alta", "media": "🟠 média", "baixa": "🟡 baixa"}
 ROTULOS_MODO = {"completo": "completo (com explicação do LLM)", "so_regras": "só regras"}
@@ -33,6 +35,7 @@ estado.setdefault("executando", False)
 estado.setdefault("pedido", None)
 estado.setdefault("mensagem", None)
 estado.setdefault("traducoes", {})
+estado.setdefault("pdf", None)
 
 
 def _md(texto: str) -> str:
@@ -45,13 +48,14 @@ def _base():
     return execucao.carregar_base()
 
 
-def _abrir(conteudo: bytes) -> None:
+def _abrir(ler) -> None:
     try:
-        estado.resultado = execucao.ler_resultado(conteudo)
+        estado.resultado = ler()
     except execucao.ErroParaUsuario as erro:
         estado.mensagem = ("error", str(erro))  # o resultado anterior continua
     else:
         estado.traducoes = {}
+        estado.pdf = None
         estado.mensagem = None
 
 
@@ -67,11 +71,16 @@ def _barra_lateral() -> None:
     modelo = lateral.text_input(
         "Modelo do Ollama", value=MODELO_PADRAO, disabled=bloqueado or modo == "so_regras", key="modelo"
     )
+    cache = lateral.checkbox(
+        "reusar respostas guardadas do LLM (cache)", value=False,
+        disabled=bloqueado or modo == "so_regras", key="cache",
+    )
     if lateral.button("Auditar", type="primary", disabled=bloqueado or not (enviado or pasta.strip()), key="auditar"):
-        entrada = (
-            execucao.salvar_envio(enviado.name, enviado.getvalue()) if enviado is not None else Path(pasta.strip())
-        )
-        estado.pedido = {"entrada": entrada, "modo": modo, "modelo": modelo}
+        if enviado is not None:
+            # O .zip só é gravado durante a execução, e apagado ao fim (`executar_envio`).
+            estado.pedido = {"envio": (enviado.name, enviado.getvalue()), "modo": modo, "modelo": modelo, "cache": cache}
+        else:
+            estado.pedido = {"entrada": Path(pasta.strip()), "modo": modo, "modelo": modelo, "cache": cache}
         estado.executando = True
         estado.mensagem = None
         st.rerun()
@@ -83,10 +92,10 @@ def _barra_lateral() -> None:
         placeholder="escolha um resultado", disabled=bloqueado, key="salvo",
     )
     if lateral.button("Abrir", disabled=bloqueado or escolhido is None, key="abrir"):
-        _abrir(Path(escolhido).read_bytes())
+        _abrir(lambda: execucao.ler_salvo(Path(escolhido)))
     externo = lateral.file_uploader("ou envie um JSON", type=["json"], disabled=bloqueado, key="json_externo")
     if lateral.button("Abrir JSON enviado", disabled=bloqueado or externo is None, key="abrir_externo"):
-        _abrir(externo.getvalue())
+        _abrir(lambda: execucao.ler_resultado(externo.getvalue()))
 
 
 # --- execução ----------------------------------------------------------------
@@ -105,15 +114,19 @@ def _executar(pedido: dict, topo) -> None:
                 )
 
             try:
-                feito = execucao.executar(
-                    pedido["entrada"], pedido["modo"], pedido["modelo"], ao_progredir=ao_progredir, obter_base=_base
-                )
+                comum = dict(ao_progredir=ao_progredir, obter_base=_base, cache=pedido.get("cache", False))
+                if "envio" in pedido:
+                    nome, conteudo = pedido["envio"]
+                    feito = execucao.executar_envio(nome, conteudo, pedido["modo"], pedido["modelo"], **comum)
+                else:
+                    feito = execucao.executar(pedido["entrada"], pedido["modo"], pedido["modelo"], **comum)
             except execucao.ErroParaUsuario as erro:
                 estado.mensagem = ("error", str(erro))
                 status.update(label="A auditoria não terminou", state="error")
             else:
                 estado.resultado = feito.resultado
                 estado.traducoes = {}
+                estado.pdf = None
                 estado.mensagem = (
                     ("warning", feito.aviso_gravacao) if feito.aviso_gravacao
                     else ("success", f"Resultado gravado em {feito.gravado_em}")
@@ -141,13 +154,39 @@ def _cabecalho(resultado: ResultadoAuditoria) -> None:
                 "cada regra e sem explicação do LLM.")
 
 
+def _relatorio(resultado: ResultadoAuditoria, bloqueado: bool) -> None:
+    with st.container(border=True):
+        st.markdown("**Relatório**")
+        tecnico = st.checkbox("incluir seção técnica", key="rel_tecnico", disabled=bloqueado)
+        nome = nome_base(resultado) + ("-tecnico" if tecnico else "")
+        c1, c2 = st.columns(2)
+        c1.download_button(
+            "Baixar relatório HTML", gerar_html(resultado, tecnico=tecnico), file_name=f"{nome}.html",
+            mime="text/html", key="baixar_html", disabled=bloqueado,
+        )
+        chave = (resultado.gerado_em, tecnico)
+        if estado.pdf is not None and estado.pdf[0] == chave:
+            c2.download_button(
+                "Baixar relatório PDF", estado.pdf[1], file_name=f"{nome}.pdf",
+                mime="application/pdf", key="baixar_pdf", disabled=bloqueado,
+            )
+        elif c2.button("Gerar PDF", key="gerar_pdf", disabled=bloqueado):
+            with st.spinner("Gerando o PDF pelo Edge..."):
+                try:
+                    estado.pdf = (chave, execucao.relatorio_pdf(resultado, tecnico=tecnico))
+                except execucao.ErroParaUsuario as erro:
+                    c2.error(str(erro))
+                else:
+                    st.rerun()
+
+
 def _examinado(resultado: ResultadoAuditoria) -> None:
     examinado = consulta.examinado(resultado)
     with st.container(border=True):
         st.subheader("O que foi examinado")
         st.markdown(f"- {examinado.regras}\n- {examinado.expressoes}")
         for falha in examinado.falhas:
-            st.error(f"Regra com falha — {falha}")
+            st.error(f"Regra com falha — {_md(falha)}")
         if examinado.lacunas:
             st.warning(f"{len(examinado.lacunas)} expressão(ões) DAX não analisada(s) pelo leitor de DAX.")
             with st.expander("Ver as expressões não analisadas"):
@@ -163,6 +202,8 @@ def _resumo(linhas: list[consulta.Linha]) -> None:
     colunas[4].metric("Com aviso", resumo.com_aviso)
     if resumo.por_categoria:
         st.caption(" · ".join(f"{categoria}: {n}" for categoria, n in resumo.por_categoria.items()))
+    if resumo.do_cache:
+        st.caption(f"{resumo.do_cache} explicação(ões) vieram do cache de respostas do LLM, não de uma chamada nova.")
 
 
 def _filtros(linhas: list[consulta.Linha], bloqueado: bool) -> Filtro:
@@ -170,15 +211,18 @@ def _filtros(linhas: list[consulta.Linha], bloqueado: bool) -> Filtro:
     c1, c2, c3, c4, c5 = st.columns([1, 1, 1, 1, 1])
     comum = dict(disabled=bloqueado)
     return Filtro(
-        severidades=frozenset(c1.multiselect("Severidade", opcoes["severidades"], key="f_severidade", **comum)),
-        categorias=frozenset(c2.multiselect("Categoria", opcoes["categorias"], key="f_categoria", **comum)),
-        regras=frozenset(c3.multiselect("Regra", opcoes["regras"], key="f_regra", **comum)),
-        tabelas=frozenset(c4.multiselect("Tabela", opcoes["tabelas"], key="f_tabela", **comum)),
+        severidades=frozenset(c1.multiselect("Severidade", opcoes["severidades"], key="f_severidade", placeholder="todas", **comum)),
+        categorias=frozenset(c2.multiselect("Categoria", opcoes["categorias"], key="f_categoria", placeholder="todas", **comum)),
+        regras=frozenset(c3.multiselect("Regra", opcoes["regras"], key="f_regra", placeholder="todas", **comum)),
+        tabelas=frozenset(c4.multiselect("Tabela", opcoes["tabelas"], key="f_tabela", placeholder="todas", **comum)),
         so_com_aviso=c5.checkbox("Só com aviso", key="f_aviso", **comum),
     )
 
 
-def _tabela(visiveis: list[consulta.Linha], bloqueado: bool) -> consulta.Linha | None:
+def _tabela(visiveis: list[consulta.Linha], bloqueado: bool, total: int) -> consulta.Linha | None:
+    if total == 0:
+        st.info("Nenhum achado.")
+        return None
     if not visiveis:
         st.info("Nenhum achado com estes filtros.")
         return None
@@ -199,7 +243,7 @@ def _tabela(visiveis: list[consulta.Linha], bloqueado: bool) -> consulta.Linha |
 
 def _link(rotulo: str, url: str) -> str:
     portugues = url_em_portugues(url)
-    texto = f"[{rotulo}]({url})"
+    texto = f"[{_md(rotulo)}]({url})"
     return f"{texto} · [ler em português]({portugues})" if portugues else texto
 
 
@@ -208,7 +252,7 @@ def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditori
         return
     st.markdown("**Fontes citadas**")
     por_numero = {t.numero: t for t in item.contexto}
-    modelo = estado.get("modelo") or MODELO_PADRAO
+    modelo = resultado.modelo_llm or estado.get("modelo") or MODELO_PADRAO
     for numero in item.geracao.citacoes:
         trecho = por_numero[numero]
         chave = f"{resultado.gerado_em}|{indice}|{numero}"
@@ -223,7 +267,7 @@ def _citacoes(item: AchadoEnriquecido, indice: int, resultado: ResultadoAuditori
             elif traducao.button("Traduzir trecho", key=f"traduzir|{chave}", disabled=bloqueado):
                 with st.spinner("Traduzindo..."):
                     try:
-                        estado.traducoes[chave] = execucao.traduzir(trecho.texto, modelo)
+                        estado.traducoes[chave] = execucao.traduzir(trecho.texto, modelo, cache=bool(estado.get("cache")))
                     except execucao.ErroParaUsuario as erro:
                         traducao.error(str(erro))
                     else:
@@ -237,6 +281,7 @@ def _detalhes_tecnicos(item: AchadoEnriquecido) -> None:
             f"- Tempo da chamada: {item.segundos if item.segundos is not None else '—'} s\n"
             f"- Tokens do prompt: {item.tokens_prompt if item.tokens_prompt is not None else '—'}\n"
             f"- Trechos retirados para caber: {item.reducoes_de_contexto}"
+            + ("\n- Origem: resposta guardada no cache (o tempo é de leitura, não de geração)" if item.do_cache else "")
         )
         for trecho in item.contexto:
             origem = "âncora da regra" if trecho.origem == "ancora" else "busca"
@@ -250,7 +295,7 @@ def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha, bloqueado: bo
     evidencia = item.achado.evidencia
     st.divider()
     st.subheader(f"{meta.id} — {meta.titulo}")
-    st.caption(f"{ROTULOS_SEVERIDADE[meta.severidade]} · {meta.categoria} · {evidencia.tipo_objeto} {evidencia.objeto}")
+    st.caption(f"{ROTULOS_SEVERIDADE[meta.severidade]} · {meta.categoria} · {evidencia.tipo_objeto} {_md(evidencia.objeto)}")
     st.markdown(_md(item.achado.mensagem))
     for aviso in consulta.avisos(item):
         st.warning(f"**{aviso.titulo}** — {_md(aviso.explicacao)}")
@@ -262,6 +307,8 @@ def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha, bloqueado: bo
     if item.geracao is not None:
         st.markdown("**Explicação**")
         st.markdown(_md(item.geracao.explicacao))
+    if item.do_cache:
+        st.caption("Resposta guardada no cache de respostas do LLM, não gerada nesta auditoria.")
     st.markdown("**Recomendação**")
     st.markdown(_md(item.recomendacao_final(meta)))
     _citacoes(item, linha.indice, resultado, bloqueado)
@@ -273,11 +320,12 @@ def _resultado(resultado: ResultadoAuditoria, bloqueado: bool = False) -> None:
     """`bloqueado` durante a auditoria: o resultado anterior continua na tela, mas
     um clique nele reexecutaria o script e mataria a auditoria em andamento."""
     _cabecalho(resultado)
+    _relatorio(resultado, bloqueado)
     _examinado(resultado)
     linhas = consulta.linhas(resultado, REGISTRO)
     _resumo(linhas)
     visiveis = consulta.filtrar(linhas, _filtros(linhas, bloqueado))
-    linha = _tabela(visiveis, bloqueado)
+    linha = _tabela(visiveis, bloqueado, len(linhas))
     if linha is not None:
         _detalhe(resultado, linha, bloqueado)
 

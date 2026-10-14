@@ -42,6 +42,8 @@ class RespostaLLM(BaseModel):
     segundos: float
     tokens_prompt: int | None = None
     """O `prompt_eval_count` do Ollama, quando ele informa."""
+    do_cache: bool = False
+    """Veio de `ClienteComCache`, não de uma chamada ao modelo."""
 
 
 class LLMClient(Protocol):

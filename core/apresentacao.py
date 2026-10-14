@@ -1,4 +1,4 @@
-"""Consultas sobre um resultado de auditoria para a interface — sem Streamlit.
+"""Consultas sobre um resultado de auditoria, para a interface e o relatório — sem Streamlit.
 
 Tudo aqui é puro e testável: avisos de confiança de um achado, linhas da tabela,
 filtros, resumo e o painel "o que foi examinado". Desenho:
@@ -8,10 +8,13 @@ filtros, resumo e o painel "o que foi examinado". Desenho:
 from collections import Counter
 from dataclasses import dataclass
 
+from pydantic import ValidationError
+
 from core.analise.base import AchadoEnriquecido
 from core.auditoria import ResultadoAuditoria
 from core.rules.base import ORDEM_SEVERIDADE
 from core.rules.registry import Registro
+from core.rules.todas import REGISTRO
 
 SEM_TABELA = "—"
 
@@ -75,6 +78,7 @@ class Linha:
     objeto: str
     tabela: str
     aviso: bool
+    do_cache: bool = False
 
 
 def linhas(resultado: ResultadoAuditoria, registro: Registro) -> list[Linha]:
@@ -86,6 +90,7 @@ def linhas(resultado: ResultadoAuditoria, registro: Registro) -> list[Linha]:
             indice=indice, severidade=meta.severidade, regra=meta.id, titulo=meta.titulo,
             categoria=meta.categoria, objeto=evidencia.objeto, tabela=evidencia.tabela or SEM_TABELA,
             aviso=bool(avisos(item)),
+            do_cache=item.do_cache,
         ))
     return sorted(todas, key=lambda l: (ORDEM_SEVERIDADE[l.severidade], l.regra, l.objeto))
 
@@ -130,6 +135,7 @@ class Resumo:
     """Sempre as três severidades, em ordem, mesmo com zero."""
     por_categoria: dict[str, int]
     com_aviso: int
+    do_cache: int = 0
 
 
 def resumir(todas: list[Linha]) -> Resumo:
@@ -139,6 +145,7 @@ def resumir(todas: list[Linha]) -> Resumo:
         por_severidade={s: severidades[s] for s in sorted(ORDEM_SEVERIDADE, key=ORDEM_SEVERIDADE.__getitem__)},
         por_categoria=dict(sorted(Counter(l.categoria for l in todas).items())),
         com_aviso=sum(1 for l in todas if l.aviso),
+        do_cache=sum(1 for l in todas if l.do_cache),
     )
 
 
@@ -178,3 +185,33 @@ def escolher(visiveis: list[Linha], selecionadas: list[int]) -> Linha | None:
     if selecionadas and 0 <= selecionadas[0] < len(visiveis):
         return visiveis[selecionadas[0]]
     return visiveis[0]
+
+
+BOM = "﻿"
+
+
+class ErroDeLeitura(Exception):
+    """O conteúdo não é um resultado que esta versão da ferramenta saiba mostrar."""
+
+
+def ler_resultado(conteudo: bytes | str, registro: Registro | None = None) -> ResultadoAuditoria:
+    """Mesma leitura para a interface e para a CLI do relatório. Aceita o BOM que o
+    Bloco de Notas põe ao salvar de novo um JSON."""
+    if isinstance(conteudo, bytes) and conteudo.startswith(BOM.encode("utf-8")):
+        conteudo = conteudo[len(BOM.encode("utf-8")):]
+    elif isinstance(conteudo, str) and conteudo.startswith(BOM):
+        conteudo = conteudo[len(BOM):]
+    try:
+        resultado = ResultadoAuditoria.model_validate_json(conteudo)
+    except ValidationError as erro:
+        raise ErroDeLeitura(
+            "O arquivo não é um resultado de auditoria desta ferramenta "
+            f"({erro.error_count()} problema(s) no formato)."
+        ) from erro
+    registro = REGISTRO if registro is None else registro
+    desconhecidas = sorted({a.achado.id_regra for a in resultado.achados} - set(registro.ids()))
+    if desconhecidas:
+        raise ErroDeLeitura(
+            f"O resultado tem regras que esta versão da ferramenta não conhece: {', '.join(desconhecidas)}."
+        )
+    return resultado

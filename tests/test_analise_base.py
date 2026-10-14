@@ -106,3 +106,10 @@ def test_gerado_com_citacao_fora_do_contexto_vazia_ou_repetida_e_recusado(citaco
     """ADR-003: um JSON de fora não pode trazer explicação sem fonte válida."""
     with pytest.raises(ValidationError, match="citações"):
         _gerado(geracao=Geracao(explicacao="e", recomendacao="Use DIVIDE.", citacoes=citacoes))
+
+
+def test_do_cache_padrao_e_falso_e_so_regras_nao_pode_ter():
+    assert _gerado().do_cache is False
+    assert _gerado(do_cache=True).do_cache is True
+    with pytest.raises(ValidationError, match="coerente"):
+        AchadoEnriquecido(achado=achado(), contexto=[], situacao="so_regras", modelo=None, do_cache=True)

@@ -18,6 +18,7 @@ from typing import Literal
 from pydantic import BaseModel, model_validator
 
 from core.analise.base import AchadoEnriquecido
+from core.analise.cache import PASTA_CACHE, ClienteComCache
 from core.analise.contexto import ErroDeContexto, carregar_gabaritos, verificar_ancoras
 from core.analise.enriquecimento import enriquecer
 from core.analise.llm import MODELO_PADRAO, ClienteOllama, ErroDeLLM, LLMClient
@@ -138,7 +139,8 @@ def resumir(resultado: ResultadoAuditoria) -> str:
         ]))
     gerados = [a for a in achados if a.situacao == "gerado"]
     motivos = Counter(a.motivo_descarte for a in achados if a.motivo_descarte)
-    tempos = [a.segundos for a in achados if a.segundos is not None]
+    tempos = [a.segundos for a in achados if a.segundos is not None and not a.do_cache]
+    do_cache = sum(1 for a in achados if a.do_cache)
     linhas = [
         f"Projeto {resultado.projeto} - modelo {resultado.modelo_llm}",
         f"Achados: {len(achados)} | gerados: {len(gerados)} | sem fundamentacao: {len(achados) - len(gerados)}",
@@ -152,20 +154,26 @@ def resumir(resultado: ResultadoAuditoria) -> str:
     reduzidos = sum(1 for a in achados if a.reducoes_de_contexto)
     if reduzidos:
         linhas.append(f"Contexto reduzido para caber: {reduzidos}")
+    if do_cache:
+        linhas.append(f"Do cache: {do_cache} (tempo medio so das chamadas reais)")
     if tempos:
         linhas.append(f"Tempo por achado: medio {sum(tempos) / len(tempos):.1f}s, pior {max(tempos):.1f}s")
     linhas.append(f"Tempo total: {resultado.segundos_total:.1f}s")
     return _ascii("\n".join(linhas))
 
 
+def nome_base(resultado: ResultadoAuditoria) -> str:
+    """`<projeto>-<AAAA-MM-DDTHHMMSS>[-so-regras]`: com segundos, duas auditorias do
+    mesmo projeto no mesmo minuto não se sobrescrevem (só regras leva 0,3 s)."""
+    carimbo = resultado.gerado_em[:19].replace(":", "")
+    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
+    return f"{resultado.projeto}-{carimbo}{sufixo}"
+
+
 def gravar(resultado: ResultadoAuditoria, pasta: Path | None = None) -> Path:
     pasta = PASTA_SAIDA if pasta is None else pasta
     pasta.mkdir(parents=True, exist_ok=True)
-    # Hora no nome: quem audita, corrige e audita de novo no mesmo dia não perde
-    # o resultado anterior.
-    carimbo = resultado.gerado_em[:16].replace(":", "")
-    sufixo = "-so-regras" if resultado.modo == "so_regras" else ""
-    caminho = pasta / f"{resultado.projeto}-{carimbo}{sufixo}.json"
+    caminho = pasta / f"{nome_base(resultado)}.json"
     caminho.write_text(resultado.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
     return caminho
 
@@ -178,12 +186,19 @@ def main(argv: list[str] | None = None) -> int:
         "--so-regras", action="store_true",
         help="so a deteccao, sem indice nem LLM; a recomendacao e a padrao da regra",
     )
+    parser.add_argument(
+        "--cache", action="store_true",
+        help="reusa respostas guardadas do LLM (outputs/cache-llm); o resultado marca o que veio do cache",
+    )
     args = parser.parse_args(argv)
     try:
         if args.so_regras:
             resultado = run_audit(args.pasta_pbip, llm=None, base=None)
         else:
-            resultado = run_audit(args.pasta_pbip, llm=ClienteOllama(args.modelo), base=BaseRag.carregar())
+            llm = ClienteOllama(args.modelo)
+            if args.cache:
+                llm = ClienteComCache(llm, PASTA_CACHE)
+            resultado = run_audit(args.pasta_pbip, llm=llm, base=BaseRag.carregar())
     except (ErroDeAuditoria, ErroDeContexto, ErroDeIndice, ErroEstruturaPbip) as erro:
         print(f"erro: {erro}", file=sys.stderr)
         return 1

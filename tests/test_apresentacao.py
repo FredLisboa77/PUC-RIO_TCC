@@ -1,14 +1,20 @@
-"""Consultas puras da interface: avisos, tabela, filtros, resumo e painel."""
+"""Consultas puras de apresentação (interface e relatório): avisos, tabela, filtros, resumo e painel."""
 
-from app import consulta
-from app.consulta import Filtro
+from pathlib import Path
+
+import pytest
+
+from core import apresentacao as consulta
 from core.analise.base import AchadoEnriquecido, Fidelidade, Geracao
+from core.apresentacao import ErroDeLeitura, Filtro, ler_resultado
 from core.auditoria import ResultadoAuditoria
 from core.rules.base import RegraMeta
 from core.rules.expressoes import LacunaDax
 from core.rules.registry import Registro
 from core.rules.runner import FalhaDeRegra, ResultadoRegras
 from fabricas_analise import RECOMENDACAO_PADRAO, achado, contexto
+
+FIXTURE_FORMATO_ANTIGO = Path(__file__).parent / "fixtures" / "resultado-formato-2026-10-11.json"
 
 
 def _meta(id_regra: str, severidade: str, categoria: str) -> RegraMeta:
@@ -158,3 +164,24 @@ def test_escolher_cai_no_primeiro_quando_a_selecao_nao_cabe():
     assert consulta.escolher(ls, []) == ls[0]
     assert consulta.escolher(ls[:2], [5]) == ls[0]
     assert consulta.escolher([], [0]) is None
+
+
+def test_resumo_conta_achados_do_cache():
+    resultado = _resultado([_gerado(achado("MOD-001", objeto="A"), do_cache=True), _gerado(achado("MOD-001", objeto="B"))])
+    ls = consulta.linhas(resultado, _registro())
+    assert [l.do_cache for l in ls] == [True, False]
+    assert consulta.resumir(ls).do_cache == 1
+
+
+def test_ler_resultado_aceita_bom():
+    bruto = FIXTURE_FORMATO_ANTIGO.read_bytes()
+    bom = "\N{ZERO WIDTH NO-BREAK SPACE}"
+    assert ler_resultado(bom.encode("utf-8") + bruto).modo == "completo"
+    assert ler_resultado(bom + bruto.decode("utf-8")).modo == "completo"
+
+
+def test_ler_resultado_recusa_formato_e_regra_desconhecida():
+    with pytest.raises(ErroDeLeitura, match="não é um resultado de auditoria"):
+        ler_resultado(b"{ quebrado")
+    with pytest.raises(ErroDeLeitura, match="XYZ-999"):
+        ler_resultado(FIXTURE_FORMATO_ANTIGO.read_text(encoding="utf-8").replace("MOD-001", "XYZ-999"))

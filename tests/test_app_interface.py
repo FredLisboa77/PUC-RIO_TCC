@@ -23,7 +23,7 @@ ARQUIVO_APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_ap
 def app(tmp_path, monkeypatch):
     monkeypatch.setattr(auditoria, "PASTA_SAIDA", tmp_path / "saida")
     monkeypatch.setattr(execucao, "carregar_base", base_padrao)
-    monkeypatch.setattr(execucao, "criar_llm", lambda modelo: LLMFalso())
+    monkeypatch.setattr(execucao, "criar_llm", lambda modelo, cache=False: LLMFalso())
     st.cache_resource.clear()
     return AppTest.from_file(ARQUIVO_APP, default_timeout=60)
 
@@ -140,3 +140,81 @@ def test_durante_a_auditoria_o_resultado_anterior_fica_desabilitado(app, tmp_pat
     assert app.multiselect and all(m.disabled for m in app.multiselect)
     traducao = [b for b in app.button if (b.key or "").startswith("traduzir")]
     assert traducao and all(b.disabled for b in traducao)
+
+
+def test_resultado_aberto_oferece_html_e_pdf(app, tmp_path, monkeypatch):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+    assert not app.exception
+    assert app.get("download_button")  # "Baixar relatório HTML"
+    monkeypatch.setattr(execucao, "relatorio_pdf", lambda resultado, tecnico: b"%PDF-ok")
+    app.button(key="gerar_pdf").click().run()
+    assert not app.exception
+    assert app.session_state["pdf"][1] == b"%PDF-ok"
+
+
+def test_falha_do_pdf_vira_mensagem(app, tmp_path, monkeypatch):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+
+    def falha(resultado, tecnico):
+        raise execucao.ErroParaUsuario("PDF indisponível: Edge ausente")
+
+    monkeypatch.setattr(execucao, "relatorio_pdf", falha)
+    app.button(key="gerar_pdf").click().run()
+    assert not app.exception
+    assert any("Edge ausente" in e.value for e in app.error)
+
+
+def _gravar_resultado(raiz, objetos) -> Path:
+    registro = Registro()
+    registro.registrar(meta(), lambda modelo: [achado(objeto=o) for o in objetos])
+    pbip = escrever_pbip(raiz / "origem", model_bim=modelo_tmsl([tabela("T")]))
+    resultado = auditoria.run_audit(
+        pbip, llm=LLMFalso(), base=base_padrao(), registro=registro, gabaritos={"MOD-001": gabarito()},
+    )
+    return auditoria.gravar(resultado)
+
+
+def _abrir_salvo(app, caminho):
+    app.run()
+    app.selectbox(key="salvo").set_value(str(caminho)).run()
+    app.button(key="abrir").click().run()
+
+
+def test_traducao_usa_o_modelo_do_resultado(app, tmp_path, monkeypatch):
+    usados = []
+    monkeypatch.setattr(execucao, "traduzir", lambda texto, modelo, cache=False: usados.append(modelo) or "ok")
+    _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
+    app.text_input(key="modelo").input("outro-modelo").run()
+    next(b for b in app.button if (b.key or "").startswith("traduzir")).click().run()
+    assert usados == ["llm-falso"]
+
+
+def test_objeto_com_markdown_aparece_escapado(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado(tmp_path, ["Tabela_*a*"]))
+    assert any("Tabela\_\*a\*" in c.value for c in app.caption)
+
+
+def test_resultado_sem_achados_diz_nenhum_achado(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado(tmp_path, []))
+    assert any(i.value == "Nenhum achado." for i in app.info)
+
+
+def test_filtros_com_placeholder_em_portugues(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
+    assert app.multiselect and all(m.placeholder == "todas" for m in app.multiselect)
+
+
+def test_detalhe_do_achado_do_cache_diz_que_veio_do_cache(app, tmp_path):
+    caminho = _gravar_resultado_salvo(tmp_path)
+    resultado = auditoria.ResultadoAuditoria.model_validate_json(caminho.read_text(encoding="utf-8"))
+    do_cache = resultado.model_copy(update={"achados": [a.model_copy(update={"do_cache": True}) for a in resultado.achados]})
+    caminho.write_text(do_cache.model_dump_json(), encoding="utf-8")
+    _abrir_salvo(app, caminho)
+    textos = " ".join(m.value for m in app.markdown) + " ".join(c.value for c in app.caption)
+    assert "resposta guardada no cache" in textos

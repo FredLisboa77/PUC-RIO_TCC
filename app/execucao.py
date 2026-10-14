@@ -6,6 +6,7 @@ mensagem vai direto para a tela. `criar_llm` e `carregar_base` são os pontos
 de troca dos testes.
 """
 
+import shutil
 import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -13,7 +14,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from core import auditoria
+from core import apresentacao, auditoria
+from core.analise.cache import PASTA_CACHE, ClienteComCache
 from core.analise.contexto import ErroDeContexto
 from core.analise.llm import ClienteOllama, ErroDeLLM, LLMClient
 from core.analise.traducao import ErroDeTraducao, traduzir_trecho
@@ -22,6 +24,8 @@ from core.ingest import ErroEstruturaPbip
 from core.rules.base import Achado
 from core.rules.registry import Registro
 from rag.indice import BaseRag, ErroDeIndice
+from reports.html import gerar_html
+from reports.pdf import ErroDePdf, gerar_pdf
 
 COMANDO_INDICE = "python -m rag.indice construir"
 
@@ -37,8 +41,9 @@ class Execucao:
     aviso_gravacao: str | None
 
 
-def criar_llm(modelo: str) -> LLMClient:
-    return ClienteOllama(modelo)
+def criar_llm(modelo: str, *, cache: bool = False) -> LLMClient:
+    llm = ClienteOllama(modelo)
+    return ClienteComCache(llm, PASTA_CACHE) if cache else llm
 
 
 def carregar_base() -> BaseRag:
@@ -66,6 +71,7 @@ def executar(
     *,
     ao_progredir: Callable[[int, int, Achado], None] | None = None,
     obter_base: Callable[[], BaseRag] | None = None,
+    cache: bool = False,
 ) -> Execucao:
     try:
         if modo == "so_regras":
@@ -73,8 +79,11 @@ def executar(
         else:
             base = _base_pronta(obter_base or carregar_base)
             resultado = auditoria.run_audit(
-                entrada, llm=criar_llm(modelo), base=base, ao_progredir=ao_progredir
+                entrada, llm=criar_llm(modelo, cache=cache), base=base, ao_progredir=ao_progredir
             )
+    except ValidationError as erro:
+        # É `ValueError`, mas aqui é bug do pipeline, não projeto ilegível.
+        raise ErroParaUsuario(f"Erro inesperado na auditoria: {type(erro).__name__}: {erro}") from erro
     except ErroEstruturaPbip as erro:
         raise ErroParaUsuario(f"Isto não é um projeto PBIP válido: {erro}") from erro
     except ErroDeAuditoria as erro:
@@ -92,6 +101,18 @@ def executar(
     except OSError as erro:
         # A geração já custou minutos: mostra o resultado mesmo sem gravar.
         return Execucao(resultado, None, f"O resultado não foi gravado em outputs/: {erro}")
+
+
+def executar_envio(nome: str, conteudo: bytes, modo: ModoAuditoria, modelo: str, **kwargs) -> Execucao:
+    """O `.zip` enviado vive só durante a auditoria: a pasta `envio-*` é apagada ao fim."""
+    try:
+        caminho = salvar_envio(nome, conteudo)
+    except OSError as erro:
+        raise ErroParaUsuario(f"Não consegui guardar o arquivo enviado: {erro}") from erro
+    try:
+        return executar(caminho, modo, modelo, **kwargs)
+    finally:
+        shutil.rmtree(caminho.parent, ignore_errors=True)
 
 
 def salvar_envio(nome: str, conteudo: bytes) -> Path:
@@ -121,23 +142,32 @@ def listar_salvos(pasta: Path | None = None) -> list[Salvo]:
 
 def ler_resultado(conteudo: bytes | str, registro: Registro | None = None) -> ResultadoAuditoria:
     try:
-        resultado = ResultadoAuditoria.model_validate_json(conteudo)
-    except ValidationError as erro:
-        raise ErroParaUsuario(
-            "O arquivo não é um resultado de auditoria desta ferramenta "
-            f"({erro.error_count()} problema(s) no formato)."
-        ) from erro
-    registro = auditoria.REGISTRO if registro is None else registro
-    desconhecidas = sorted({a.achado.id_regra for a in resultado.achados} - set(registro.ids()))
-    if desconhecidas:
-        raise ErroParaUsuario(
-            f"O resultado tem regras que esta versão da ferramenta não conhece: {', '.join(desconhecidas)}."
-        )
-    return resultado
+        return apresentacao.ler_resultado(conteudo, auditoria.REGISTRO if registro is None else registro)
+    except apresentacao.ErroDeLeitura as erro:
+        raise ErroParaUsuario(str(erro)) from erro
 
 
-def traduzir(texto: str, modelo: str) -> str:
+def ler_salvo(caminho: Path) -> ResultadoAuditoria:
+    """O arquivo listado pode ter sumido entre a listagem e o clique."""
     try:
-        return traduzir_trecho(texto, criar_llm(modelo))
+        conteudo = caminho.read_bytes()
+    except OSError as erro:
+        raise ErroParaUsuario(f"Não consegui abrir {caminho.name}: {erro}") from erro
+    return ler_resultado(conteudo)
+
+
+def traduzir(texto: str, modelo: str, *, cache: bool = False) -> str:
+    try:
+        return traduzir_trecho(texto, criar_llm(modelo, cache=cache))
     except (ErroDeLLM, ErroDeTraducao) as erro:
         raise ErroParaUsuario(f"Não consegui traduzir o trecho: {erro}") from erro
+
+
+def relatorio_pdf(resultado: ResultadoAuditoria, *, tecnico: bool) -> bytes:
+    with tempfile.TemporaryDirectory(prefix="relatorio-") as pasta:
+        destino = Path(pasta) / "relatorio.pdf"
+        try:
+            gerar_pdf(gerar_html(resultado, tecnico=tecnico), destino)
+        except ErroDePdf as erro:
+            raise ErroParaUsuario(str(erro)) from erro
+        return destino.read_bytes()

@@ -77,11 +77,12 @@ def test_nome_do_projeto_de_pasta_com_espaco_e_de_zip(tmp_path):
     assert auditoria.nome_do_projeto(tmp_path / "projeto.zip") == "projeto"
 
 
-def test_gravar_usa_projeto_data_e_hora_e_relê_igual(tmp_path):
+def test_gravar_usa_projeto_data_e_hora_com_segundos_e_relê_igual(tmp_path):
     resultado, _ = _auditar(tmp_path)
     caminho = gravar(resultado, tmp_path / "saida")
-    carimbo = resultado.gerado_em[:16].replace(":", "")
+    carimbo = resultado.gerado_em[:19].replace(":", "")
     assert caminho.name == f"Minimal-{carimbo}.json"
+    assert caminho.stem == auditoria.nome_base(resultado)
     assert ResultadoAuditoria.model_validate_json(caminho.read_text(encoding="utf-8")) == resultado
 
 
@@ -90,12 +91,12 @@ def test_gravar_so_regras_leva_sufixo(tmp_path):
     assert gravar(resultado, tmp_path / "saida").name.endswith("-so-regras.json")
 
 
-def test_duas_auditorias_no_mesmo_dia_nao_se_sobrescrevem(tmp_path):
+def test_duas_auditorias_no_mesmo_minuto_nao_se_sobrescrevem(tmp_path):
     resultado, _ = _auditar(tmp_path)
-    outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "23:59:00"})
-    if outra.gerado_em[:16] == resultado.gerado_em[:16]:
-        outra = resultado.model_copy(update={"gerado_em": resultado.gerado_em[:11] + "00:00:00"})
-    assert gravar(resultado, tmp_path / "saida") != gravar(outra, tmp_path / "saida")
+    base = resultado.gerado_em[:17]
+    um = resultado.model_copy(update={"gerado_em": base + "01"})
+    outro = resultado.model_copy(update={"gerado_em": base + "02"})
+    assert gravar(um, tmp_path / "saida") != gravar(outro, tmp_path / "saida")
 
 
 def test_resumo_so_regras_diz_o_modo_e_nao_fala_de_geracao(tmp_path):
@@ -255,3 +256,45 @@ def test_progresso_sem_achados_nao_e_chamado(tmp_path):
     run_audit(_pbip(tmp_path, tabelas=()), llm=None, base=None, registro=_registro(),
               ao_progredir=lambda *a: chamadas.append(a))
     assert chamadas == []
+
+
+def test_resumo_conta_o_cache_e_tira_do_tempo_medio(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    a, b = resultado.achados
+    misto = resultado.model_copy(update={"achados": [
+        a.model_copy(update={"segundos": 8.0}),
+        b.model_copy(update={"segundos": 0.0, "do_cache": True}),
+    ]})
+    texto = resumir(misto)
+    assert "Do cache: 1" in texto
+    assert "medio 8.0s" in texto
+
+
+def test_resumo_sem_cache_nao_menciona(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    assert "cache" not in resumir(resultado).lower()
+
+
+def test_auditoria_repetida_com_cache_da_textos_iguais_sem_chamar_o_llm(tmp_path):
+    from core.analise.cache import ClienteComCache
+
+    pasta_cache = tmp_path / "cache"
+    pbip = _pbip(tmp_path)
+    primeira_llm = LLMFalso()
+    primeira = run_audit(pbip, llm=ClienteComCache(primeira_llm, pasta_cache), base=base_padrao(),
+                         registro=_registro(), gabaritos={"MOD-001": gabarito()})
+    segunda_llm = LLMFalso()
+    segunda = run_audit(pbip, llm=ClienteComCache(segunda_llm, pasta_cache), base=base_padrao(),
+                        registro=_registro(), gabaritos={"MOD-001": gabarito()})
+    assert [a.geracao for a in segunda.achados] == [a.geracao for a in primeira.achados]
+    assert [a.do_cache for a in primeira.achados] == [False, False]
+    assert [a.do_cache for a in segunda.achados] == [True, True]
+    assert (len(segunda_llm.chamadas), segunda_llm.aquecimentos) == (0, 1)
+
+
+def test_comando_com_cache_envolve_o_cliente(tmp_path, monkeypatch, capsys):
+    _comando_falso(monkeypatch, tmp_path)
+    monkeypatch.setattr(auditoria, "PASTA_CACHE", tmp_path / "cache")
+    assert auditoria.main([str(_pbip(tmp_path)), "--cache"]) == 0
+    assert auditoria.main([str(_pbip(tmp_path / "de-novo")), "--cache"]) == 0
+    assert "Do cache: 2" in capsys.readouterr().out
