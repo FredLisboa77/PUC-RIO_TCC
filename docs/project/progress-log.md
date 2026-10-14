@@ -1852,7 +1852,16 @@ evidência de P1–P8 carrega M, string de conexão ou caminho.
 O PDF é longo porque cada fonte citada traz a seção inteira do Learn, no original — é o que
 permite à banca julgar a citação. O 13 de 15 citando a âncora se repetiu (3 rodadas hoje).
 
-Suíte: 822 testes passando.
+**Revisão final do branch (revisor novo):** nenhum crítico; corrigidos com teste que falhou antes:
+(1) falha ao gravar o PDF (arquivo aberto no leitor) dava traceback — agora mensagem; (2) explicação
+vinda do cache sem rótulo no detalhe da interface e do HTML — agora rotulada por achado; (3) JSON
+forjado com `javascript:` na URL de um trecho virava link no relatório — reclassificado de menor
+para importante por ser segurança; só viram link URLs do Learn. Seis menores adiados: CLI com stdout
+redirecionado e caminho fora do cp1252, cache com `tokens_prompt` inválido, timeout que não cobre o
+`launch`/`page.pdf`, pastas `pbip-*` da extração em %TEMP% (pré-existente), texto do contador do
+cache, `.tmp` do cache com nome fixo.
+
+Suíte: 826 testes passando.
 
 **Próximo passo:** revisão final e merge da `fase4-relatorio`; depois a Fase 5 (avaliação,
 documentação e banca, semanas 11–13).

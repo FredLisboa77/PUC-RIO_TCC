@@ -78,7 +78,7 @@ regras de M, depois abrir mão do PDF (R-07).
 | Interface Streamlit (`streamlit run app/streamlit_app.py`) | Aceita em 13/10/2026: P8 completo pela interface em 155,1 s e 134,4 s (15 de 15 gerados, 13 de 15 citando a âncora, 3 com aviso), progresso por achado, tradução sob demanda de trecho citado, abertura do JSON de 11/10; só regras no P8 em 0,3 s; Ollama sem o modelo vira mensagem e nada é gravado. Só regras em P1–P7 pela CLI: **61** achados, iguais aos marcados no resultado pós-correção |
 | Relatório HTML/PDF (`python -m reports <resultado.json> --pdf [--tecnico]`, e botões na interface) | Aceito em 13/10/2026: HTML autocontido e PDF pelo Edge do sistema (Playwright, `channel="msedge"`); P8 completo em 33 páginas (68 com a seção técnica), P5 só regras em 14; rodapé com número de página |
 | Cache das respostas do LLM (`--cache`, e caixa na interface) | Aceito em 13/10/2026: P8 auditado duas vezes — 165,6 s e **1,5 s**, gerações idênticas, "Do cache: 15"; desligado por padrão e rotulado no resultado, na interface e no relatório |
-| Suíte de testes | **822 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Suíte de testes | **826 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
