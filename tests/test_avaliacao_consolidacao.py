@@ -53,3 +53,11 @@ def test_origem_ausente_diz_qual(tmp_path, sem):
     _escrever(tmp_path, sem=sem)
     with pytest.raises(ErroDeAvaliacao, match="falta"):
         consolidar(tmp_path)
+
+
+def test_ignora_geracao_com_nome_fora_do_padrao(tmp_path):
+    _escrever(tmp_path)
+    pasta = tmp_path
+    (pasta / "geracao-2026-10-20-teste.json").write_text(json.dumps({"itens": {"teste": 1}}), encoding="utf-8")
+    c = consolidar(pasta)
+    assert c["geracao"]["origem"] == "geracao-2026-10-15.json"

@@ -95,3 +95,42 @@ def test_consolidar_com_json_sem_chave_sai_com_mensagem(ambiente, capsys):
     (ambiente / "results" / "geracao-2026-01-01.json").write_text("{}", encoding="utf-8")
     assert comando.main(["consolidar"]) == 1
     assert "erro:" in capsys.readouterr().err
+
+
+def test_importar_parcial_sem_vereditos_e_medir_recusa_csv_vazio(ambiente, capsys):
+    assert comando.main(["auditar"]) == 0
+    assert comando.main(["gerar"]) == 0
+    assert comando.main(["importar", "--parcial"]) == 0
+    capsys.readouterr()
+    assert comando.main(["medir"]) == 1
+    err = capsys.readouterr().err
+    assert "nada medido" in err and "linha None" not in err
+    assert not list((ambiente / "results").glob("geracao-*.json"))
+
+
+def test_medir_grava_o_denominador_de_gerados(ambiente):
+    _importar_tudo(ambiente)
+    assert comando.main(["medir"]) == 0
+    geracao = next((ambiente / "results").glob("geracao-*.json"))
+    assert json.loads(geracao.read_text(encoding="utf-8"))["ambiente"]["gerados"] == 2
+
+
+def test_planilha_corrompida_sai_com_mensagem(ambiente, capsys):
+    assert comando.main(["auditar"]) == 0
+    (ambiente / "r.xlsx").write_bytes(b"lixo que nao e um xlsx")
+    capsys.readouterr()
+    assert comando.main(["importar"]) == 1
+    assert "erro:" in capsys.readouterr().err
+
+
+def test_auditar_sem_projetos_sai_com_mensagem(ambiente, monkeypatch, capsys):
+    vazia = ambiente / "vazia"
+    vazia.mkdir()
+    monkeypatch.setattr(comando, "PASTA_PBIP", vazia)
+    assert comando.main(["auditar"]) == 1
+    assert "nenhum projeto" in capsys.readouterr().err
+
+
+def test_auditar_com_menos_de_sete_projetos_avisa(ambiente, capsys):
+    assert comando.main(["auditar"]) == 0
+    assert "Aviso: so 1 projeto(s) de P1-P7 encontrados." in capsys.readouterr().out

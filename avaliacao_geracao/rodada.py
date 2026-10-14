@@ -2,7 +2,8 @@
 
 Fica fora do git (`eval/geracao/`): o contexto de cada achado traz seções do Learn,
 cuja cópia é local e não redistribuível. O id do achado é estável entre rodadas, e a
-impressão digital liga cada veredito ao texto que foi julgado.
+impressão digital liga cada veredito ao texto que foi julgado: explicação, recomendação,
+a lista de citações e, para cada citação, o link e o texto do trecho citado.
 """
 
 import hashlib
@@ -28,7 +29,13 @@ def id_do_achado(projeto: str, item: AchadoEnriquecido) -> str:
 def impressao(item: AchadoEnriquecido) -> str | None:
     if item.geracao is None:
         return None
-    texto = f"{item.geracao.explicacao}\n{item.geracao.recomendacao}"
+    por_numero = {t.numero: t for t in item.contexto}
+    partes = [item.geracao.explicacao, item.geracao.recomendacao, str(item.geracao.citacoes)]
+    for n in item.geracao.citacoes:
+        trecho = por_numero.get(n)
+        partes.append(f"{trecho.url}#{trecho.ancora}" if trecho else f"[{n}] ausente")
+        partes.append(trecho.texto if trecho else "")
+    texto = "\n".join(partes)
     return hashlib.sha256(texto.encode("utf-8")).hexdigest()
 
 

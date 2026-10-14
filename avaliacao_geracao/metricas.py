@@ -90,6 +90,7 @@ def medir(linhas: list[LinhaRubrica], rodada: Rodada, *, registro: Registro | No
             "gerado_em": datetime.now().isoformat(timespec="seconds"),
             "commit": commit,
             "linhas": len(julgadas),
+            "gerados": sum(1 for r in rodada.values() if r.item.situacao == "gerado"),
         },
         "itens": itens,
         "utilizavel": _recortes([(*chave(item), _utilizavel(l)) for l, item in julgadas]),

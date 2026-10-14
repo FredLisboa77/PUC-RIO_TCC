@@ -5,6 +5,9 @@ import json
 import subprocess
 import sys
 from datetime import date
+from zipfile import BadZipFile
+
+from openpyxl.utils.exceptions import InvalidFileException
 
 from avaliacao_geracao import ErroDeAvaliacao
 from avaliacao_geracao.consolidacao import PASTA_RESULTADOS, consolidar
@@ -51,11 +54,19 @@ def _gravar_json(dados: dict, prefixo: str) -> str:
     return str(destino)
 
 
+def _descrever(p) -> str:
+    return f"linha {'-' if p.linha is None else p.linha} ({p.id}): {p.motivo}"
+
+
 def _auditar() -> int:
     pastas = projetos_da_avaliacao(PASTA_PBIP)
+    if not pastas:
+        raise ErroDeAvaliacao(f"nenhum projeto P1-P7 em {PASTA_PBIP}")
     resumo = auditar(pastas, PASTA_RODADA, llm=criar_llm(), base=carregar_base())
     print(_ascii(f"Projetos: {resumo.projetos} | achados: {resumo.achados} | gerados: {resumo.gerados} "
                  f"| fora do cache: {resumo.fora_do_cache}"))
+    if len(pastas) < 7:
+        print(_ascii(f"Aviso: so {len(pastas)} projeto(s) de P1-P7 encontrados."))
     if resumo.fora_do_cache:
         print("Aviso: respostas fora do cache podem ter mudado o texto de uma rodada anterior.")
     return 0
@@ -73,7 +84,7 @@ def _importar(parcial: bool) -> int:
     problemas = validar(lidas, rodada, parcial)
     if problemas:
         for p in problemas:
-            print(_ascii(f"linha {p.linha} ({p.id}): {p.motivo}"), file=sys.stderr)
+            print(_ascii(_descrever(p)), file=sys.stderr)
         print(_ascii(f"erro: {len(problemas)} problema(s); nada gravado"), file=sys.stderr)
         return 1
     completas = [l for _, l in lidas if l.pertinente and l.fiel and l.recomendacao_correta]
@@ -88,7 +99,7 @@ def _medir() -> int:
     problemas = validar(list(enumerate(linhas, start=2)), rodada, parcial=False)
     if problemas:
         for p in problemas:
-            print(_ascii(f"linha {p.linha} ({p.id}): {p.motivo}"), file=sys.stderr)
+            print(_ascii(_descrever(p)), file=sys.stderr)
         print(_ascii(f"erro: {len(problemas)} problema(s) no CSV; nada medido"), file=sys.stderr)
         return 1
     resultado = medir(linhas, rodada, commit=commit_atual())
@@ -128,7 +139,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyError as erro:
         print(_ascii(f"erro: formato inesperado: {erro}"), file=sys.stderr)
         return 1
-    except (ValueError, OSError) as erro:
+    except (ValueError, OSError, TypeError, IndexError, BadZipFile, InvalidFileException) as erro:
         print(_ascii(f"erro: {type(erro).__name__}: {erro}"), file=sys.stderr)
         return 1
 

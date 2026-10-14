@@ -143,3 +143,15 @@ def test_id_duplicado_e_recusado():
     linha = LinhaRubrica(id="a", impressao="x", pertinente="sim", fiel="sim", recomendacao_correta="sim")
     problemas = validar([(2, linha), (3, linha)], {}, parcial=False)
     assert any("duplicado" in p.motivo for p in problemas)
+
+
+def test_validar_aponta_achado_gerado_ausente_da_planilha(tmp_path):
+    rodada = _rodada(_gerado("A"), _gerado("B"))
+    destino = tmp_path / "r.xlsx"
+    gerar_planilha(rodada, destino)
+    lidas = ler_planilha(destino)[:1]  # linha apagada
+    ausente = sorted(rodada)[1] if lidas[0][1].id == sorted(rodada)[0] else sorted(rodada)[0]
+    problemas = validar(lidas, rodada, parcial=False)
+    assert [(p.linha, p.id, p.motivo) for p in problemas if p.linha is None] == [
+        (None, ausente, "achado gerado da rodada ausente da planilha")]
+    assert not [p for p in validar(lidas, rodada, parcial=True) if p.linha is None]

@@ -85,3 +85,8 @@ def test_concordancia_humano_automatico():
     assert c["pertinente"]["concordancia"] == 1.0 and c["pertinente"]["kappa"] == pytest.approx(1.0)
     # fiel: automático "sem divergência"; B tem divergência e humano disse não
     assert c["fiel"]["tabela"] == {"a": 2, "b": 0, "c": 0, "d": 1}
+
+
+def test_ambiente_registra_o_denominador_de_gerados():
+    linhas, rodada = _cenario()
+    assert medir(linhas, rodada, registro=_registro())["ambiente"]["gerados"] == 3

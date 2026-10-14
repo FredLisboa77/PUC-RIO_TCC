@@ -7,6 +7,7 @@ como análise de erros.
 
 import copy
 import json
+import re
 from pathlib import Path
 
 from avaliacao_geracao import ErroDeAvaliacao
@@ -20,6 +21,9 @@ ORIGENS = {
     "recuperacao": "recuperacao-2026-10-11.json",
     "complementares": "complementares-2026-10-12.json",
 }
+
+
+PADRAO_GERACAO = re.compile(r"^geracao-\d{4}-\d{2}-\d{2}\.json$")
 
 
 def _ler(pasta: Path, nome: str) -> dict:
@@ -51,7 +55,7 @@ def consolidar(pasta: Path = PASTA_RESULTADOS) -> dict:
     pos = _ler(pasta, ORIGENS["regras_pos_correcao"])
     recuperacao = _ler(pasta, ORIGENS["recuperacao"])
     complementares = _ler(pasta, ORIGENS["complementares"])
-    geracoes = sorted(pasta.glob("geracao-*.json"))
+    geracoes = sorted(p for p in pasta.glob("geracao-*.json") if PADRAO_GERACAO.match(p.name))
     if not geracoes:
         raise ErroDeAvaliacao(f"falta geracao-<data>.json em {pasta} — rode `python -m avaliacao_geracao medir`")
 

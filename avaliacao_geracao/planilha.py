@@ -197,6 +197,9 @@ def validar(lidas: list[tuple[int, LinhaRubrica]], rodada: Rodada, parcial: bool
             problemas.append(Problema(linha=numero, id=linha.id, motivo=f"veredito fora da lista: {fora!r}"))
         if "não" in vereditos and linha.justificativa is None:
             problemas.append(Problema(linha=numero, id=linha.id, motivo="'não' sem justificativa"))
+    if not parcial:
+        for chave in sorted({k for k, r in rodada.items() if r.item.situacao == "gerado"} - vistos):
+            problemas.append(Problema(linha=None, id=chave, motivo="achado gerado da rodada ausente da planilha"))
     return problemas
 
 

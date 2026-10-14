@@ -10,7 +10,7 @@ from conftest import escrever_pbip, modelo_tmsl, tabela
 from core.analise.base import AchadoEnriquecido, Fidelidade, Geracao
 from core.analise.cache import ClienteComCache
 from core.rules.registry import Registro
-from fabricas_analise import LLMFalso, achado, base_padrao, contexto, gabarito, meta
+from fabricas_analise import LLMFalso, achado, base_padrao, contexto, gabarito, meta, trecho_de_contexto
 
 
 def _registro() -> Registro:
@@ -63,3 +63,16 @@ def test_carregar_rodada_ausente_ou_ilegivel(tmp_path):
     (tmp_path / "P1_A.json").write_text("{ quebrado", encoding="utf-8")
     with pytest.raises(ErroDeAvaliacao, match="P1_A.json"):
         carregar_rodada(tmp_path)
+
+
+def test_impressao_cobre_citacoes_e_trechos_citados():
+    base = _gerado()
+    outra_citacao = base.model_copy(update={"geracao": base.geracao.model_copy(update={"citacoes": [2]})})
+    assert impressao(outra_citacao) != impressao(base)
+    ctx = contexto(2)
+    ctx[0] = trecho_de_contexto(1, texto="Outro texto do trecho citado.", origem="ancora")
+    outro_trecho = base.model_copy(update={"contexto": ctx})
+    assert impressao(outro_trecho) != impressao(base)
+    outro_url = contexto(2)
+    outro_url[0] = outro_url[0].model_copy(update={"ancora": "outra"})
+    assert impressao(base.model_copy(update={"contexto": outro_url})) != impressao(base)
