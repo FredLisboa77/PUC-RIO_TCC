@@ -12,7 +12,7 @@ from pathlib import Path
 from academico.compilacao import PASTA_MONOGRAFIA, RAIZ_REPO
 from core.rules.todas import REGISTRO
 
-CONSOLIDADO = RAIZ_REPO / "eval" / "results" / "consolidado-2026-10-14.json"
+CONSOLIDADO = RAIZ_REPO / "eval" / "results" / "consolidado-2026-10-15.json"
 PASTA_GERADO = PASTA_MONOGRAFIA / "gerado"
 AUSENTE = "—"
 _ESPECIAIS = "\\*_#@<>$`[]~/"
@@ -91,6 +91,15 @@ def _figura(rotulo: str, legenda: str, cabecalho: list[str], linhas: list[list[s
     return "\n".join(partes)
 
 
+def com_piso_e_teto(taxa: dict) -> str:
+    """Proporção principal e, entre parênteses, piso–teto quando os indeterminados os afastam dela."""
+    principal = taxa["principal"]
+    piso, teto = taxa.get("piso", principal), taxa.get("teto", principal)
+    if piso == principal and teto == principal:
+        return num(principal)
+    return f"{num(principal)} ({num(piso)}–{num(teto)})"
+
+
 def _linha_regra(nome: str, dados: dict, negrito: bool = False) -> list[str]:
     m = dados["matriz"]
     rotulo = _negrito(nome) if negrito else _celula(nome)
@@ -99,22 +108,25 @@ def _linha_regra(nome: str, dados: dict, negrito: bool = False) -> list[str]:
         _celula(str(m["vp"])),
         _celula(str(m["fp"])),
         _celula(str(m["fn"])),
-        _celula(str(m["ind_marcados"] + m["ind_nao_marcados"])),
-        _celula(num(dados["taxas"]["precisao"]["principal"])),
+        _celula(str(m["ind_marcados"])),
+        _celula(str(m["ind_nao_marcados"])),
+        _celula(com_piso_e_teto(dados["taxas"]["precisao"])),
         _celula(faixa((dados.get("wilson") or {}).get("precisao"))),
-        _celula(num(dados["taxas"]["recall"]["principal"])),
+        _celula(com_piso_e_teto(dados["taxas"]["recall"])),
     ]
 
 
 def tabela_regras(bloco: dict, rotulo: str, legenda: str) -> str:
+    """Indeterminados em duas colunas: os que a regra marcou (Ind. M) entram no
+    denominador da precisão; os que ela não marcou (Ind. NM), só no da revocação."""
     linhas = [_linha_regra(regra, bloco["por_regra"][regra]) for regra in sorted(bloco["por_regra"])]
     linhas.append(_linha_regra("Total (micro)", bloco["total_micro"], negrito=True))
     return _figura(
         rotulo,
         legenda,
-        ["Regra", "VP", "FP", "FN", "Indet.", "Precisão", "IC 95% (Wilson)", "Revocação"],
+        ["Regra", "VP", "FP", "FN", "Ind. M", "Ind. NM", "Precisão (piso–teto)", "IC 95% (Wilson)", "Revocação (piso–teto)"],
         linhas,
-        ["left"] + ["right"] * 7,
+        ["left"] + ["right"] * 8,
         bloco["origem"],
     )
 

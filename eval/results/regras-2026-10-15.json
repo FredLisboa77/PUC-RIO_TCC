@@ -1,0 +1,536 @@
+{
+  "por_regra": {
+    "DAX-001": {
+      "matriz": {
+        "vp": 6,
+        "fp": 0,
+        "fn": 0,
+        "vn": 4,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "MOD-001": {
+      "matriz": {
+        "vp": 1,
+        "fp": 0,
+        "fn": 0,
+        "vn": 57,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 1
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 0.5,
+          "teto": 1.0
+        }
+      }
+    },
+    "MOD-002": {
+      "matriz": {
+        "vp": 0,
+        "fp": 0,
+        "fn": 0,
+        "vn": 45,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        },
+        "recall": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        }
+      }
+    },
+    "MOD-003": {
+      "matriz": {
+        "vp": 1,
+        "fp": 6,
+        "fn": 0,
+        "vn": 51,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.14285714285714285,
+          "piso": 0.14285714285714285,
+          "teto": 0.14285714285714285
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "MOD-005": {
+      "matriz": {
+        "vp": 0,
+        "fp": 0,
+        "fn": 0,
+        "vn": 13,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        },
+        "recall": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        }
+      }
+    },
+    "MOD-006": {
+      "matriz": {
+        "vp": 3,
+        "fp": 0,
+        "fn": 0,
+        "vn": 55,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "MOD-007": {
+      "matriz": {
+        "vp": 1,
+        "fp": 0,
+        "fn": 0,
+        "vn": 45,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "PERF-001": {
+      "matriz": {
+        "vp": 18,
+        "fp": 0,
+        "fn": 6,
+        "vn": 3,
+        "ind_marcados": 1,
+        "ind_nao_marcados": 4
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 0.9473684210526315,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 0.75,
+          "piso": 0.6428571428571429,
+          "teto": 0.76
+        }
+      }
+    },
+    "PERF-003": {
+      "matriz": {
+        "vp": 16,
+        "fp": 0,
+        "fn": 0,
+        "vn": 13,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    }
+  },
+  "por_categoria": {
+    "dax": {
+      "matriz": {
+        "vp": 6,
+        "fp": 0,
+        "fn": 0,
+        "vn": 4,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "modelagem": {
+      "matriz": {
+        "vp": 6,
+        "fp": 6,
+        "fn": 0,
+        "vn": 266,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 1
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.5,
+          "piso": 0.5,
+          "teto": 0.5
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 0.8571428571428571,
+          "teto": 1.0
+        }
+      }
+    },
+    "performance": {
+      "matriz": {
+        "vp": 34,
+        "fp": 0,
+        "fn": 6,
+        "vn": 16,
+        "ind_marcados": 1,
+        "ind_nao_marcados": 4
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 0.9714285714285714,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 0.85,
+          "piso": 0.7727272727272727,
+          "teto": 0.8536585365853658
+        }
+      }
+    }
+  },
+  "por_projeto": {
+    "P1": {
+      "matriz": {
+        "vp": 7,
+        "fp": 2,
+        "fn": 3,
+        "vn": 46,
+        "ind_marcados": 1,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.7777777777777778,
+          "piso": 0.7,
+          "teto": 0.8
+        },
+        "recall": {
+          "principal": 0.7,
+          "piso": 0.7,
+          "teto": 0.7272727272727273
+        }
+      }
+    },
+    "P2": {
+      "matriz": {
+        "vp": 2,
+        "fp": 2,
+        "fn": 1,
+        "vn": 54,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.5,
+          "piso": 0.5,
+          "teto": 0.5
+        },
+        "recall": {
+          "principal": 0.6666666666666666,
+          "piso": 0.6666666666666666,
+          "teto": 0.6666666666666666
+        }
+      }
+    },
+    "P3": {
+      "matriz": {
+        "vp": 8,
+        "fp": 0,
+        "fn": 0,
+        "vn": 48,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "P4": {
+      "matriz": {
+        "vp": 5,
+        "fp": 1,
+        "fn": 2,
+        "vn": 47,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 4
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.8333333333333334,
+          "piso": 0.8333333333333334,
+          "teto": 0.8333333333333334
+        },
+        "recall": {
+          "principal": 0.7142857142857143,
+          "piso": 0.45454545454545453,
+          "teto": 0.7142857142857143
+        }
+      }
+    },
+    "P5": {
+      "matriz": {
+        "vp": 18,
+        "fp": 0,
+        "fn": 0,
+        "vn": 33,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 1
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 0.9473684210526315,
+          "teto": 1.0
+        }
+      }
+    },
+    "P6": {
+      "matriz": {
+        "vp": 6,
+        "fp": 1,
+        "fn": 0,
+        "vn": 20,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.8571428571428571,
+          "piso": 0.8571428571428571,
+          "teto": 0.8571428571428571
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0
+        }
+      }
+    },
+    "P7": {
+      "matriz": {
+        "vp": 0,
+        "fp": 0,
+        "fn": 0,
+        "vn": 38,
+        "ind_marcados": 0,
+        "ind_nao_marcados": 0
+      },
+      "taxas": {
+        "precisao": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        },
+        "recall": {
+          "principal": null,
+          "piso": null,
+          "teto": null
+        }
+      }
+    }
+  },
+  "total_micro": {
+    "matriz": {
+      "vp": 46,
+      "fp": 6,
+      "fn": 6,
+      "vn": 286,
+      "ind_marcados": 1,
+      "ind_nao_marcados": 5
+    },
+    "taxas": {
+      "precisao": {
+        "principal": 0.8846153846153846,
+        "piso": 0.8679245283018868,
+        "teto": 0.8867924528301887
+      },
+      "recall": {
+        "principal": 0.8846153846153846,
+        "piso": 0.8070175438596491,
+        "teto": 0.8867924528301887
+      }
+    }
+  },
+  "macro": {
+    "precisao": 0.8775510204081632,
+    "recall": 0.9642857142857143
+  },
+  "macro_por_categoria": {
+    "dax": {
+      "precisao": 1.0,
+      "recall": 1.0
+    },
+    "modelagem": {
+      "precisao": 0.7857142857142857,
+      "recall": 1.0
+    },
+    "performance": {
+      "precisao": 1.0,
+      "recall": 0.875
+    }
+  },
+  "r03": [
+    "MOD-003"
+  ],
+  "r12": {
+    "vp": 46,
+    "vp_sem_perf003": 30,
+    "gatilho": 40
+  },
+  "divergencias": [
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P1|Date Role",
+      "justificativa": null
+    },
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P1|Time Intelligence",
+      "justificativa": null
+    },
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P2|Toggle for breakdown",
+      "justificativa": null
+    },
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P2|Toggle for variance to plan",
+      "justificativa": null
+    },
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P4|Indicators",
+      "justificativa": null
+    },
+    {
+      "tipo": "FP",
+      "id": "MOD-003|P6|Logo",
+      "justificativa": null
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P1|Date[Mth of year]",
+      "justificativa": "Função MONTH é cálculo por linha determinístico; pode ser movida para Power Query (redução de dados)."
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P1|Date[Mth]",
+      "justificativa": "Formatação por data é determinística por linha; melhor no Power Query ou na modelagem de coluna calculada pré‑importação."
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P1|Date[Year]",
+      "justificativa": "Determinístico por linha; mover para Power Query recomendado."
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P2|Date[Month]",
+      "justificativa": "Correção de string por linha é determinística; pode ser feita no Power Query (melhor prática)."
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P4|Date[Months]",
+      "justificativa": "Operação por linha; pode ser feita no Power Query."
+    },
+    {
+      "tipo": "FN",
+      "id": "PERF-001|P4|Date[RunningMonths]",
+      "justificativa": "É um cálculo matemático estático linha-a-linha (Row Context) baseado em constantes e colunas da própria linha. Deve ser feito no Power Query."
+    }
+  ]
+}

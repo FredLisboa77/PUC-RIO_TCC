@@ -24,8 +24,19 @@ BLOCO_REGRAS = {
         },
         "DAX-001": {
             "matriz": {"vp": 6, "fp": 0, "fn": 0, "vn": 4, "ind_marcados": 1, "ind_nao_marcados": 2},
-            "taxas": {"precisao": {"principal": 1.0}, "recall": {"principal": 1.0}},
+            "taxas": {
+                "precisao": {"principal": 1.0, "piso": 0.857, "teto": 1.0},
+                "recall": {"principal": 1.0, "piso": 0.667, "teto": 1.0},
+            },
             "wilson": {"precisao": [0.6096, 0.99999], "recall": [0.6096, 0.99999]},
+        },
+        "MOD-007": {
+            "matriz": {"vp": 1, "fp": 0, "fn": 0, "vn": 45, "ind_marcados": 0, "ind_nao_marcados": 0},
+            "taxas": {
+                "precisao": {"principal": 1.0, "piso": 1.0, "teto": 1.0},
+                "recall": {"principal": 1.0, "piso": 1.0, "teto": 1.0},
+            },
+            "wilson": {"precisao": [0.2065, 1.0], "recall": [0.2065, 1.0]},
         },
     },
     "total_micro": {
@@ -71,8 +82,13 @@ def test_escapar_mantem_literal_a_sintaxe_que_depende_de_posicao(tmp_path):
 def test_tabela_regras_ordena_mostra_ausente_e_total():
     texto = tabela_regras(BLOCO_REGRAS, "tab-x", "Legenda")
     assert texto.index("[DAX-001]") < texto.index("[MOD-002]")
-    assert "[MOD-002], [0], [0], [0], [0], [—], [—], [—]" in texto
-    assert r"[DAX-001], [6], [0], [0], [3], [1,00], [\[0,61; 1,00\]], [1,00]" in texto
+    assert "[MOD-002], [0], [0], [0], [0], [0], [—], [—], [—]" in texto
+    assert r"[DAX-001], [6], [0], [0], [1], [2], [1,00 (0,86–1,00)], [\[0,61; 1,00\]], [1,00 (0,67–1,00)]" in texto
+
+
+def test_tabela_regras_omite_piso_e_teto_quando_coincidem_com_o_principal():
+    texto = tabela_regras(BLOCO_REGRAS, "tab-x", "Legenda")
+    assert r"[MOD-007], [1], [0], [0], [0], [0], [1,00], [\[0,21; 1,00\]], [1,00]" in texto
     assert "[*Total (micro)*]" in texto
     assert texto.rstrip().endswith("`regras-x.json`.]")
     assert "<tab-x>" in texto

@@ -1,6 +1,7 @@
 """Consolidado dos resultados: a fonte única das tabelas da monografia.
 
-O resultado oficial da detecção é o da tag `regras-gt`; o arquivo de origem não
+O resultado oficial da detecção é o da tag `regras-gt`, medido contra o gabarito
+revisto em 15/10/2026 (MOD-005; ver o progress-log). O arquivo de origem não
 é alterado — o Wilson é acrescentado só aqui. A pós-correção vai junto, rotulada
 como análise de erros.
 """
@@ -16,8 +17,8 @@ from rag.avaliacao import RAIZ_REPO
 
 PASTA_RESULTADOS = RAIZ_REPO / "eval" / "results"
 ORIGENS = {
-    "regras": "regras-2026-10-12.json",
-    "regras_pos_correcao": "regras-2026-10-12-pos-correcao.json",
+    "regras": "regras-2026-10-15.json",
+    "regras_pos_correcao": "regras-2026-10-15-pos-correcao.json",
     "recuperacao": "recuperacao-2026-10-11.json",
     "complementares": "complementares-2026-10-12.json",
 }
@@ -64,7 +65,7 @@ def consolidar(pasta: Path = PASTA_RESULTADOS) -> dict:
     if escolhida is None:
         raise ErroDeAvaliacao(f"falta o resultado da configuração vencedora em {ORIGENS['recuperacao']}")
     return {
-        "regras": _com_wilson(regras, ORIGENS["regras"], "resultado oficial (tag regras-gt)"),
+        "regras": _com_wilson(regras, ORIGENS["regras"], "resultado oficial, regras da tag regras-gt"),
         "regras_pos_correcao": _com_wilson(pos, ORIGENS["regras_pos_correcao"], "análise de erros"),
         "recuperacao": {
             "origem": ORIGENS["recuperacao"], "configuracao": vencedora, "macro": escolhida["macro"],
