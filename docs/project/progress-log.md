@@ -1865,3 +1865,128 @@ Suíte: 826 testes passando.
 
 **Próximo passo:** revisão final e merge da `fase4-relatorio`; depois a Fase 5 (avaliação,
 documentação e banca, semanas 11–13).
+
+---
+
+## 13/10/2026 — Fase 5 iniciada: spec e plano da avaliação da geração
+
+Fase 5 dividida em três subprojetos (decisão do Fred): (1) avaliação final, semana 11; (2)
+monografia, semana 12; (3) demonstração, semana 13. Subprojeto 1 desenhado e aprovado:
+rubrica humana das explicações nos **61 achados de P1–P7** (main atual, versão das regras
+declarada), três vereditos sim/não/indeterminado (pertinente, fiel, recomendação correta),
+planilha cega aos sinais automáticos, pacote `avaliacao_geracao/` no molde do `gabarito/`,
+consolidado como fonte única das tabelas da monografia (com Wilson nas regras).
+
+Spec `docs/superpowers/specs/2026-10-13-avaliacao-da-geracao-design.md`, plano
+`docs/superpowers/plans/2026-10-13-avaliacao-da-geracao.md`, branch `fase5-avaliacao`.
+
+**Próximo passo:** o Fred escolhe o modo de execução do plano (sessão direta ou subagentes) e
+a implementação começa pela Task 1; a Task 7 termina com a planilha pronta para a anotação dele.
+
+---
+
+## 14/10/2026 — Avaliação da geração: ferramenta pronta, rodada de P1–P7 feita, planilha para anotar
+
+Plano `docs/superpowers/plans/2026-10-13-avaliacao-da-geracao.md` executado com subagentes
+(Tasks 1–7), uma revisão por tarefa e uma revisão final do branch. Pacote `avaliacao_geracao/`:
+`python -m avaliacao_geracao auditar|gerar|importar|medir|consolidar` (`2deb58b`..`55fdec1`).
+
+**Rodada avaliada (P1–P7, `main` atual das regras, `qwen2.5:7b-instruct-q4_K_M`, BM25):**
+
+| Medida | Valor |
+|---|---|
+| Projetos | 7 (P7 sem achados) |
+| Achados | 61 |
+| Explicações geradas | 61 (nenhum descarte por `sem_fundamentacao`) |
+| Tempo da primeira rodada | 8 min 53 s |
+| Segunda rodada | 6,5 s, **0 respostas fora do cache** — a rodada é reproduzível nesta máquina |
+
+Por regra: PERF-001 31, PERF-003 16, DAX-001 6, MOD-003 3, MOD-006 3, MOD-001 1, MOD-007 1.
+Por projeto: P5 18, P4 13, P1 11, P3 9, P6 7, P2 3.
+
+**Planilha:** `eval/gabarito/rubrica-geracao-P1-P7.xlsx` (fora do git), 61 linhas, aba de
+instruções, colunas de leitura protegidas, lista sim/não/indeterminado nas três colunas da
+rubrica; conferido que não aparece `cita_ancora`, divergência, cache nem tokens, e que todo
+achado tem o trecho âncora na referência.
+
+**Decisões tomadas na execução (registrar na monografia onde couber):**
+- A **impressão digital** cobre explicação, recomendação, as citações e o texto de cada trecho
+  citado (a spec previa só explicação + recomendação): o veredito de pertinência julga a
+  evidência, e um índice reconstruído com o mesmo texto do LLM não pode herdar o veredito. Feito
+  antes de gerar a planilha, sem custo.
+- **`importar` sem `--parcial` e `medir` exigem cobertura completa:** todo achado gerado da rodada
+  precisa de linha com os três vereditos; o `medir` revalida o CSV contra a rodada e recusa CSV
+  parcial (achado da revisão final — sem isso, um número da monografia podia sair de uma anotação
+  pela metade). `importar --parcial` continua servindo para conferir o andamento.
+- **"Utilizável como está":** um "não" em qualquer item decide "não", mesmo com indeterminado nos
+  outros; o denominador difere da letra da spec só nessas linhas.
+- `medir` registra o denominador (`ambiente.gerados`); `consolidar` só aceita
+  `geracao-AAAA-MM-DD.json`.
+
+Revisão final: um importante (o da cobertura) e quatro menores, todos corrigidos e re-revisados.
+Menores adiados (não bloqueiam): testes da planilha que ainda usam o registro real; sem teste
+da lista suspensa; sem teste travando a regra do "utilizável" com indeterminado; fixture do
+teste da CLI repetitivo.
+
+Suíte: 874 testes passando.
+
+**Próximo passo:** o Fred anota `eval/gabarito/rubrica-geracao-P1-P7.xlsx` (~3,5–4 h;
+`python -m avaliacao_geracao importar --parcial` para conferir o andamento); depois `importar`,
+`medir`, `consolidar` (Task 8 do plano) e o registro dos números aqui e no status.
+
+---
+
+## 14/10/2026 — Rubrica da geração anotada e medida; resultados consolidados
+
+O Fred anotou as 61 linhas. `importar` (61 de 61, sem problema), `medir` e `consolidar`:
+`eval/rubrica_geracao.csv`, `eval/results/geracao-2026-10-14.json`,
+`eval/results/consolidado-2026-10-14.json` (commit da medição `ea1a1cb`). Nenhum indeterminado,
+então principal = piso = teto.
+
+| Item | sim / n | Principal | Wilson 95% |
+|---|---|---|---|
+| Pertinente | 61 / 61 | 1,00 | 0,94–1,00 |
+| Fiel | 32 / 61 | 0,52 | 0,40–0,65 |
+| Recomendação correta | 47 / 61 | 0,77 | 0,65–0,86 |
+| **Utilizável como está** (os três "sim") | 23 / 61 | **0,38** | 0,27–0,50 |
+
+Descarte (`sem_fundamentacao`): 0 de 61.
+
+Por regra (fiel · recomendação · utilizável): PERF-001 9/31 · 24/31 · **6/31**; PERF-003 16/16 ·
+15/16 · **15/16**; DAX-001 1/6 · 6/6 · 1/6; MOD-003 3/3 · 0/3 · 0/3; MOD-006 2/3 · 2/3 · 1/3;
+MOD-001 0/1 · 0/1; MOD-007 1/1 · 0/1.
+
+**Humano × automático:**
+- `cita_ancora` × pertinente: concordância 0,98 (60 ambos sim, 1 em que o LLM citou outra passagem
+  que sustenta o achado), **kappa 0,00** — a tabela é degenerada (quase tudo "sim"; paradoxo da
+  prevalência), então o kappa não informa; o que se pode dizer é que a recuperação + citação
+  obrigatória entregou evidência pertinente em todos os achados.
+- "sem divergência" × fiel: concordância 0,48, **kappa −0,08** (24 casos em que o critério
+  automático não viu problema e o humano viu infidelidade). O verificador automático de fidelidade
+  (números e nomes) **não mede fidelidade** no sentido que importa: as infidelidades reais são
+  semânticas.
+
+**Padrões dos "não" (das justificativas):**
+- **Fiel, PERF-001 (22 de 31):** a mesma distorção repetida — "o VertiPaq não *compreende*
+  eficientemente colunas calculadas" (~12) e "descompressão de dados" (~7), onde o trecho diz
+  "compressão menos eficiente". Parece erro de tradução *compress → compreende* do modelo 7B ao
+  escrever em português sobre fonte em inglês. Outros: fatos inventados sobre a expressão da coluna.
+- **Fiel, DAX-001 (5 de 6):** trata o retorno BLANK do DIVIDE como problema, contradizendo o trecho
+  ("for measures, it's usually a better design that they return BLANK").
+- **Recomendação, PERF-001 (7):** sintaxe DAX proposta para o Power Query (FORMAT, YEAR, "Auto
+  date/time" como função do Power Query, função M inexistente `Date.MonthOfYear`).
+- **Recomendação, MOD-003 (3 de 3):** manda relacionar tabelas auxiliares que são desconectadas de
+  propósito (Indicators, Logo, Supply Analytics) — o modelo não sabe que tabela desconectada pode ser
+  legítima; conversa com a análise de erros da MOD-003.
+- Isolados: MOD-006 propõe fundir a fato na dimensão; MOD-007 usa RELATED como substituto do
+  relacionamento; MOD-001 cita CALENDAR/CALENDARAUTO que não estão nos trechos citados.
+
+**Leitura para a monografia:** a recuperação e a citação funcionam (pertinência 100%); o gargalo é a
+geração do modelo local de 7B — fidelidade de 52% e só 38% das explicações utilizáveis sem edição,
+concentrado em duas regras (PERF-001 e DAX-001) e com padrões sistemáticos, não aleatórios. O
+critério automático de fidelidade precisa ser declarado como insuficiente. Limitações: um anotador só
+(declarado), n pequeno por regra (Wilson largo), PERF-001 com metade dos casos.
+
+**Próximo passo:** revisão final e merge da `fase5-avaliacao` na `main`; depois a monografia
+(subprojeto 2, semana 12), usando `consolidado-2026-10-14.json` como fonte única das tabelas.
+Oferecer a atualização da página do orientador.

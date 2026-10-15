@@ -1,0 +1,2005 @@
+{
+  "regras": {
+    "origem": "regras-2026-10-12.json",
+    "rotulo": "resultado oficial (tag regras-gt)",
+    "por_regra": {
+      "DAX-001": {
+        "matriz": {
+          "vp": 6,
+          "fp": 0,
+          "fn": 0,
+          "vn": 4,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.6096569663469354,
+            0.9999999999999999
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "MOD-001": {
+        "matriz": {
+          "vp": 1,
+          "fp": 0,
+          "fn": 0,
+          "vn": 57,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.5,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.20654329147389294,
+            1.0
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "MOD-002": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 45,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          }
+        },
+        "wilson": {
+          "precisao": null,
+          "recall": null
+        }
+      },
+      "MOD-003": {
+        "matriz": {
+          "vp": 1,
+          "fp": 6,
+          "fn": 0,
+          "vn": 51,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.14285714285714285,
+            "piso": 0.14285714285714285,
+            "teto": 0.14285714285714285
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.02567895594897479,
+            0.51313450331903
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "MOD-005": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 6,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 7
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": 0.0,
+            "teto": null
+          }
+        },
+        "wilson": {
+          "precisao": null,
+          "recall": null
+        }
+      },
+      "MOD-006": {
+        "matriz": {
+          "vp": 3,
+          "fp": 0,
+          "fn": 0,
+          "vn": 55,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.43849391955098227,
+            1.0
+          ],
+          "recall": [
+            0.43849391955098227,
+            1.0
+          ]
+        }
+      },
+      "MOD-007": {
+        "matriz": {
+          "vp": 1,
+          "fp": 0,
+          "fn": 0,
+          "vn": 45,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.20654329147389294,
+            1.0
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "PERF-001": {
+        "matriz": {
+          "vp": 18,
+          "fp": 0,
+          "fn": 6,
+          "vn": 3,
+          "ind_marcados": 1,
+          "ind_nao_marcados": 4
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 0.9473684210526315,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 0.75,
+            "piso": 0.6428571428571429,
+            "teto": 0.76
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.8241154494176252,
+            1.0
+          ],
+          "recall": [
+            0.5510017468789357,
+            0.8800079652065766
+          ]
+        }
+      },
+      "PERF-003": {
+        "matriz": {
+          "vp": 16,
+          "fp": 0,
+          "fn": 0,
+          "vn": 13,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.8063865817272802,
+            1.0
+          ],
+          "recall": [
+            0.8063865817272802,
+            1.0
+          ]
+        }
+      }
+    },
+    "por_categoria": {
+      "dax": {
+        "matriz": {
+          "vp": 6,
+          "fp": 0,
+          "fn": 0,
+          "vn": 4,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.6096569663469354,
+            0.9999999999999999
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "modelagem": {
+        "matriz": {
+          "vp": 6,
+          "fp": 6,
+          "fn": 0,
+          "vn": 259,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 8
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.5,
+            "piso": 0.5,
+            "teto": 0.5
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.42857142857142855,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.2537781703934222,
+            0.7462218296065778
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "performance": {
+        "matriz": {
+          "vp": 34,
+          "fp": 0,
+          "fn": 6,
+          "vn": 16,
+          "ind_marcados": 1,
+          "ind_nao_marcados": 4
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 0.9714285714285714,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 0.85,
+            "piso": 0.7727272727272727,
+            "teto": 0.8536585365853658
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.8984820937803899,
+            1.0
+          ],
+          "recall": [
+            0.7092737396097997,
+            0.9293890829149256
+          ]
+        }
+      }
+    },
+    "por_projeto": {
+      "P1": {
+        "matriz": {
+          "vp": 7,
+          "fp": 2,
+          "fn": 3,
+          "vn": 45,
+          "ind_marcados": 1,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.7777777777777778,
+            "piso": 0.7,
+            "teto": 0.8
+          },
+          "recall": {
+            "principal": 0.7,
+            "piso": 0.6363636363636364,
+            "teto": 0.7272727272727273
+          }
+        }
+      },
+      "P2": {
+        "matriz": {
+          "vp": 2,
+          "fp": 2,
+          "fn": 1,
+          "vn": 53,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.5,
+            "piso": 0.5,
+            "teto": 0.5
+          },
+          "recall": {
+            "principal": 0.6666666666666666,
+            "piso": 0.5,
+            "teto": 0.6666666666666666
+          }
+        }
+      },
+      "P3": {
+        "matriz": {
+          "vp": 8,
+          "fp": 0,
+          "fn": 0,
+          "vn": 47,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.8888888888888888,
+            "teto": 1.0
+          }
+        }
+      },
+      "P4": {
+        "matriz": {
+          "vp": 5,
+          "fp": 1,
+          "fn": 2,
+          "vn": 46,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 5
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.8333333333333334,
+            "piso": 0.8333333333333334,
+            "teto": 0.8333333333333334
+          },
+          "recall": {
+            "principal": 0.7142857142857143,
+            "piso": 0.4166666666666667,
+            "teto": 0.7142857142857143
+          }
+        }
+      },
+      "P5": {
+        "matriz": {
+          "vp": 18,
+          "fp": 0,
+          "fn": 0,
+          "vn": 31,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 3
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.8571428571428571,
+            "teto": 1.0
+          }
+        }
+      },
+      "P6": {
+        "matriz": {
+          "vp": 6,
+          "fp": 1,
+          "fn": 0,
+          "vn": 20,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.8571428571428571,
+            "piso": 0.8571428571428571,
+            "teto": 0.8571428571428571
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        }
+      },
+      "P7": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 37,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": 0.0,
+            "teto": null
+          }
+        }
+      }
+    },
+    "total_micro": {
+      "matriz": {
+        "vp": 46,
+        "fp": 6,
+        "fn": 6,
+        "vn": 279,
+        "ind_marcados": 1,
+        "ind_nao_marcados": 12
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.8846153846153846,
+          "piso": 0.8679245283018868,
+          "teto": 0.8867924528301887
+        },
+        "recall": {
+          "principal": 0.8846153846153846,
+          "piso": 0.71875,
+          "teto": 0.8867924528301887
+        }
+      },
+      "wilson": {
+        "precisao": [
+          0.7702808110893793,
+          0.9460310424391727
+        ],
+        "recall": [
+          0.7702808110893793,
+          0.9460310424391727
+        ]
+      }
+    },
+    "macro": {
+      "precisao": 0.8775510204081632,
+      "recall": 0.9642857142857143
+    },
+    "macro_por_categoria": {
+      "dax": {
+        "precisao": 1.0,
+        "recall": 1.0
+      },
+      "modelagem": {
+        "precisao": 0.7857142857142857,
+        "recall": 1.0
+      },
+      "performance": {
+        "precisao": 1.0,
+        "recall": 0.875
+      }
+    },
+    "r03": [
+      "MOD-003"
+    ],
+    "r12": {
+      "vp": 46,
+      "vp_sem_perf003": 30,
+      "gatilho": 40
+    },
+    "divergencias": [
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P1|Date Role",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P1|Time Intelligence",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P2|Toggle for breakdown",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P2|Toggle for variance to plan",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P4|Indicators",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P6|Logo",
+        "justificativa": null
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P1|Date[Mth of year]",
+        "justificativa": "Função MONTH é cálculo por linha determinístico; pode ser movida para Power Query (redução de dados)."
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P1|Date[Mth]",
+        "justificativa": "Formatação por data é determinística por linha; melhor no Power Query ou na modelagem de coluna calculada pré‑importação."
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P1|Date[Year]",
+        "justificativa": "Determinístico por linha; mover para Power Query recomendado."
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P2|Date[Month]",
+        "justificativa": "Correção de string por linha é determinística; pode ser feita no Power Query (melhor prática)."
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P4|Date[Months]",
+        "justificativa": "Operação por linha; pode ser feita no Power Query."
+      },
+      {
+        "tipo": "FN",
+        "id": "PERF-001|P4|Date[RunningMonths]",
+        "justificativa": "É um cálculo matemático estático linha-a-linha (Row Context) baseado em constantes e colunas da própria linha. Deve ser feito no Power Query."
+      }
+    ]
+  },
+  "regras_pos_correcao": {
+    "origem": "regras-2026-10-12-pos-correcao.json",
+    "rotulo": "análise de erros",
+    "por_regra": {
+      "DAX-001": {
+        "matriz": {
+          "vp": 6,
+          "fp": 0,
+          "fn": 0,
+          "vn": 4,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.6096569663469354,
+            0.9999999999999999
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "MOD-001": {
+        "matriz": {
+          "vp": 1,
+          "fp": 0,
+          "fn": 0,
+          "vn": 57,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.5,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.20654329147389294,
+            1.0
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "MOD-002": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 45,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          }
+        },
+        "wilson": {
+          "precisao": null,
+          "recall": null
+        }
+      },
+      "MOD-003": {
+        "matriz": {
+          "vp": 1,
+          "fp": 2,
+          "fn": 0,
+          "vn": 55,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.3333333333333333,
+            "piso": 0.3333333333333333,
+            "teto": 0.3333333333333333
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.0614903152761605,
+            0.7923450448735121
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "MOD-005": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 6,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 7
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": 0.0,
+            "teto": null
+          }
+        },
+        "wilson": {
+          "precisao": null,
+          "recall": null
+        }
+      },
+      "MOD-006": {
+        "matriz": {
+          "vp": 3,
+          "fp": 0,
+          "fn": 0,
+          "vn": 55,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.43849391955098227,
+            1.0
+          ],
+          "recall": [
+            0.43849391955098227,
+            1.0
+          ]
+        }
+      },
+      "MOD-007": {
+        "matriz": {
+          "vp": 1,
+          "fp": 0,
+          "fn": 0,
+          "vn": 45,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.20654329147389294,
+            1.0
+          ],
+          "recall": [
+            0.20654329147389294,
+            1.0
+          ]
+        }
+      },
+      "PERF-001": {
+        "matriz": {
+          "vp": 24,
+          "fp": 2,
+          "fn": 0,
+          "vn": 1,
+          "ind_marcados": 5,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.9230769230769231,
+            "piso": 0.7741935483870968,
+            "teto": 0.9354838709677419
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.7585805251948495,
+            0.9786453608166245
+          ],
+          "recall": [
+            0.8620194241710247,
+            1.0
+          ]
+        }
+      },
+      "PERF-003": {
+        "matriz": {
+          "vp": 16,
+          "fp": 0,
+          "fn": 0,
+          "vn": 13,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.8063865817272802,
+            1.0
+          ],
+          "recall": [
+            0.8063865817272802,
+            1.0
+          ]
+        }
+      }
+    },
+    "por_categoria": {
+      "dax": {
+        "matriz": {
+          "vp": 6,
+          "fp": 0,
+          "fn": 0,
+          "vn": 4,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.6096569663469354,
+            0.9999999999999999
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "modelagem": {
+        "matriz": {
+          "vp": 6,
+          "fp": 2,
+          "fn": 0,
+          "vn": 263,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 8
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.75,
+            "piso": 0.75,
+            "teto": 0.75
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.42857142857142855,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.40926987910258916,
+            0.9285223111419724
+          ],
+          "recall": [
+            0.6096569663469354,
+            0.9999999999999999
+          ]
+        }
+      },
+      "performance": {
+        "matriz": {
+          "vp": 40,
+          "fp": 2,
+          "fn": 0,
+          "vn": 14,
+          "ind_marcados": 5,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.9523809523809523,
+            "piso": 0.851063829787234,
+            "teto": 0.9574468085106383
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        },
+        "wilson": {
+          "precisao": [
+            0.8420986468452026,
+            0.9868427513607937
+          ],
+          "recall": [
+            0.9123754607496077,
+            1.0
+          ]
+        }
+      }
+    },
+    "por_projeto": {
+      "P1": {
+        "matriz": {
+          "vp": 10,
+          "fp": 0,
+          "fn": 0,
+          "vn": 47,
+          "ind_marcados": 1,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 0.9090909090909091,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.9090909090909091,
+            "teto": 1.0
+          }
+        }
+      },
+      "P2": {
+        "matriz": {
+          "vp": 3,
+          "fp": 0,
+          "fn": 0,
+          "vn": 55,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.75,
+            "teto": 1.0
+          }
+        }
+      },
+      "P3": {
+        "matriz": {
+          "vp": 8,
+          "fp": 1,
+          "fn": 0,
+          "vn": 46,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.8888888888888888,
+            "piso": 0.8888888888888888,
+            "teto": 0.8888888888888888
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.8888888888888888,
+            "teto": 1.0
+          }
+        }
+      },
+      "P4": {
+        "matriz": {
+          "vp": 7,
+          "fp": 2,
+          "fn": 0,
+          "vn": 45,
+          "ind_marcados": 4,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.7777777777777778,
+            "piso": 0.5384615384615384,
+            "teto": 0.8461538461538461
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.875,
+            "teto": 1.0
+          }
+        }
+      },
+      "P5": {
+        "matriz": {
+          "vp": 18,
+          "fp": 0,
+          "fn": 0,
+          "vn": 31,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 3
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 0.8571428571428571,
+            "teto": 1.0
+          }
+        }
+      },
+      "P6": {
+        "matriz": {
+          "vp": 6,
+          "fp": 1,
+          "fn": 0,
+          "vn": 20,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 0
+        },
+        "taxas": {
+          "precisao": {
+            "principal": 0.8571428571428571,
+            "piso": 0.8571428571428571,
+            "teto": 0.8571428571428571
+          },
+          "recall": {
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0
+          }
+        }
+      },
+      "P7": {
+        "matriz": {
+          "vp": 0,
+          "fp": 0,
+          "fn": 0,
+          "vn": 37,
+          "ind_marcados": 0,
+          "ind_nao_marcados": 1
+        },
+        "taxas": {
+          "precisao": {
+            "principal": null,
+            "piso": null,
+            "teto": null
+          },
+          "recall": {
+            "principal": null,
+            "piso": 0.0,
+            "teto": null
+          }
+        }
+      }
+    },
+    "total_micro": {
+      "matriz": {
+        "vp": 52,
+        "fp": 4,
+        "fn": 0,
+        "vn": 281,
+        "ind_marcados": 5,
+        "ind_nao_marcados": 8
+      },
+      "taxas": {
+        "precisao": {
+          "principal": 0.9285714285714286,
+          "piso": 0.8524590163934426,
+          "teto": 0.9344262295081968
+        },
+        "recall": {
+          "principal": 1.0,
+          "piso": 0.8666666666666667,
+          "teto": 1.0
+        }
+      },
+      "wilson": {
+        "precisao": [
+          0.830243171685138,
+          0.9718744187536204
+        ],
+        "recall": [
+          0.9312054095871178,
+          1.0
+        ]
+      }
+    },
+    "macro": {
+      "precisao": 0.8937728937728938,
+      "recall": 1.0
+    },
+    "macro_por_categoria": {
+      "dax": {
+        "precisao": 1.0,
+        "recall": 1.0
+      },
+      "modelagem": {
+        "precisao": 0.8333333333333334,
+        "recall": 1.0
+      },
+      "performance": {
+        "precisao": 0.9615384615384616,
+        "recall": 1.0
+      }
+    },
+    "r03": [
+      "MOD-003"
+    ],
+    "r12": {
+      "vp": 52,
+      "vp_sem_perf003": 36,
+      "gatilho": 40
+    },
+    "divergencias": [
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P4|Indicators",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "MOD-003|P6|Logo",
+        "justificativa": null
+      },
+      {
+        "tipo": "FP",
+        "id": "PERF-001|P3|Date[Month increment number]",
+        "justificativa": "Usa agregação MIN([Year]) que depende do contexto do modelo; não é um cálculo puramente por linha e não pode ser diretamente movido para Power Query sem reavaliar a lógica."
+      },
+      {
+        "tipo": "FP",
+        "id": "PERF-001|P4|Date[MonthIndex]",
+        "justificativa": "Usa CALCULATE, DISTINCTCOUNT, ALL, e EARLIER — lógica dependente de contexto e agregação; não é apropriado para mover para Power Query sem reescrever a lógica."
+      }
+    ]
+  },
+  "recuperacao": {
+    "origem": "recuperacao-2026-10-11.json",
+    "configuracao": {
+      "chunking": "secao",
+      "cabecalho": false,
+      "busca": "bm25",
+      "corpus": "completo"
+    },
+    "macro": {
+      "consultas": 62,
+      "acerto": {
+        "1": 0.4444444444444444,
+        "3": 0.7222222222222222,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "precisao": {
+        "1": 0.4444444444444444,
+        "3": 0.24074074074074073,
+        "5": 0.19999999999999998,
+        "10": 0.09999999999999999
+      },
+      "mrr": 0.6129629629629629
+    },
+    "justificativa": "maior macro acerto@5 do corpus completo = 1.000; 8 combinação(ões) a menos de 1/9 dela; vence a de menor complexidade (0), desempate por macro MRR@10 e pela ordem fixa"
+  },
+  "complementares": {
+    "origem": "complementares-2026-10-12.json",
+    "macro": {
+      "bm25": {
+        "principal": 0.6180555555555556,
+        "piso": 0.5902777777777778,
+        "teto": 0.6241319444444444
+      },
+      "densa": {
+        "principal": 0.6689620292561469,
+        "piso": 0.6365546218487395,
+        "teto": 0.705999066293184
+      },
+      "hibrida": {
+        "principal": 0.6494708994708994,
+        "piso": 0.6448412698412699,
+        "teto": 0.6873759920634921
+      }
+    },
+    "decisao": {
+      "vencedora": "bm25",
+      "justificativa": "nenhuma alternativa supera a macro do bm25 (0.618) por 0.10; fica o bm25"
+    }
+  },
+  "geracao": {
+    "origem": "geracao-2026-10-14.json",
+    "ambiente": {
+      "gerado_em": "2026-10-14T22:08:59",
+      "commit": "ea1a1cb",
+      "linhas": 61,
+      "gerados": 61
+    },
+    "itens": {
+      "pertinente": {
+        "total": {
+          "n": {
+            "sim": 61,
+            "nao": 0,
+            "indeterminado": 0
+          },
+          "principal": 1.0,
+          "piso": 1.0,
+          "teto": 1.0,
+          "wilson": [
+            0.9407540837980555,
+            1.0
+          ]
+        },
+        "por_regra": {
+          "DAX-001": {
+            "n": {
+              "sim": 6,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.6096569663469354,
+              0.9999999999999999
+            ]
+          },
+          "MOD-001": {
+            "n": {
+              "sim": 1,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "MOD-003": {
+            "n": {
+              "sim": 3,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.43849391955098227,
+              1.0
+            ]
+          },
+          "MOD-006": {
+            "n": {
+              "sim": 3,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.43849391955098227,
+              1.0
+            ]
+          },
+          "MOD-007": {
+            "n": {
+              "sim": 1,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "PERF-001": {
+            "n": {
+              "sim": 31,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.889740999265246,
+              0.9999999999999999
+            ]
+          },
+          "PERF-003": {
+            "n": {
+              "sim": 16,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.8063865817272802,
+              1.0
+            ]
+          }
+        },
+        "por_categoria": {
+          "dax": {
+            "n": {
+              "sim": 6,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.6096569663469354,
+              0.9999999999999999
+            ]
+          },
+          "modelagem": {
+            "n": {
+              "sim": 8,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.6755843804891231,
+              1.0
+            ]
+          },
+          "performance": {
+            "n": {
+              "sim": 47,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.9244398288016114,
+              1.0
+            ]
+          }
+        }
+      },
+      "fiel": {
+        "total": {
+          "n": {
+            "sim": 32,
+            "nao": 29,
+            "indeterminado": 0
+          },
+          "principal": 0.5245901639344263,
+          "piso": 0.5245901639344263,
+          "teto": 0.5245901639344263,
+          "wilson": [
+            0.4015694171531101,
+            0.6446971771320402
+          ]
+        },
+        "por_regra": {
+          "DAX-001": {
+            "n": {
+              "sim": 1,
+              "nao": 5,
+              "indeterminado": 0
+            },
+            "principal": 0.16666666666666666,
+            "piso": 0.16666666666666666,
+            "teto": 0.16666666666666666,
+            "wilson": [
+              0.03005258587173032,
+              0.563509436563646
+            ]
+          },
+          "MOD-001": {
+            "n": {
+              "sim": 0,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.0,
+            "piso": 0.0,
+            "teto": 0.0,
+            "wilson": [
+              0.0,
+              0.7934567085261071
+            ]
+          },
+          "MOD-003": {
+            "n": {
+              "sim": 3,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.43849391955098227,
+              1.0
+            ]
+          },
+          "MOD-006": {
+            "n": {
+              "sim": 2,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.6666666666666666,
+            "piso": 0.6666666666666666,
+            "teto": 0.6666666666666666,
+            "wilson": [
+              0.2076549551264879,
+              0.9385096847238394
+            ]
+          },
+          "MOD-007": {
+            "n": {
+              "sim": 1,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.20654329147389294,
+              1.0
+            ]
+          },
+          "PERF-001": {
+            "n": {
+              "sim": 9,
+              "nao": 22,
+              "indeterminado": 0
+            },
+            "principal": 0.2903225806451613,
+            "piso": 0.2903225806451613,
+            "teto": 0.2903225806451613,
+            "wilson": [
+              0.1609562071843287,
+              0.4659265995754067
+            ]
+          },
+          "PERF-003": {
+            "n": {
+              "sim": 16,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.8063865817272802,
+              1.0
+            ]
+          }
+        },
+        "por_categoria": {
+          "dax": {
+            "n": {
+              "sim": 1,
+              "nao": 5,
+              "indeterminado": 0
+            },
+            "principal": 0.16666666666666666,
+            "piso": 0.16666666666666666,
+            "teto": 0.16666666666666666,
+            "wilson": [
+              0.03005258587173032,
+              0.563509436563646
+            ]
+          },
+          "modelagem": {
+            "n": {
+              "sim": 6,
+              "nao": 2,
+              "indeterminado": 0
+            },
+            "principal": 0.75,
+            "piso": 0.75,
+            "teto": 0.75,
+            "wilson": [
+              0.40926987910258916,
+              0.9285223111419724
+            ]
+          },
+          "performance": {
+            "n": {
+              "sim": 25,
+              "nao": 22,
+              "indeterminado": 0
+            },
+            "principal": 0.5319148936170213,
+            "piso": 0.5319148936170213,
+            "teto": 0.5319148936170213,
+            "wilson": [
+              0.39232141926770786,
+              0.6666853783153737
+            ]
+          }
+        }
+      },
+      "recomendacao_correta": {
+        "total": {
+          "n": {
+            "sim": 47,
+            "nao": 14,
+            "indeterminado": 0
+          },
+          "principal": 0.7704918032786885,
+          "piso": 0.7704918032786885,
+          "teto": 0.7704918032786885,
+          "wilson": [
+            0.6508635609254849,
+            0.858068976211168
+          ]
+        },
+        "por_regra": {
+          "DAX-001": {
+            "n": {
+              "sim": 6,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.6096569663469354,
+              0.9999999999999999
+            ]
+          },
+          "MOD-001": {
+            "n": {
+              "sim": 0,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.0,
+            "piso": 0.0,
+            "teto": 0.0,
+            "wilson": [
+              0.0,
+              0.7934567085261071
+            ]
+          },
+          "MOD-003": {
+            "n": {
+              "sim": 0,
+              "nao": 3,
+              "indeterminado": 0
+            },
+            "principal": 0.0,
+            "piso": 0.0,
+            "teto": 0.0,
+            "wilson": [
+              0.0,
+              0.5615060804490177
+            ]
+          },
+          "MOD-006": {
+            "n": {
+              "sim": 2,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.6666666666666666,
+            "piso": 0.6666666666666666,
+            "teto": 0.6666666666666666,
+            "wilson": [
+              0.2076549551264879,
+              0.9385096847238394
+            ]
+          },
+          "MOD-007": {
+            "n": {
+              "sim": 0,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.0,
+            "piso": 0.0,
+            "teto": 0.0,
+            "wilson": [
+              0.0,
+              0.7934567085261071
+            ]
+          },
+          "PERF-001": {
+            "n": {
+              "sim": 24,
+              "nao": 7,
+              "indeterminado": 0
+            },
+            "principal": 0.7741935483870968,
+            "piso": 0.7741935483870968,
+            "teto": 0.7741935483870968,
+            "wilson": [
+              0.6018723994130262,
+              0.8860500840550121
+            ]
+          },
+          "PERF-003": {
+            "n": {
+              "sim": 15,
+              "nao": 1,
+              "indeterminado": 0
+            },
+            "principal": 0.9375,
+            "piso": 0.9375,
+            "teto": 0.9375,
+            "wilson": [
+              0.7167073163197013,
+              0.9888809426916687
+            ]
+          }
+        },
+        "por_categoria": {
+          "dax": {
+            "n": {
+              "sim": 6,
+              "nao": 0,
+              "indeterminado": 0
+            },
+            "principal": 1.0,
+            "piso": 1.0,
+            "teto": 1.0,
+            "wilson": [
+              0.6096569663469354,
+              0.9999999999999999
+            ]
+          },
+          "modelagem": {
+            "n": {
+              "sim": 2,
+              "nao": 6,
+              "indeterminado": 0
+            },
+            "principal": 0.25,
+            "piso": 0.25,
+            "teto": 0.25,
+            "wilson": [
+              0.07147768885802763,
+              0.5907301208974108
+            ]
+          },
+          "performance": {
+            "n": {
+              "sim": 39,
+              "nao": 8,
+              "indeterminado": 0
+            },
+            "principal": 0.8297872340425532,
+            "piso": 0.8297872340425532,
+            "teto": 0.8297872340425532,
+            "wilson": [
+              0.6985994892711489,
+              0.9111374190873607
+            ]
+          }
+        }
+      }
+    },
+    "utilizavel": {
+      "total": {
+        "n": {
+          "sim": 23,
+          "nao": 38,
+          "indeterminado": 0
+        },
+        "principal": 0.3770491803278688,
+        "piso": 0.3770491803278688,
+        "teto": 0.3770491803278688,
+        "wilson": [
+          0.2661433042836724,
+          0.5025237242905762
+        ]
+      },
+      "por_regra": {
+        "DAX-001": {
+          "n": {
+            "sim": 1,
+            "nao": 5,
+            "indeterminado": 0
+          },
+          "principal": 0.16666666666666666,
+          "piso": 0.16666666666666666,
+          "teto": 0.16666666666666666,
+          "wilson": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "MOD-001": {
+          "n": {
+            "sim": 0,
+            "nao": 1,
+            "indeterminado": 0
+          },
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.0,
+          "wilson": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "MOD-003": {
+          "n": {
+            "sim": 0,
+            "nao": 3,
+            "indeterminado": 0
+          },
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.0,
+          "wilson": [
+            0.0,
+            0.5615060804490177
+          ]
+        },
+        "MOD-006": {
+          "n": {
+            "sim": 1,
+            "nao": 2,
+            "indeterminado": 0
+          },
+          "principal": 0.3333333333333333,
+          "piso": 0.3333333333333333,
+          "teto": 0.3333333333333333,
+          "wilson": [
+            0.0614903152761605,
+            0.7923450448735121
+          ]
+        },
+        "MOD-007": {
+          "n": {
+            "sim": 0,
+            "nao": 1,
+            "indeterminado": 0
+          },
+          "principal": 0.0,
+          "piso": 0.0,
+          "teto": 0.0,
+          "wilson": [
+            0.0,
+            0.7934567085261071
+          ]
+        },
+        "PERF-001": {
+          "n": {
+            "sim": 6,
+            "nao": 25,
+            "indeterminado": 0
+          },
+          "principal": 0.1935483870967742,
+          "piso": 0.1935483870967742,
+          "teto": 0.1935483870967742,
+          "wilson": [
+            0.09186883586347633,
+            0.36280603555459856
+          ]
+        },
+        "PERF-003": {
+          "n": {
+            "sim": 15,
+            "nao": 1,
+            "indeterminado": 0
+          },
+          "principal": 0.9375,
+          "piso": 0.9375,
+          "teto": 0.9375,
+          "wilson": [
+            0.7167073163197013,
+            0.9888809426916687
+          ]
+        }
+      },
+      "por_categoria": {
+        "dax": {
+          "n": {
+            "sim": 1,
+            "nao": 5,
+            "indeterminado": 0
+          },
+          "principal": 0.16666666666666666,
+          "piso": 0.16666666666666666,
+          "teto": 0.16666666666666666,
+          "wilson": [
+            0.03005258587173032,
+            0.563509436563646
+          ]
+        },
+        "modelagem": {
+          "n": {
+            "sim": 1,
+            "nao": 7,
+            "indeterminado": 0
+          },
+          "principal": 0.125,
+          "piso": 0.125,
+          "teto": 0.125,
+          "wilson": [
+            0.02241690886329617,
+            0.4708948057698615
+          ]
+        },
+        "performance": {
+          "n": {
+            "sim": 21,
+            "nao": 26,
+            "indeterminado": 0
+          },
+          "principal": 0.44680851063829785,
+          "piso": 0.44680851063829785,
+          "teto": 0.44680851063829785,
+          "wilson": [
+            0.31410747474911305,
+            0.5875478626124176
+          ]
+        }
+      }
+    },
+    "descarte": {
+      "achados": 61,
+      "sem_fundamentacao": 0,
+      "taxa": 0.0,
+      "por_motivo": {}
+    },
+    "concordancia": {
+      "pertinente": {
+        "tabela": {
+          "a": 60,
+          "b": 0,
+          "c": 1,
+          "d": 0
+        },
+        "n": 61,
+        "concordancia": 0.9836065573770492,
+        "kappa": 0.0
+      },
+      "fiel": {
+        "tabela": {
+          "a": 24,
+          "b": 24,
+          "c": 8,
+          "d": 5
+        },
+        "n": 61,
+        "concordancia": 0.47540983606557374,
+        "kappa": -0.07964601769911503
+      }
+    }
+  }
+}
