@@ -1,0 +1,163 @@
+# Ambiente, estrutura e comandos
+
+Conteúdo técnico que estava no `README.md` até 15/10/2026, quando o README passou a seguir o modelo de entrega da PUC-Rio. O texto foi movido sem alterações, exceto os links relativos, ajustados para esta pasta.
+
+## Estado atual
+
+| Fase | Período | Status |
+|---|---|---|
+| Fase 1 — Viabilidade e planejamento | Semanas 1–2 | **Concluída em 29/09/2026** — gate aprovado e spike de LLM validado |
+| Fase 2 — Leitura do PBIP e regras | Semanas 3–5 | **Concluída em 08/10/2026** — ingestão, parser, motor de regras, lexer de DAX e 9 regras (8 estruturais + DAX-001) |
+| Fase 3 — RAG e análise com LLM | Semanas 6–8 | **Concluída em 13/10/2026** — base de 1.420 páginas do Learn, recuperação BM25 escolhida por medição, geração com citação obrigatória; gabarito das regras (precisão 0,88); revisão de meio de projeto aprovada |
+| Fase 4 — Interface e relatório | Semanas 9–10 | **Concluída em 13/10/2026** — interface Streamlit, relatório HTML/PDF e cache das respostas do LLM |
+| **Fase 5 — Avaliação, documentação e banca** | Semanas 11–13 | **Em andamento** — avaliação da geração medida em 14/10/2026; monografia e demonstração a seguir |
+
+O **resumo de andamento** — o que está pronto, o que ficou pendente e por quê — está em [`docs/project/status.md`](status.md). O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](fase1-viabilidade-e-planejamento.md), e o histórico detalhado do trabalho em [`docs/project/progress-log.md`](progress-log.md).
+
+Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, um lexer de DAX que tokeniza as 137 expressões do PBIP real usado como estudo de caso com zero token desconhecido, e o motor de regras determinísticas com 9 regras (8 estruturais e a primeira de DAX, DAX-001) — 15 achados nesse PBIP real. Sobre ele, a base RAG com o Microsoft Learn, a explicação gerada por um LLM local com citação obrigatória, a interface Streamlit, o relatório HTML/PDF e a avaliação: detecção contra gabarito humano (precisão 0,88 em P1–P7) e rubrica humana das explicações (citação pertinente em 61 de 61, fiéis 0,52, recomendação correta 0,77). 877 testes passando.
+
+Cada regra declara a página do Microsoft Learn que a sustenta, e `python -m core.rules.catalogo` imprime o catálogo. Regra sem essa âncora não entra no registro: a verificação das fontes antes de escrever código eliminou três das nove regras estruturais originalmente propostas, uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito — e, nesta etapa, um terceiro teste do mesmo critério (suficiência de evidência) rejeitou uma regra inteira (coluna sem uso) antes do código, por falta de evidência sobre a camada de relatório que a ferramenta não lê.
+
+## Decisões de arquitetura
+
+| ADR | Assunto |
+|---|---|
+| [ADR-001](../adr/ADR-001-formato-model-bim.md) | Formato do modelo semântico: `model.bim` (TMSL), não TMDL |
+| [ADR-002](../adr/ADR-002-stack-tecnologica.md) | Stack tecnológica, com o ambiente real medido |
+| [ADR-003](../adr/ADR-003-orquestracao-sequencial-e-deteccao-hibrida.md) | Orquestração sequencial; as regras são a única fonte de achados |
+| [ADR-004](../adr/ADR-004-coleta-da-base-rag.md) | Coleta da base RAG pelas páginas públicas do Microsoft Learn |
+| [ADR-005](../adr/ADR-005-dataset-de-avaliacao.md) | Dataset de avaliação: amostras públicas da Microsoft (MIT) |
+
+## Escopo
+
+**Entra no MVP:** entrada em PBIP (TMSL), análise do modelo semântico, regras determinísticas, RAG sobre documentação pública versionada, geração de explicações com citação obrigatória, interface local, relatório HTML e PDF, avaliação quantitativa.
+
+**Fora do MVP** (ver [`docs/project/backlog.md`](backlog.md)): entrada em PBIX, suporte a TMDL, camada de relatório (`.Report`/PBIR), correção automática, multiagente, métricas em tempo de execução, reranking, autenticação e deploy.
+
+## Stack
+
+Python 3.11 · Streamlit · Pydantic · ChromaDB · sentence-transformers (`bge-small-en-v1.5`) · Ollama · Jinja2 + Playwright · pytest.
+
+## Estrutura
+
+```
+app/       interface Streamlit
+core/      leitura do PBIP, parsing, regras, análise
+rag/       coleta, chunking, indexação, recuperação
+reports/   templates HTML e exportação para PDF
+gabarito/  gabarito humano das regras (planilha, importação, medição)
+avaliacao_geracao/  rubrica humana das explicações e consolidado dos resultados
+tests/     testes e fixtures PBIP mínimos
+eval/      ground truth, scripts e resultados da avaliação
+docs/      academic/ (relatório), adr/ (decisões), project/ (log, backlog, riscos)
+data/      projetos PBIP reais — ignorado no Git
+outputs/   relatórios gerados — ignorado no Git
+```
+
+## Ambiente
+
+Windows 11, Python 3.11.9. O ambiente virtual fica em `.venv/` na raiz do projeto.
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Certificado do PyPI nesta máquina
+
+O Norton intercepta TLS aqui: o certificado do PyPI chega emitido pela raiz "Norton Web/Mail Shield". O Windows confia nessa raiz, mas o `pip` usa o bundle do `certifi`, que não a contém — daí o erro `CERTIFICATE_VERIFY_FAILED`. A solução é apontar o `pip` para a mesma raiz que o sistema já confia, **sem** desabilitar a verificação:
+
+```powershell
+pip install -r requirements.txt --cert C:\ProgramData\Norton\Antivirus\wscert.pem
+```
+
+Para não repetir isso a cada comando, o arquivo `.venv/pip.ini` guarda essa configuração. Como o `.venv` não é versionado, ele precisa ser refeito se o ambiente for recriado.
+
+### Catálogo de fontes da RAG
+
+```powershell
+python -m rag.catalogo            # gera rag/sources.yaml a partir de rag/tocs/ (offline)
+python -m rag.catalogo atualizar  # baixa os toc.json do Learn de novo e gera
+python -m rag.coleta --limite 20  # ensaio: baixa as 20 primeiras páginas pendentes
+python -m rag.coleta              # baixa as páginas do catálogo para rag/store/ (retomável)
+python -m rag.extracao            # extrai o texto por seção para rag/store/textos/ (offline)
+```
+
+`rag/store/` não é versionado: é cópia local do Microsoft Learn, para uso pessoal e não comercial.
+
+```powershell
+python -m rag.avaliacao gerar     # gera eval/recuperacao/consultas.yaml (precisa de rag/store/ e data/pbip/)
+python -m rag.medicao             # mede as 24 combinacoes de recuperacao e grava eval/results/
+python -m rag.indice construir    # constroi o indice da combinacao vencedora em rag/store/
+```
+
+`eval/recuperacao/gabarito.yaml` (frases-marca) é escrito à mão; `consultas.yaml` é gerado — não editar à mão.
+
+`rag/sources.yaml` é gerado — não editar à mão. Notas vão em `rag/observacoes.yaml`;
+leituras complementares do SQLBI (só link, nunca indexadas) em `rag/leituras_sqlbi.yaml`.
+
+### Modelo de linguagem
+
+Ollama, com `qwen2.5:7b-instruct-q4_K_M` como modelo principal e `qwen2.5:3b` como contingência — escolhidos no spike de 29/09/2026 (resultado na [ADR-002](../adr/ADR-002-stack-tecnologica.md)).
+
+```powershell
+winget install --id Ollama.Ollama
+ollama pull qwen2.5:7b-instruct-q4_K_M
+ollama pull qwen2.5:3b
+```
+
+**Antes do primeiro `pull`**, defina `OLLAMA_MODELS` apontando para um disco com espaço. Por padrão o Ollama grava em `C:\Users\<voce>\.ollama`, e os dois modelos somam 6,2 GB. Nesta máquina a variável aponta para `D:\dev\ollama-models` (risco R-14).
+
+Para repetir o spike:
+
+```powershell
+python eval/spike_llm.py qwen2.5:3b qwen2.5:7b-instruct-q4_K_M
+```
+
+### Interface
+
+```powershell
+streamlit run app/streamlit_app.py
+```
+
+Na barra lateral: nova auditoria (pasta do projeto ou `.zip`), no modo **completo** (com o
+Ollama e o índice da RAG) ou **só regras** (só a detecção, em segundos, com a recomendação padrão
+de cada regra); ou abrir um resultado salvo em `outputs/`. Pela linha de comando, o mesmo modo
+é `python -m core.auditoria <pasta-pbip> --so-regras`.
+
+### Relatório
+
+```powershell
+python -m reports outputs\<resultado>.json --pdf             # HTML e PDF ao lado do JSON
+python -m reports outputs\<resultado>.json --pdf --tecnico   # com a seção técnica
+python -m core.auditoria <pasta-pbip> --cache                 # reusa respostas guardadas do LLM
+```
+
+O PDF usa o Microsoft Edge instalado (Playwright, `channel="msedge"`); não é preciso rodar
+`playwright install`. O cache das respostas fica em `outputs/cache-llm/` — apagar a pasta o limpa.
+
+### Avaliação da geração
+
+```powershell
+python -m avaliacao_geracao auditar      # auditoria completa de P1-P7, com cache (exige Ollama e índice)
+python -m avaliacao_geracao gerar        # planilha cega da rubrica em eval/gabarito/
+python -m avaliacao_geracao importar     # valida a planilha e grava eval/rubrica_geracao.csv (--parcial para conferir)
+python -m avaliacao_geracao medir        # taxas com intervalo de Wilson e kappa humano x automático
+python -m avaliacao_geracao consolidar   # junta todos os resultados em eval/results/consolidado-<data>.json
+```
+
+As auditorias da rodada (`eval/geracao/`) e a planilha ficam fora do Git, porque trazem texto
+do Learn; o CSV dos vereditos e os resultados entram.
+
+## Testes
+
+```powershell
+pytest
+```
+
+Os testes montam PBIP sintéticos em pasta temporária. Os testes de `tests/test_pbip_real.py` (16, ao fim desta etapa) leem o PBIP real e são **pulados** automaticamente quando `data/` não existe, que é o caso de qualquer cópia limpa do repositório — e com eles vai embora a rede de regressão das exclusões de escopo, que é o que trava as 15 ocorrências medidas, a cobertura do lexer (137 de 137 expressões, zero desconhecida) e a cobertura da varredura de DAX (105 de 105 em escopo, 0 lacunas).
+
+## Nota sobre dados
+
+`data/`, `outputs/`, `rag/store/` e `.env` estão no `.gitignore`. Arquivos `.pbix`, `.abf` e `.pbi/localSettings.json` nunca são versionados — podem conter dados, strings de conexão e caminhos locais.

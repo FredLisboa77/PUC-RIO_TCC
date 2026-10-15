@@ -6,7 +6,7 @@ from pathlib import Path
 
 from academico.citacoes import verificar
 from academico.compilacao import PDF, PRINCIPAL, ErroDeCompilacao, compilar, paginas_textuais
-from academico.tabelas import CONSOLIDADO, PASTA_GERADO, carregar, escrever, gerar_todas
+from academico.tabelas import CONSOLIDADO, PASTA_GERADO, README, atualizar_readme, blocos_markdown, carregar, escrever, gerar_todas
 
 
 def _ascii(texto: str) -> str:
@@ -14,9 +14,13 @@ def _ascii(texto: str) -> str:
 
 
 def _tabelas() -> int:
-    tabelas = gerar_todas(carregar(CONSOLIDADO))
+    consolidado = carregar(CONSOLIDADO)
+    tabelas = gerar_todas(consolidado)
     escrever(tabelas, PASTA_GERADO)
     print(f"{len(tabelas)} tabelas geradas em docs/academic/monografia/gerado")
+    texto = README.read_text(encoding="utf-8")
+    README.write_text(atualizar_readme(texto, blocos_markdown(consolidado)), encoding="utf-8", newline="\n")
+    print("tabelas do README.md atualizadas")
     return 0
 
 

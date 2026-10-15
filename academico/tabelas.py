@@ -258,3 +258,55 @@ def escrever(tabelas: dict[str, str], pasta: Path = PASTA_GERADO) -> None:
     pasta.mkdir(parents=True, exist_ok=True)
     for nome, conteudo in tabelas.items():
         (pasta / nome).write_text(conteudo, encoding="utf-8", newline="\n")
+
+
+README = RAIZ_REPO / "README.md"
+
+
+def _md(cabecalho: list[str], linhas: list[list[str]]) -> str:
+    saida = ["| " + " | ".join(cabecalho) + " |", "|" + "---|" * len(cabecalho)]
+    saida += ["| " + " | ".join(linha) + " |" for linha in linhas]
+    return "\n".join(saida)
+
+
+def blocos_markdown(consolidado: dict) -> dict[str, str]:
+    """As três tabelas principais, em Markdown, para a seção Resultados do README."""
+    regras = consolidado["regras"]
+    linhas_regras = []
+    for regra in sorted(regras["por_regra"]):
+        d = regras["por_regra"][regra]
+        m = d["matriz"]
+        linhas_regras.append([regra, str(m["vp"]), str(m["fp"]), str(m["fn"]), num(d["taxas"]["precisao"]["principal"]), faixa((d.get("wilson") or {}).get("precisao"))])
+    t = regras["total_micro"]
+    linhas_regras.append(["**Total (micro)**", str(t["matriz"]["vp"]), str(t["matriz"]["fp"]), str(t["matriz"]["fn"]), num(t["taxas"]["precisao"]["principal"]), faixa(t["wilson"]["precisao"])])
+
+    rec = consolidado["recuperacao"]["macro"]
+    linhas_rec = [[k, num(rec["acerto"][k]), num(rec["precisao"][k])] for k in ("1", "3", "5", "10")]
+    linhas_rec.append(["MRR@10", num(rec["mrr"]), AUSENTE])
+
+    ger = consolidado["geracao"]
+    linhas_ger = [
+        [ROTULOS_GERACAO[n], _sim_de_n(ger["itens"][n]["total"]["n"]), num(ger["itens"][n]["total"]["principal"]), faixa(ger["itens"][n]["total"]["wilson"])]
+        for n in ROTULOS_GERACAO
+    ]
+    u = ger["utilizavel"]["total"]
+    linhas_ger.append(["**Utilizável como está**", _sim_de_n(u["n"]), num(u["principal"]), faixa(u["wilson"])])
+
+    return {
+        "regras": _md(["Regra", "VP", "FP", "FN", "Precisão", "IC 95% (Wilson)"], linhas_regras),
+        "recuperacao": _md(["K", "Acerto@K", "Precisão@K"], linhas_rec),
+        "geracao": _md(["Item", "Sim / n", "Proporção", "IC 95% (Wilson)"], linhas_ger),
+    }
+
+
+def atualizar_readme(texto: str, blocos: dict[str, str]) -> str:
+    """Troca o miolo de cada bloco `<!-- tabela:nome -->` … `<!-- /tabela -->`."""
+    for nome, conteudo in blocos.items():
+        abertura = f"<!-- tabela:{nome} -->\n"
+        inicio = texto.find(abertura)
+        if inicio < 0:
+            raise KeyError(f"bloco <!-- tabela:{nome} --> ausente do README")
+        miolo = inicio + len(abertura)
+        fim = texto.index("<!-- /tabela -->", miolo)
+        texto = texto[:miolo] + conteudo + "\n" + texto[fim:]
+    return texto

@@ -116,3 +116,36 @@ def test_cada_tabela_gerada_compila_incluida_como_no_capitulo(tmp_path):
         doc = tmp_path / "doc.typ"
         doc.write_text('#import "abnt.typ": abnt\n#show: abnt\n#include "capitulos/c.typ"\n', encoding="utf-8")
         assert compilar(doc).startswith(b"%PDF"), nome
+
+
+def test_atualizar_readme_substitui_so_o_miolo_do_bloco():
+    from academico.tabelas import atualizar_readme
+
+    texto = "antes\n<!-- tabela:regras -->\nvelho\n<!-- /tabela -->\ndepois\n"
+    novo = atualizar_readme(texto, {"regras": "| a |\n|---|\n| 1 |"})
+    assert novo == "antes\n<!-- tabela:regras -->\n| a |\n|---|\n| 1 |\n<!-- /tabela -->\ndepois\n"
+
+
+def test_atualizar_readme_bloco_ausente_e_erro():
+    import pytest
+
+    from academico.tabelas import atualizar_readme
+
+    with pytest.raises(KeyError, match="geracao"):
+        atualizar_readme("sem blocos", {"geracao": "x"})
+
+
+def test_blocos_markdown_numeros_em_portugues():
+    from academico.tabelas import blocos_markdown
+
+    blocos = blocos_markdown(carregar())
+    assert set(blocos) == {"regras", "recuperacao", "geracao"}
+    assert "| **Total (micro)** | 46 | 6 | 6 |" in blocos["regras"]
+    assert "| Fiel | 32 / 61 | 0,52 |" in blocos["geracao"]
+
+
+def test_readme_em_dia_com_o_consolidado():
+    from academico.tabelas import README, atualizar_readme, blocos_markdown
+
+    texto = README.read_text(encoding="utf-8")
+    assert atualizar_readme(texto, blocos_markdown(carregar())) == texto, "rode `python -m academico tabelas`"
