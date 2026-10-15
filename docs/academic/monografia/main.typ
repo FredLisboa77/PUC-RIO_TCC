@@ -40,7 +40,7 @@
   #align(center)[Rio de Janeiro \ 2026]
 ]
 
-// RESUMO-E-ABSTRACT (Task 10)
+#include "capitulos/resumo.typ"
 
 #titulo-pre[Lista de tabelas]
 #outline(title: none, target: figure.where(kind: table))
