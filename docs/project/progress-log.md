@@ -2126,3 +2126,20 @@ PDF: 45 páginas textuais. Suíte: 905 testes passando.
 **Próximo passo:** o Fred relê os trechos alterados (caps. 3 a 6) e decide se faz o teste com
 glossário na instrução antes da entrega; depois, merge da `revisao-monografia` na `main` e a
 demonstração (subprojeto 3).
+
+### 15/10/2026 — Teste do glossário: rodada feita, planilha cega pronta para anotar
+
+Protocolo versionado **antes** da rodada (`d84c5b4`,
+`docs/superpowers/specs/2026-10-15-teste-do-glossario-design.md`); código em `4d37616`
+(`avaliacao_geracao/glossario.py`, subcomandos `glossario-*`; produção inalterada).
+
+- Rodada com glossário: 61 achados, 61 gerados, todos fora do cache (novos); achados e
+  contextos idênticos aos da rodada original — só a instrução mudou.
+- Planilha cega `eval/gabarito/rubrica-glossario-P1-P7.xlsx`: 81 linhas (61 novas + 20
+  originais sorteadas, semente 20261015), códigos R01–R81, ordem aleatória. Chave em
+  `eval/geracao/glossario/chave.json` (fora do git; vai para o resultado só na medição).
+- Reexecução da instrução original sem cache em andamento (indicador léxico).
+
+**Próximo passo:** o Fred anota as 81 linhas sem abrir a chave
+(`python -m avaliacao_geracao glossario-importar --parcial` mostra o andamento); depois
+`glossario-importar` e `glossario-medir`, e o resultado entra na monografia como análise de erros.
