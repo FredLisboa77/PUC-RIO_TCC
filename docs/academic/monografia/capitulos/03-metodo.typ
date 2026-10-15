@@ -12,7 +12,50 @@ A divisão de responsabilidades entre a segunda e a terceira camadas é a decis�
 
 == Leitura do projeto PBIP <sec-leitura>
 
-Um projeto PBIP é uma pasta que separa o relatório do modelo semântico. Na pasta do modelo, o arquivo `definition.pbism` declara em que formato a definição está gravada: na versão 1.0, obrigatoriamente em TMSL (_Tabular Model Scripting Language_), no arquivo `model.bim`; a partir da versão 4.0, em TMSL ou em TMDL (_Tabular Model Definition Language_), numa pasta `definition` @learn-pbip. A ferramenta lê apenas o `model.bim` (ADR-001). O TMSL é um documento JSON que a biblioteca padrão do Python lê sem dependências, enquanto o TMDL não tinha, à época da decisão, analisador oficial em Python, e salvar em TMDL ainda era recurso em pré-visualização, de conversão irreversível. O formato fica atrás de uma única função de leitura, de modo que acrescentar o TMDL no futuro não exige reescrever as regras.
+Um relatório do Power BI tem duas partes. O _modelo semântico_ reúne as tabelas, as colunas, os relacionamentos entre as tabelas e as medidas de cálculo; é a camada que os visuais consultam. O _relatório_ são as páginas e os visuais construídos sobre esse modelo. No formato tradicional, o PBIX, as duas partes ficam dentro de um único arquivo binário, ilegível fora do Power BI Desktop. O formato PBIP (_Power BI Project_) grava o mesmo conteúdo como uma pasta de arquivos de texto, com uma subpasta para o relatório e outra para o modelo semântico, o que permite versionar o projeto e, para o que interessa aqui, lê-lo com um programa.
+
+Na pasta do modelo semântico, o arquivo central é o `model.bim`. Ele contém a definição completa do modelo, escrita em TMSL (_Tabular Model Scripting Language_), a linguagem em JSON com que a Microsoft descreve os modelos tabulares do Analysis Services, o mesmo motor que executa os modelos do Power BI @learn-pbip. O arquivo guarda a *definição* do modelo, mas não os *dados*: os dados importados ficam numa cópia em cache, num arquivo separado (`cache.abf`) que o Git ignora por padrão @learn-pbip. Por isso a ferramenta audita a estrutura do modelo sem acessar nem os dados nem a fonte de onde eles vêm. Nos projetos deste trabalho, o `model.bim` tem entre 53 KB e 862 KB.
+
+A @fig-modelbim mostra um trecho simplificado do `model.bim` de um dos projetos avaliados. No primeiro nível ficam o nível de compatibilidade do modelo e o objeto `model`. Dentro dele, a lista `tables` descreve cada tabela: suas colunas, com tipo de dado e forma de agregação padrão, e, no caso das colunas calculadas, a expressão DAX que as define; suas medidas, cada uma com a expressão DAX; e suas partições, com a consulta em Power Query M que carrega os dados. A lista `relationships` descreve cada relacionamento pela tabela e coluna de cada ponta. O arquivo traz ainda hierarquias, papéis de segurança em nível de linha e anotações gravadas pelo Power BI Desktop.
+
+#figure(
+  kind: image,
+  block(width: 100%, stroke: 0.5pt, inset: 8pt, align(left, text(size: 8.5pt, ```json
+{
+  "compatibilityLevel": 1606,
+  "model": {
+    "tables": [
+      {
+        "name": "Date",
+        "columns": [
+          { "name": "Date", "dataType": "dateTime", "isKey": true },
+          { "name": "Mth", "type": "calculated", "dataType": "string",
+            "expression": "FORMAT('Date'[Date],\"MMM\")" }
+        ],
+        "measures": [
+          { "name": "Latest year", "expression": "min('Date'[Year])" }
+        ],
+        "partitions": [
+          { "mode": "import",
+            "source": { "type": "m",
+                        "expression": ["let", "    Source = Excel.Workbook(...)", "..."] } }
+        ]
+      }
+    ],
+    "relationships": [
+      { "fromTable": "Sales", "fromColumn": "CustomerKey",
+        "toTable": "Customer", "toColumn": "CustomerKey" }
+    ]
+  }
+}
+```))),
+  caption: [Trecho simplificado de um `model.bim` (projeto P1), com uma coluna calculada, uma medida, uma partição em Power Query M e um relacionamento],
+) <fig-modelbim>
+#fonte[Elaborado pelo autor a partir do `model.bim` do projeto P1, com propriedades omitidas.]
+
+Tudo o que as regras sabem do modelo vem desse arquivo, e duas propriedades dele moldaram o método. A primeira é o que *não* está no arquivo: os valores dos dados e o uso das colunas pelos visuais do relatório. Uma regra que dependa dessas informações não pode ser decidida pela ferramenta, como mostra a próxima seção. A segunda é que o Power BI Desktop omite as propriedades que estão no valor padrão. No relacionamento da @fig-modelbim, não aparecem a cardinalidade nem a direção do filtro porque ambas têm o valor padrão: muitos-para-um, com filtro num só sentido. Nos oito modelos do projeto, a propriedade que torna o filtro bidirecional aparece em apenas 5 dos 57 relacionamentos. Ler um `model.bim` exige, portanto, conhecer o padrão de cada propriedade, e tratar a ausência de uma propriedade como informação só é seguro quando se sabe que ela seria gravada no caso contrário. Essa lição está na origem do terceiro teste do critério de detectabilidade.
+
+A pasta do modelo semântico declara, no arquivo `definition.pbism`, em que formato a definição está gravada: na versão 1.0, obrigatoriamente em TMSL, no `model.bim`; a partir da versão 4.0, em TMSL ou em TMDL (_Tabular Model Definition Language_), um formato mais legível que divide a definição em vários arquivos dentro de uma pasta `definition` @learn-pbip. A ferramenta lê apenas o `model.bim` (ADR-001). O TMSL é JSON, que a biblioteca padrão do Python lê sem dependências, enquanto o TMDL não tinha, à época da decisão, analisador oficial em Python, e salvar em TMDL ainda era recurso em pré-visualização, de conversão irreversível. O formato fica atrás de uma única função de leitura, de modo que acrescentar o TMDL no futuro não exige reescrever as regras. Na prática, basta salvar o projeto com a opção de TMDL desligada para que o Power BI Desktop grave o `model.bim`.
 
 O analisador converte o `model.bim` num modelo interno validado com Pydantic, com tabelas, colunas, medidas, relacionamentos, hierarquias, ordenações, papéis de segurança em nível de linha e as `variations` que ligam uma coluna de data à tabela de data automática criada pelo Power BI. Uma particularidade do TMSL é guardar expressões ora como texto, ora como lista de linhas; o analisador normaliza os dois casos.
 

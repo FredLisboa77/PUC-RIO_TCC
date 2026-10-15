@@ -27,7 +27,11 @@ def _pdf(principal: Path, saida: Path) -> int:
             print(f"citacoes sem entrada no .bib: {', '.join(conferencia.sem_entrada)}", file=sys.stderr)
             return 1
     conteudo = compilar(principal)
-    saida.write_bytes(conteudo)
+    try:
+        saida.write_bytes(conteudo)
+    except OSError as erro:
+        print(_ascii(f"nao foi possivel gravar {saida} (o PDF esta aberto em outro programa?): {erro.strerror}"), file=sys.stderr)
+        return 1
     print(f"{_ascii(saida.name)}: {paginas_textuais(principal)} paginas textuais")
     return 0
 

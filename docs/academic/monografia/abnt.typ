@@ -12,7 +12,7 @@
   }
   show heading.where(level: 2): it => block(above: 1.5em, below: 1em, text(weight: "regular", upper(it)))
   show heading.where(level: 3): it => block(above: 1.5em, below: 1em, text(weight: "bold", it))
-  show figure.where(kind: table): set figure.caption(position: top)
+  set figure.caption(position: top)
   set figure.caption(separator: [ -- ])
   show figure.caption: set text(size: 10pt)
   show figure.where(kind: table): set block(breakable: true)

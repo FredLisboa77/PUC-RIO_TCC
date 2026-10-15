@@ -58,6 +58,16 @@ def test_cli_erro_de_compilacao_sai_com_1_sem_traceback(tmp_path, capsys):
     assert "nao-existe.typ" in saida.err
 
 
+def test_cli_pdf_sem_permissao_de_gravar_sai_com_1_sem_traceback(tmp_path, capsys):
+    destino = tmp_path / "aberto.pdf"
+    destino.mkdir()  # gravar sobre uma pasta falha como gravar sobre um PDF aberto no visualizador
+    codigo = main(["pdf", "--principal", str(_escrever(tmp_path, DOC_COM_MARCADORES)), "--saida", str(destino)])
+    assert codigo == 1
+    erro = capsys.readouterr().err
+    assert "Traceback" not in erro
+    assert "aberto.pdf" in erro
+
+
 def test_cli_pdf_grava_arquivo_e_informa_paginas(tmp_path, capsys):
     destino = tmp_path / "saida.pdf"
     codigo = main(["pdf", "--principal", str(_escrever(tmp_path, DOC_COM_MARCADORES)), "--saida", str(destino)])
