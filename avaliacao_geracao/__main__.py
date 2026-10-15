@@ -11,6 +11,10 @@ from openpyxl.utils.exceptions import InvalidFileException
 
 from avaliacao_geracao import ErroDeAvaliacao
 from avaliacao_geracao.consolidacao import PASTA_RESULTADOS, consolidar
+from avaliacao_geracao.glossario import (
+    CHAVE, CSV_GLOSSARIO, PASTA_REEXECUCAO, PASTA_RODADA_GLOSSARIO, PLANILHA_CEGA, SISTEMA_COM_GLOSSARIO,
+    ClienteComInstrucao, gerar_planilha_cega, indicador_lexico, medir_glossario, montar_amostra, rodada_da_chave,
+)
 from avaliacao_geracao.metricas import medir
 from avaliacao_geracao.planilha import CSV_OFICIAL, PLANILHA, gerar_planilha, gravar_csv, ler_csv, ler_planilha, validar
 from avaliacao_geracao.rodada import PASTA_PBIP, PASTA_RODADA, auditar, carregar_rodada, projetos_da_avaliacao
@@ -107,6 +111,77 @@ def _medir() -> int:
     return 0
 
 
+def _auditar_em(destino, llm) -> int:
+    pastas = projetos_da_avaliacao(PASTA_PBIP)
+    if not pastas:
+        raise ErroDeAvaliacao(f"nenhum projeto P1-P7 em {PASTA_PBIP}")
+    resumo = auditar(pastas, destino, llm=llm, base=carregar_base())
+    print(_ascii(f"Projetos: {resumo.projetos} | achados: {resumo.achados} | gerados: {resumo.gerados} "
+                 f"| fora do cache: {resumo.fora_do_cache} | em {destino}"))
+    return 0
+
+
+def _glossario_gerar(forcar: bool) -> int:
+    if CHAVE.exists() and not forcar:
+        raise ErroDeAvaliacao(f"{CHAVE} ja existe - o sorteio e fixo; use --forcar so antes de anotar")
+    original, nova = carregar_rodada(PASTA_RODADA), carregar_rodada(PASTA_RODADA_GLOSSARIO)
+    chave = montar_amostra(original, nova)
+    linhas = gerar_planilha_cega(chave, original, nova, PLANILHA_CEGA, forcar=forcar)
+    CHAVE.parent.mkdir(parents=True, exist_ok=True)
+    CHAVE.write_text(json.dumps(chave, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(_ascii(f"Planilha cega com {linhas} linha(s): {PLANILHA_CEGA} (chave em {CHAVE} - nao abrir antes de anotar)"))
+    return 0
+
+
+def _ler_chave() -> dict:
+    if not CHAVE.is_file():
+        raise ErroDeAvaliacao(f"falta {CHAVE} - rode `python -m avaliacao_geracao glossario-gerar`")
+    return json.loads(CHAVE.read_text(encoding="utf-8"))
+
+
+def _glossario_importar(parcial: bool) -> int:
+    combinada = rodada_da_chave(_ler_chave(), carregar_rodada(PASTA_RODADA), carregar_rodada(PASTA_RODADA_GLOSSARIO))
+    lidas = ler_planilha(PLANILHA_CEGA)
+    problemas = validar(lidas, combinada, parcial)
+    if problemas:
+        for p in problemas:
+            print(_ascii(_descrever(p)), file=sys.stderr)
+        print(_ascii(f"erro: {len(problemas)} problema(s); nada gravado"), file=sys.stderr)
+        return 1
+    completas = [l for _, l in lidas if l.pertinente and l.fiel and l.recomendacao_correta]
+    if parcial:
+        print(_ascii(f"Anotadas: {len(completas)} de {len(lidas)}"))
+        return 0
+    gravar_csv(completas, CSV_GLOSSARIO)
+    print(_ascii(f"Importadas {len(completas)} de {len(lidas)} linha(s) em {CSV_GLOSSARIO}"))
+    return 0
+
+
+def _glossario_medir() -> int:
+    chave = _ler_chave()
+    original = carregar_rodada(PASTA_RODADA)
+    nova = carregar_rodada(PASTA_RODADA_GLOSSARIO)
+    combinada = rodada_da_chave(chave, original, nova)
+    novas = ler_csv(CSV_GLOSSARIO)
+    problemas = validar(list(enumerate(novas, start=2)), combinada, parcial=False)
+    if problemas:
+        for p in problemas:
+            print(_ascii(_descrever(p)), file=sys.stderr)
+        print(_ascii(f"erro: {len(problemas)} problema(s) no CSV; nada medido"), file=sys.stderr)
+        return 1
+    achados = sorted(k for k, r in original.items() if r.item.situacao == "gerado")
+    resultado = medir_glossario(ler_csv(CSV_OFICIAL), novas, chave, achados=achados)
+    resultado["indicador_lexico"] = {
+        "original": indicador_lexico(original),
+        "reexecucao_sem_cache": indicador_lexico(carregar_rodada(PASTA_REEXECUCAO)),
+        "glossario": indicador_lexico(nova),
+    }
+    resultado["chave"] = chave
+    resultado["commit"] = commit_atual()
+    print(_ascii(f"Resultado em {_gravar_json(resultado, 'glossario')}"))
+    return 0
+
+
 def _consolidar() -> int:
     print(_ascii(f"Consolidado em {_gravar_json(consolidar(PASTA_RESULTADOS), 'consolidado')}"))
     return 0
@@ -122,6 +197,13 @@ def main(argv: list[str] | None = None) -> int:
     importar.add_argument("--parcial", action="store_true")
     sub.add_parser("medir", help="mede a rubrica")
     sub.add_parser("consolidar", help="junta todos os resultados")
+    sub.add_parser("glossario-auditar", help="rodada P1-P7 com o glossario na instrucao (com cache)")
+    sub.add_parser("glossario-reexecutar", help="rodada P1-P7 com a instrucao original, sem cache")
+    g_gerar = sub.add_parser("glossario-gerar", help="sorteio e planilha cega do teste do glossario")
+    g_gerar.add_argument("--forcar", action="store_true")
+    g_importar = sub.add_parser("glossario-importar", help="valida a planilha cega e grava o CSV")
+    g_importar.add_argument("--parcial", action="store_true")
+    sub.add_parser("glossario-medir", help="comparacao pareada e indicador lexico")
     args = parser.parse_args(argv)
     try:
         if args.comando == "auditar":
@@ -132,6 +214,16 @@ def main(argv: list[str] | None = None) -> int:
             return _importar(args.parcial)
         if args.comando == "medir":
             return _medir()
+        if args.comando == "glossario-auditar":
+            return _auditar_em(PASTA_RODADA_GLOSSARIO, ClienteComInstrucao(criar_llm(), SISTEMA_COM_GLOSSARIO))
+        if args.comando == "glossario-reexecutar":
+            return _auditar_em(PASTA_REEXECUCAO, ClienteOllama(MODELO_PADRAO))
+        if args.comando == "glossario-gerar":
+            return _glossario_gerar(args.forcar)
+        if args.comando == "glossario-importar":
+            return _glossario_importar(args.parcial)
+        if args.comando == "glossario-medir":
+            return _glossario_medir()
         return _consolidar()
     except (ErroDeAvaliacao, ErroDeAuditoria, ErroDeContexto, ErroDeIndice, ErroEstruturaPbip) as erro:
         print(_ascii(f"erro: {erro}"), file=sys.stderr)

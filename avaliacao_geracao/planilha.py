@@ -91,17 +91,23 @@ def _referencia(r: ItemDaRodada, registro: Registro) -> str:
 
 
 def gerar_planilha(rodada: Rodada, destino: Path, *, forcar: bool = False, registro: Registro | None = None) -> int:
-    if destino.exists() and not forcar:
-        raise ErroDeAvaliacao(f"{destino} já existe e pode ter vereditos — apague, renomeie ou use --forcar")
-    registro = REGISTRO if registro is None else registro
     itens = sorted(
         ((chave, r) for chave, r in rodada.items() if r.item.situacao == "gerado"),
         key=lambda par: (par[1].projeto, par[1].item.achado.id_regra, par[1].item.achado.evidencia.objeto),
     )
+    return escrever_planilha(itens, destino, forcar=forcar, registro=registro)
+
+
+def escrever_planilha(itens: list[tuple[str, ItemDaRodada]], destino: Path, *, forcar: bool = False,
+                      registro: Registro | None = None, instrucoes_extra: list[str] | None = None) -> int:
+    """Uma linha por item, na ordem recebida; a primeira coluna é a chave dada."""
+    if destino.exists() and not forcar:
+        raise ErroDeAvaliacao(f"{destino} já existe e pode ter vereditos — apague, renomeie ou use --forcar")
+    registro = REGISTRO if registro is None else registro
     livro = Workbook()
     instrucoes = livro.active
     instrucoes.title = "Instruções"
-    for i, linha in enumerate(INSTRUCOES, start=1):
+    for i, linha in enumerate([*INSTRUCOES, *(instrucoes_extra or [])], start=1):
         instrucoes.cell(row=i, column=1, value=linha)
     aba = livro.create_sheet("Rubrica")
     cabecalho = [*COLUNAS_LEITURA, *COLUNAS_ANOTACAO]
