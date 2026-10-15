@@ -60,8 +60,9 @@
 #include "capitulos/03-metodo.typ"
 #include "capitulos/04-avaliacao.typ"
 #include "capitulos/05-discussao.typ"
+#include "capitulos/06-conclusao.typ"
 
 #context [#metadata(here().page()) <fim-textual>]
 
 #bibliography("referencias.bib", title: [Referências], style: "abnt.csl")
-// APÊNDICES (Task 9)
+#include "capitulos/apendices.typ"

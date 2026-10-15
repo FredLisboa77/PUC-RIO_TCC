@@ -214,9 +214,19 @@ def tabela_concordancia(bloco: dict) -> str:
     )
 
 
+ROTULOS_CATEGORIA = {"modelagem": "modelagem", "performance": "desempenho", "dax": "DAX"}
+ROTULOS_SEVERIDADE = {"alta": "alta", "media": "média", "baixa": "baixa"}
+
+
 def tabela_catalogo() -> str:
     linhas = [
-        [_celula(m.id), _celula(m.titulo), _celula(m.categoria), _celula(m.severidade), f'[#link("{m.url_canonica}")[{escapar(m.url_canonica)}]]']
+        [
+            _celula(m.id),
+            _celula(m.titulo),
+            _celula(ROTULOS_CATEGORIA.get(m.categoria, m.categoria)),
+            _celula(ROTULOS_SEVERIDADE.get(m.severidade, m.severidade)),
+            f'[#link("{m.url_canonica}")[{escapar(m.url_canonica)}]]',
+        ]
         for m in REGISTRO.metas()
     ]
     return _figura(

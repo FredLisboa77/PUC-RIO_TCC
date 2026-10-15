@@ -8,6 +8,7 @@ from academico.tabelas import (
     faixa,
     gerar_todas,
     num,
+    tabela_catalogo,
     tabela_concordancia,
     tabela_geracao,
     tabela_regras,
@@ -86,6 +87,13 @@ def test_tabela_concordancia_explica_as_celulas():
     }
     texto = tabela_concordancia(bloco)
     assert "[Fiel], [Sem aviso de números ou nomes], [24], [24], [8], [5], [0,48], [-0,08]" in texto
+
+
+def test_catalogo_usa_os_termos_do_texto():
+    texto = tabela_catalogo()
+    assert "[desempenho]" in texto and "[performance]" not in texto
+    assert "[média]" in texto and "[media]" not in texto
+    assert "[DAX]" in texto
 
 
 def test_arquivos_gerados_em_dia_com_o_consolidado():
