@@ -18,6 +18,14 @@ from core.rules.todas import REGISTRO
 
 SEM_TABELA = "—"
 
+NOTA_EXPLICACAO = (
+    "Texto gerado pelo modelo de linguagem. A conferência automática só verifica números e nomes, "
+    "não o sentido: a ausência de aviso não garante que a explicação esteja correta. "
+    "O achado e a recomendação padrão da regra não dependem do modelo."
+)
+"""Medido em 14/10/2026: contra a leitura humana de 61 explicações, a conferência automática teve
+kappa −0,08 (progress-log). Daí o rótulo honesto em vez de "fidelidade"."""
+
 MOTIVOS = {
     "json_invalido": "o LLM não devolveu JSON válido",
     "campo_vazio": "o LLM devolveu explicação ou recomendação vazia",
@@ -50,9 +58,10 @@ def avisos(item: AchadoEnriquecido) -> list[Aviso]:
         ))
     if item.fidelidade is not None and item.fidelidade.divergencias:
         lista.append(Aviso(
-            "Divergência de fidelidade",
+            "Números ou nomes sem origem nos trechos",
             "A resposta menciona termos que não aparecem no achado nem nos trechos: "
-            f"{', '.join(item.fidelidade.divergencias)}. Confira antes de agir.",
+            f"{', '.join(item.fidelidade.divergencias)}. A conferência só confere números e nomes; "
+            "confira antes de agir.",
         ))
     if item.cita_ancora is False:
         lista.append(Aviso(

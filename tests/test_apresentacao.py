@@ -69,8 +69,9 @@ def test_cada_gatilho_gera_seu_aviso():
     divergente = _gerado(achado(), fidelidade=Fidelidade(divergencias=["42", "Vendas"]))
     assert titulos(_descartado(achado())) == ["Sem fundamentação — recomendação padrão da regra"]
     assert "não devolveu JSON válido" in consulta.avisos(_descartado(achado()))[0].explicacao
-    assert titulos(divergente) == ["Divergência de fidelidade"]
+    assert titulos(divergente) == ["Números ou nomes sem origem nos trechos"]
     assert "42, Vendas" in consulta.avisos(divergente)[0].explicacao
+    assert "só confere números e nomes" in consulta.avisos(divergente)[0].explicacao
     assert titulos(_gerado(achado(), cita_ancora=False)) == ["Não cita a seção âncora da regra"]
     assert titulos(_gerado(achado(), reducoes_de_contexto=2)) == ["Contexto reduzido para caber"]
     assert titulos(AchadoEnriquecido.so_regras(achado())) == ["Só regras — sem explicação do LLM"]

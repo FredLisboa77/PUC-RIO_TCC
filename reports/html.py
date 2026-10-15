@@ -64,4 +64,5 @@ def gerar_html(
         regras=regras,
         tecnico=tecnico,
         severidade=ROTULOS_SEVERIDADE,
+        nota_explicacao=apresentacao.NOTA_EXPLICACAO,
     )

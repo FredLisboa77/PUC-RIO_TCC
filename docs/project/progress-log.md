@@ -1990,3 +1990,17 @@ critério automático de fidelidade precisa ser declarado como insuficiente. Lim
 **Próximo passo:** revisão final e merge da `fase5-avaliacao` na `main`; depois a monografia
 (subprojeto 2, semana 12), usando `consolidado-2026-10-14.json` como fonte única das tabelas.
 Oferecer a atualização da página do orientador.
+
+---
+
+## 14/10/2026 — Aviso de "fidelidade" renomeado na ferramenta
+
+Consequência da rubrica (kappa −0,08 entre a conferência automática e a leitura humana): o aviso
+"Divergência de fidelidade" passa a se chamar **"Números ou nomes sem origem nos trechos"** na
+interface, no relatório e no resumo da linha de comando, e toda explicação gerada leva uma nota
+dizendo que a conferência só verifica números e nomes, que a ausência de aviso não garante a
+correção e que o achado e a recomendação padrão não dependem do modelo
+(`core.apresentacao.NOTA_EXPLICACAO`). Os nomes internos (`fidelidade` no JSON) ficam, para os
+resultados antigos continuarem legíveis. A página do orientador já descreve o rótulo novo.
+
+Suíte: 877 testes passando.

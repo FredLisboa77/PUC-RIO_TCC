@@ -298,3 +298,9 @@ def test_comando_com_cache_envolve_o_cliente(tmp_path, monkeypatch, capsys):
     assert auditoria.main([str(_pbip(tmp_path)), "--cache"]) == 0
     assert auditoria.main([str(_pbip(tmp_path / "de-novo")), "--cache"]) == 0
     assert "Do cache: 2" in capsys.readouterr().out
+
+
+def test_resumo_chama_o_aviso_de_numeros_ou_nomes_sem_origem(tmp_path):
+    resultado, _ = _auditar(tmp_path)
+    texto = resumir(resultado)
+    assert "numeros ou nomes sem origem: 0" in texto and "fidelidade" not in texto
