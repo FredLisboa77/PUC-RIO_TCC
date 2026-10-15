@@ -16,6 +16,6 @@
     [PERF-003], [16], [0], [0], [0], [0], [1,00], [\[0,81; 1,00\]], [1,00],
     [*Total (micro)*], [52], [4], [0], [5], [1], [0,93 (0,85–0,93)], [\[0,83; 0,97\]], [1,00 (0,98–1,00)],
   ),
-  caption: [Desempenho das regras após a correção da MOD-003 e da PERF-001 (análise de erros)],
+  caption: [Desempenho das regras após a correção da MOD-003 e da PERF-001 (análise de erros); Ind. M e Ind. NM: indeterminados marcados e não marcados pela regra],
 ) <tab-regras-pos-correcao>
 #fonte[Elaborado pelo autor a partir de `regras-2026-10-15-pos-correcao.json`.]

@@ -2077,3 +2077,52 @@ consolidado, com teste de sincronia. O conteúdo técnico anterior foi para
 `fase5-monografia` na `main`; depois a demonstração (subprojeto 3, semana 13). Oferecer a
 atualização da página do orientador.
 
+
+---
+
+## 15/10/2026 — Revisão externa da monografia: MOD-005 no gabarito e correções do texto
+
+Branch `revisao-monografia`. O Fred trouxe uma revisão externa do PDF; cada ponto foi conferido
+contra os dados, o código e o PDF antes de ser aceito ou recusado.
+
+**Defeito real encontrado (o mais grave):** as 7 linhas da MOD-005 revistas para "indeterminado"
+em 12/10 estavam erradas. As tabelas de data de P1–P7 têm `dataCategory: "Time"` na tabela e
+`isKey: true` na coluna de data, ou seja, **estão marcadas**, e P1–P7 foram salvos como PBIP pelo
+próprio Desktop (ADR-005). A conclusão de 06/10 ("o Desktop nunca grava a propriedade"), tirada
+só no P8, está refutada pelos nossos dados; a causa da divergência no P8 não foi apurada. A regra
+sempre se comportou certo (se cala diante de `dataCategory: "Time"`).
+
+- Gabarito: as 7 linhas viraram "não viola", com o histórico na justificativa.
+- Remedição: regras congeladas num worktree com `core/rules` da tag `regras-gt` — a reprodução
+  do resultado de 12/10 com o CSV antigo saiu **idêntica** antes da troca — e regras corrigidas.
+  Novos `regras-2026-10-15.json`, `regras-2026-10-15-pos-correcao.json` e
+  `consolidado-2026-10-15.json` (fonte da monografia; os de 12/10 e 14/10 ficam como histórico).
+- **Valores principais não mudam** (0,88/0,88 oficial; 0,93/1,00 pós-correção). Indeterminados
+  13 → 6; piso de revocação oficial 0,72 → 0,81. MOD-005: 13 VN.
+- Docstrings e nota de verificação da MOD-005 corrigidas; lógica da regra inalterada.
+
+**Tabelas de regras:** indeterminados em duas colunas (Ind. M, que a regra marcou; Ind. NM, que
+não marcou) e piso–teto entre parênteses quando diferem do principal. Fecha a conta dos 61
+achados da geração: 56 decididos + 5 indeterminados marcados pela PERF-001.
+
+**Texto:** exemplo de indeterminado trocado (PERF-001, `Product[Sorting]` com `RELATED`); Etapa 1
+da recuperação apresentada como registro da decisão; MOD-002/MOD-005 sem detecção medida
+declaradas; ponto cego topológico da MOD-006 (cabeçalho–item) e a leitura do erro do P8 (a
+mensagem do achado cita `FactOnlineSales`); denominador da DAX-001 (parênteses não disparam;
+`VAR` constante dispara — falso positivo declarado); ameaças de construto novas (falso positivo
+efetivo da PERF-001 em tabelas de data; sem comparação com o texto fixo; conclusão sobre a
+conferência limitada à verificação léxica); hipótese, não medida, de que os complementares da
+PERF-001 induziram as recomendações com sintaxe DAX; trabalhos futuros (glossário na instrução,
+comparação às cegas com o texto fixo, geração só com a âncora, reverificar a marcação no
+Desktop); frase da Introdução sobre o verificador restringida; vírgula duplicada no cap. 2.
+
+**Recusados, com motivo:** "É" mal renderizado e "de 1 a 3" sem o 1 (o PDF está certo; artefato
+da leitura do revisor); trocar o BM25 depois de medir (violaria a regra pré-fixada, e a densa
+também zerou a PERF-001); parênteses na DAX-001 (o código já trata); a explicação do erro do P8
+pela topologia da MOD-006 (a tabela apontada era dimensão).
+
+PDF: 45 páginas textuais. Suíte: 905 testes passando.
+
+**Próximo passo:** o Fred relê os trechos alterados (caps. 3 a 6) e decide se faz o teste com
+glossário na instrução antes da entrega; depois, merge da `revisao-monografia` na `main` e a
+demonstração (subprojeto 3).

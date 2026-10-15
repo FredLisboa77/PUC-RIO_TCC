@@ -267,14 +267,16 @@ def lado_muitos(r: Relacionamento) -> set[str]:
 def tabela_de_data_marcada(t: Tabela) -> bool:
     """A tabela traz a marcação de tabela de data na propriedade do TMSL.
 
-    **O Power BI Desktop não escreve esta propriedade.** Verificado em
-    06/10/2026 contra um PBIP salvo pelo Desktop: `dataCategory` aparece só em
-    coluna, nunca em tabela, e `isDateTable` não aparece em lugar nenhum. O TOM,
-    por outro lado, representa a marcação assim — então um modelo editado pelo
-    Tabular Editor ou pelo endpoint XMLA pode trazê-la aqui.
+    É assim que o TMSL grava "Marcar como tabela de data": `dataCategory: "Time"`
+    na tabela e `isKey: true` na coluna de data. As tabelas de data de P1–P7,
+    salvas como PBIP pelo Power BI Desktop, trazem a propriedade (conferido em
+    15/10/2026). A verificação de 06/10/2026 no P8 não a encontrou e concluiu,
+    errado, que o Desktop nunca a escreve; a causa da divergência não foi
+    apurada.
 
     Serve, portanto, como marcação **explícita** quando existe, e nunca como
-    prova de ausência: para isso usa-se `colunas_com_data_automatica`.
+    prova de ausência, enquanto não houver garantia de que o Desktop sempre a
+    grava: para isso usa-se `colunas_com_data_automatica`.
     """
     return t.data_category == "Time"
 

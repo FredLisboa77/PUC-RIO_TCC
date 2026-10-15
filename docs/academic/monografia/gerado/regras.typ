@@ -16,6 +16,6 @@
     [PERF-003], [16], [0], [0], [0], [0], [1,00], [\[0,81; 1,00\]], [1,00],
     [*Total (micro)*], [46], [6], [6], [1], [5], [0,88 (0,87–0,89)], [\[0,77; 0,95\]], [0,88 (0,81–0,89)],
   ),
-  caption: [Desempenho das regras contra o gabarito em P1–P7 (resultado oficial, regras da tag regras-gt)],
+  caption: [Desempenho das regras contra o gabarito em P1–P7 (resultado oficial, regras da tag regras-gt); Ind. M e Ind. NM: indeterminados marcados e não marcados pela regra],
 ) <tab-regras>
 #fonte[Elaborado pelo autor a partir de `regras-2026-10-15.json`.]

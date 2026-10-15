@@ -258,12 +258,15 @@ def tabela_catalogo() -> str:
     )
 
 
+SIGLAS_INDETERMINADOS = "; Ind. M e Ind. NM: indeterminados marcados e não marcados pela regra"
+
+
 def gerar_todas(consolidado: dict) -> dict[str, str]:
     regras = consolidado["regras"]
     pos = consolidado["regras_pos_correcao"]
     return {
-        "regras.typ": tabela_regras(regras, "tab-regras", f"Desempenho das regras contra o gabarito em P1–P7 ({regras['rotulo']})"),
-        "regras-pos-correcao.typ": tabela_regras(pos, "tab-regras-pos-correcao", f"Desempenho das regras após a correção da MOD-003 e da PERF-001 ({pos['rotulo']})"),
+        "regras.typ": tabela_regras(regras, "tab-regras", f"Desempenho das regras contra o gabarito em P1–P7 ({regras['rotulo']}){SIGLAS_INDETERMINADOS}"),
+        "regras-pos-correcao.typ": tabela_regras(pos, "tab-regras-pos-correcao", f"Desempenho das regras após a correção da MOD-003 e da PERF-001 ({pos['rotulo']}){SIGLAS_INDETERMINADOS}"),
         "recuperacao.typ": tabela_recuperacao(consolidado["recuperacao"]),
         "complementares.typ": tabela_complementares(consolidado["complementares"]),
         "geracao.typ": tabela_geracao(consolidado["geracao"]),
