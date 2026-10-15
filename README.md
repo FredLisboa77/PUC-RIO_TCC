@@ -16,13 +16,13 @@ O resultado aparece numa interface local e pode ser exportado em HTML e PDF.
 |---|---|---|
 | Fase 1 — Viabilidade e planejamento | Semanas 1–2 | **Concluída em 29/09/2026** — gate aprovado e spike de LLM validado |
 | Fase 2 — Leitura do PBIP e regras | Semanas 3–5 | **Concluída em 08/10/2026** — ingestão, parser, motor de regras, lexer de DAX e 9 regras (8 estruturais + DAX-001) |
-| **Fase 3 — RAG e análise com LLM** | Semanas 6–8 | **Em andamento** |
-| Fase 4 — Interface e relatório | Semanas 9–10 | Não iniciada |
-| Fase 5 — Avaliação, documentação e banca | Semanas 11–13 | Não iniciada |
+| Fase 3 — RAG e análise com LLM | Semanas 6–8 | **Concluída em 13/10/2026** — base de 1.420 páginas do Learn, recuperação BM25 escolhida por medição, geração com citação obrigatória; gabarito das regras (precisão 0,88); revisão de meio de projeto aprovada |
+| Fase 4 — Interface e relatório | Semanas 9–10 | **Concluída em 13/10/2026** — interface Streamlit, relatório HTML/PDF e cache das respostas do LLM |
+| **Fase 5 — Avaliação, documentação e banca** | Semanas 11–13 | **Em andamento** — avaliação da geração medida em 14/10/2026; monografia e demonstração a seguir |
 
 O **resumo de andamento** — o que está pronto, o que ficou pendente e por quê — está em [`docs/project/status.md`](docs/project/status.md). O planejamento completo está em [`docs/project/fase1-viabilidade-e-planejamento.md`](docs/project/fase1-viabilidade-e-planejamento.md), e o histórico detalhado do trabalho em [`docs/project/progress-log.md`](docs/project/progress-log.md).
 
-Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, um lexer de DAX que tokeniza as 137 expressões do PBIP real usado como estudo de caso com zero token desconhecido, e o motor de regras determinísticas com 9 regras (8 estruturais e a primeira de DAX, DAX-001) — 15 achados nesse PBIP real. 195 testes passando.
+Já implementado: ingestão de PBIP (pasta ou `.zip`) com validação de estrutura, parser do `model.bim` para um modelo interno normalizado, um lexer de DAX que tokeniza as 137 expressões do PBIP real usado como estudo de caso com zero token desconhecido, e o motor de regras determinísticas com 9 regras (8 estruturais e a primeira de DAX, DAX-001) — 15 achados nesse PBIP real. Sobre ele, a base RAG com o Microsoft Learn, a explicação gerada por um LLM local com citação obrigatória, a interface Streamlit, o relatório HTML/PDF e a avaliação: detecção contra gabarito humano (precisão 0,88 em P1–P7) e rubrica humana das explicações (citação pertinente em 61 de 61, fiéis 0,52, recomendação correta 0,77). 874 testes passando.
 
 Cada regra declara a página do Microsoft Learn que a sustenta, e `python -m core.rules.catalogo` imprime o catálogo. Regra sem essa âncora não entra no registro: a verificação das fontes antes de escrever código eliminou três das nove regras estruturais originalmente propostas, uma delas porque a página que a sustentaria recomendava justamente o que a regra marcaria como defeito — e, nesta etapa, um terceiro teste do mesmo critério (suficiência de evidência) rejeitou uma regra inteira (coluna sem uso) antes do código, por falta de evidência sobre a camada de relatório que a ferramenta não lê.
 
@@ -53,6 +53,8 @@ app/       interface Streamlit
 core/      leitura do PBIP, parsing, regras, análise
 rag/       coleta, chunking, indexação, recuperação
 reports/   templates HTML e exportação para PDF
+gabarito/  gabarito humano das regras (planilha, importação, medição)
+avaliacao_geracao/  rubrica humana das explicações e consolidado dos resultados
 tests/     testes e fixtures PBIP mínimos
 eval/      ground truth, scripts e resultados da avaliação
 docs/      academic/ (relatório), adr/ (decisões), project/ (log, backlog, riscos)
@@ -142,6 +144,19 @@ python -m core.auditoria <pasta-pbip> --cache                 # reusa respostas 
 
 O PDF usa o Microsoft Edge instalado (Playwright, `channel="msedge"`); não é preciso rodar
 `playwright install`. O cache das respostas fica em `outputs/cache-llm/` — apagar a pasta o limpa.
+
+### Avaliação da geração
+
+```powershell
+python -m avaliacao_geracao auditar      # auditoria completa de P1-P7, com cache (exige Ollama e índice)
+python -m avaliacao_geracao gerar        # planilha cega da rubrica em eval/gabarito/
+python -m avaliacao_geracao importar     # valida a planilha e grava eval/rubrica_geracao.csv (--parcial para conferir)
+python -m avaliacao_geracao medir        # taxas com intervalo de Wilson e kappa humano x automático
+python -m avaliacao_geracao consolidar   # junta todos os resultados em eval/results/consolidado-<data>.json
+```
+
+As auditorias da rodada (`eval/geracao/`) e a planilha ficam fora do Git, porque trazem texto
+do Learn; o CSV dos vereditos e os resultados entram.
 
 ## Testes
 
