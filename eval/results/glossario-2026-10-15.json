@@ -1,0 +1,626 @@
+{
+  "estatuto": "análise de erros",
+  "protocolo": "docs/superpowers/specs/2026-10-15-teste-do-glossario-design.md",
+  "n_pares": 61,
+  "itens": {
+    "pertinente": {
+      "original": {
+        "sim": 61,
+        "n": 61,
+        "proporcao": 1.0,
+        "wilson": [
+          0.9407540837980555,
+          1.0
+        ]
+      },
+      "glossario": {
+        "sim": 61,
+        "n": 61,
+        "proporcao": 1.0,
+        "wilson": [
+          0.9407540837980555,
+          1.0
+        ]
+      },
+      "discordantes": {
+        "so_original": 0,
+        "so_glossario": 0
+      },
+      "p_mcnemar": 1.0
+    },
+    "fiel": {
+      "original": {
+        "sim": 32,
+        "n": 61,
+        "proporcao": 0.5245901639344263,
+        "wilson": [
+          0.4015694171531101,
+          0.6446971771320402
+        ]
+      },
+      "glossario": {
+        "sim": 51,
+        "n": 61,
+        "proporcao": 0.8360655737704918,
+        "wilson": [
+          0.7238692567544832,
+          0.9084408651425705
+        ]
+      },
+      "discordantes": {
+        "so_original": 2,
+        "so_glossario": 21
+      },
+      "p_mcnemar": 6.604194641113281e-05
+    },
+    "recomendacao_correta": {
+      "original": {
+        "sim": 47,
+        "n": 61,
+        "proporcao": 0.7704918032786885,
+        "wilson": [
+          0.6508635609254849,
+          0.858068976211168
+        ]
+      },
+      "glossario": {
+        "sim": 37,
+        "n": 61,
+        "proporcao": 0.6065573770491803,
+        "wilson": [
+          0.4811702438560874,
+          0.7193183313795637
+        ]
+      },
+      "discordantes": {
+        "so_original": 18,
+        "so_glossario": 8
+      },
+      "p_mcnemar": 0.07551869750022888
+    },
+    "utilizavel": {
+      "original": {
+        "sim": 23,
+        "n": 61,
+        "proporcao": 0.3770491803278688,
+        "wilson": [
+          0.2661433042836724,
+          0.5025237242905762
+        ]
+      },
+      "glossario": {
+        "sim": 32,
+        "n": 61,
+        "proporcao": 0.5245901639344263,
+        "wilson": [
+          0.4015694171531101,
+          0.6446971771320402
+        ]
+      },
+      "discordantes": {
+        "so_original": 4,
+        "so_glossario": 13
+      },
+      "p_mcnemar": 0.049041748046875
+    }
+  },
+  "por_regra": {
+    "DAX-001": {
+      "pertinente": {
+        "original": "6 / 6",
+        "glossario": "6 / 6"
+      },
+      "fiel": {
+        "original": "1 / 6",
+        "glossario": "2 / 6"
+      },
+      "recomendacao_correta": {
+        "original": "6 / 6",
+        "glossario": "3 / 6"
+      },
+      "utilizavel": {
+        "original": "1 / 6",
+        "glossario": "1 / 6"
+      }
+    },
+    "MOD-001": {
+      "pertinente": {
+        "original": "1 / 1",
+        "glossario": "1 / 1"
+      },
+      "fiel": {
+        "original": "0 / 1",
+        "glossario": "0 / 1"
+      },
+      "recomendacao_correta": {
+        "original": "0 / 1",
+        "glossario": "1 / 1"
+      },
+      "utilizavel": {
+        "original": "0 / 1",
+        "glossario": "0 / 1"
+      }
+    },
+    "MOD-003": {
+      "pertinente": {
+        "original": "3 / 3",
+        "glossario": "3 / 3"
+      },
+      "fiel": {
+        "original": "3 / 3",
+        "glossario": "3 / 3"
+      },
+      "recomendacao_correta": {
+        "original": "0 / 3",
+        "glossario": "3 / 3"
+      },
+      "utilizavel": {
+        "original": "0 / 3",
+        "glossario": "3 / 3"
+      }
+    },
+    "MOD-006": {
+      "pertinente": {
+        "original": "3 / 3",
+        "glossario": "3 / 3"
+      },
+      "fiel": {
+        "original": "2 / 3",
+        "glossario": "1 / 3"
+      },
+      "recomendacao_correta": {
+        "original": "2 / 3",
+        "glossario": "3 / 3"
+      },
+      "utilizavel": {
+        "original": "1 / 3",
+        "glossario": "1 / 3"
+      }
+    },
+    "MOD-007": {
+      "pertinente": {
+        "original": "1 / 1",
+        "glossario": "1 / 1"
+      },
+      "fiel": {
+        "original": "1 / 1",
+        "glossario": "1 / 1"
+      },
+      "recomendacao_correta": {
+        "original": "0 / 1",
+        "glossario": "1 / 1"
+      },
+      "utilizavel": {
+        "original": "0 / 1",
+        "glossario": "1 / 1"
+      }
+    },
+    "PERF-001": {
+      "pertinente": {
+        "original": "31 / 31",
+        "glossario": "31 / 31"
+      },
+      "fiel": {
+        "original": "9 / 31",
+        "glossario": "28 / 31"
+      },
+      "recomendacao_correta": {
+        "original": "24 / 31",
+        "glossario": "10 / 31"
+      },
+      "utilizavel": {
+        "original": "6 / 31",
+        "glossario": "10 / 31"
+      }
+    },
+    "PERF-003": {
+      "pertinente": {
+        "original": "16 / 16",
+        "glossario": "16 / 16"
+      },
+      "fiel": {
+        "original": "16 / 16",
+        "glossario": "16 / 16"
+      },
+      "recomendacao_correta": {
+        "original": "15 / 16",
+        "glossario": "16 / 16"
+      },
+      "utilizavel": {
+        "original": "15 / 16",
+        "glossario": "16 / 16"
+      }
+    }
+  },
+  "consistencia": {
+    "pertinente": {
+      "n": 20,
+      "tabela": {
+        "a": 20,
+        "b": 0,
+        "c": 0,
+        "d": 0
+      },
+      "concordancia": 1.0,
+      "kappa": null
+    },
+    "fiel": {
+      "n": 20,
+      "tabela": {
+        "a": 9,
+        "b": 0,
+        "c": 6,
+        "d": 5
+      },
+      "concordancia": 0.7,
+      "kappa": 0.4285714285714285
+    },
+    "recomendacao_correta": {
+      "n": 20,
+      "tabela": {
+        "a": 11,
+        "b": 3,
+        "c": 2,
+        "d": 4
+      },
+      "concordancia": 0.75,
+      "kappa": 0.43181818181818177
+    },
+    "utilizavel": {
+      "n": 20,
+      "tabela": {
+        "a": 4,
+        "b": 1,
+        "c": 6,
+        "d": 9
+      },
+      "concordancia": 0.65,
+      "kappa": 0.30000000000000004
+    }
+  },
+  "decisao": {
+    "melhora": true,
+    "fragil": true
+  },
+  "indicador_lexico": {
+    "original": {
+      "com_erro": 16,
+      "explicacoes": 31
+    },
+    "reexecucao_sem_cache": {
+      "com_erro": 16,
+      "explicacoes": 31
+    },
+    "glossario": {
+      "com_erro": 3,
+      "explicacoes": 31
+    }
+  },
+  "chave": {
+    "R01": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|MOD-006|Product"
+    },
+    "R02": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Store[Opening month]"
+    },
+    "R03": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|MOD-001|DateTableTemplate_6de7953b-39de-41ab-b96b-cebbc3f3ccc1"
+    },
+    "R04": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Store[City]"
+    },
+    "R05": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-001|Product[Sorting]"
+    },
+    "R06": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-003|Sales[Extended Amount]"
+    },
+    "R07": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Employee[TenureDays]"
+    },
+    "R08": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Rolling Period]"
+    },
+    "R09": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Employee[AgeGroupID]"
+    },
+    "R10": {
+      "versao": "glossario",
+      "achado": "P2_Corporate Spend|PERF-001|Date[Month]"
+    },
+    "R11": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Sales Per Sq Ft]"
+    },
+    "R12": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Gross Margin This Year %]"
+    },
+    "R13": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Running Months]"
+    },
+    "R14": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[RunningMonths]"
+    },
+    "R15": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[MonthIndex]"
+    },
+    "R16": {
+      "versao": "original",
+      "achado": "P5_Store Sales|PERF-001|Store[City]"
+    },
+    "R17": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|MOD-003|Logo"
+    },
+    "R18": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Manufacturer[MfgisVanArsdel]"
+    },
+    "R19": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Gross Margin Last Year %]"
+    },
+    "R20": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Avg $/Unit TY]"
+    },
+    "R21": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|MOD-007|Sales Order[SalesOrderLineKey] → Sales[SalesOrderLineKey]"
+    },
+    "R22": {
+      "versao": "original",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[MonthIndex]"
+    },
+    "R23": {
+      "versao": "original",
+      "achado": "P5_Store Sales|MOD-006|Store"
+    },
+    "R24": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Product[isVanArsdel]"
+    },
+    "R25": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Store[Opening year]"
+    },
+    "R26": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Employee[BadHires]"
+    },
+    "R27": {
+      "versao": "original",
+      "achado": "P5_Store Sales|DAX-001|Sales[Total Sales Var %]"
+    },
+    "R28": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Rolling Period Sort]"
+    },
+    "R29": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-003|Sentiment[Score]"
+    },
+    "R30": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Employee[isNewHire]"
+    },
+    "R31": {
+      "versao": "original",
+      "achado": "P1_AdventureWorks Sales|MOD-007|Sales Order[SalesOrderLineKey] → Sales[SalesOrderLineKey]"
+    },
+    "R32": {
+      "versao": "original",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_Regular_Sales_Dollars]"
+    },
+    "R33": {
+      "versao": "glossario",
+      "achado": "P2_Corporate Spend|PERF-003|Calculations[Value]"
+    },
+    "R34": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_Markdown_Sales_Units]"
+    },
+    "R35": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-001|Date[Year]"
+    },
+    "R36": {
+      "versao": "original",
+      "achado": "P5_Store Sales|DAX-001|Sales[Avg $/Unit LY]"
+    },
+    "R37": {
+      "versao": "original",
+      "achado": "P5_Store Sales|DAX-001|Sales[Sales Per Sq Ft]"
+    },
+    "R38": {
+      "versao": "original",
+      "achado": "P6_Supply Chain Sample|PERF-003|Supply Analytics[Manufactured Goods %]"
+    },
+    "R39": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|MOD-003|Indicators"
+    },
+    "R40": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|MOD-003|Supply Analytics"
+    },
+    "R41": {
+      "versao": "original",
+      "achado": "P2_Corporate Spend|PERF-003|Calculations[Value]"
+    },
+    "R42": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_GrossMarginAmount]"
+    },
+    "R43": {
+      "versao": "original",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Rolling Period Sort]"
+    },
+    "R44": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Date[Month increment number]"
+    },
+    "R45": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Product[IsCompete]"
+    },
+    "R46": {
+      "versao": "original",
+      "achado": "P2_Corporate Spend|PERF-001|Date[Month]"
+    },
+    "R47": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|MOD-006|Store"
+    },
+    "R48": {
+      "versao": "original",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Product[IsCompete]"
+    },
+    "R49": {
+      "versao": "original",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Running Year]"
+    },
+    "R50": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Months]"
+    },
+    "R51": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_Regular_Sales_Units]"
+    },
+    "R52": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Store[Open Month No]"
+    },
+    "R53": {
+      "versao": "glossario",
+      "achado": "P2_Corporate Spend|PERF-001|Country Region[Country / Region]"
+    },
+    "R54": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Total Sales Var %]"
+    },
+    "R55": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-003|Employee[TenureDays]"
+    },
+    "R56": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Employee[TenureMonths]"
+    },
+    "R57": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-003|Employee[BadHires]"
+    },
+    "R58": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|PERF-001|Supply Analytics[Manufactured Goods]"
+    },
+    "R59": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|DAX-001|Sales[Avg $/Unit LY]"
+    },
+    "R60": {
+      "versao": "original",
+      "achado": "P5_Store Sales|DAX-001|Sales[Gross Margin This Year %]"
+    },
+    "R61": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-003|Sales[Product Standard Cost]"
+    },
+    "R62": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-003|Sales[Sales Amount]"
+    },
+    "R63": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Store[Store type]"
+    },
+    "R64": {
+      "versao": "original",
+      "achado": "P6_Supply Chain Sample|PERF-001|Supply Analytics[Manufactured Goods]"
+    },
+    "R65": {
+      "versao": "original",
+      "achado": "P1_AdventureWorks Sales|MOD-006|Product"
+    },
+    "R66": {
+      "versao": "original",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Rolling Period]"
+    },
+    "R67": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-001|Date[Mth of year]"
+    },
+    "R68": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|PERF-003|Supply Analytics[Manufactured Goods %]"
+    },
+    "R69": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_Regular_Sales_Dollars]"
+    },
+    "R70": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-003|Sales[Unit Price]"
+    },
+    "R71": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|MOD-006|Product"
+    },
+    "R72": {
+      "versao": "original",
+      "achado": "P1_AdventureWorks Sales|PERF-001|Date[Mth of year]"
+    },
+    "R73": {
+      "versao": "glossario",
+      "achado": "P3_Employee Hiring and History|PERF-001|Business unit[Region]"
+    },
+    "R74": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|PERF-001|Supply Analytics[Manufactured (%)]"
+    },
+    "R75": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-001|Date[Mth]"
+    },
+    "R76": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-003|Sales[Sum_Markdown_Sales_Dollars]"
+    },
+    "R77": {
+      "versao": "glossario",
+      "achado": "P6_Supply Chain Sample|PERF-003|Backorder Percentage[Backorder %]"
+    },
+    "R78": {
+      "versao": "original",
+      "achado": "P6_Supply Chain Sample|MOD-001|DateTableTemplate_6de7953b-39de-41ab-b96b-cebbc3f3ccc1"
+    },
+    "R79": {
+      "versao": "glossario",
+      "achado": "P5_Store Sales|PERF-001|Sales[ReportingPeriodID]"
+    },
+    "R80": {
+      "versao": "glossario",
+      "achado": "P1_AdventureWorks Sales|PERF-003|Sales[Total Product Cost]"
+    },
+    "R81": {
+      "versao": "glossario",
+      "achado": "P4_Competitive Marketing Analysis|PERF-001|Date[Running Year]"
+    }
+  },
+  "commit": "ae4af2f"
+}
