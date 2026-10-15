@@ -15,7 +15,6 @@
   set figure.caption(position: top)
   set figure.caption(separator: [ -- ])
   show figure.caption: set text(size: 10pt)
-  show figure.where(kind: table): set block(breakable: true)
   show table: set text(size: 10pt)
   show table: set par(justify: false, first-line-indent: 0pt, leading: 0.5em)
   set table(stroke: 0.5pt, inset: 4pt)

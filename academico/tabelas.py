@@ -66,6 +66,7 @@ def _figura(rotulo: str, legenda: str, cabecalho: list[str], linhas: list[list[s
     """Uma tabela ABNT: legenda acima, fonte abaixo. `linhas` já vem em células Typst."""
     partes = [
         "// Gerado por `python -m academico tabelas`. Nao editar a mao.",
+        '#import "../abnt.typ": fonte',
         "#figure(",
         "  table(",
         f"    columns: {len(cabecalho)},",

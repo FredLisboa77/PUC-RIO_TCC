@@ -97,10 +97,14 @@ def test_arquivos_gerados_em_dia_com_o_consolidado():
         )
 
 
-def test_cada_tabela_gerada_compila(tmp_path):
+def test_cada_tabela_gerada_compila_incluida_como_no_capitulo(tmp_path):
     abnt = (PASTA_GERADO.parent / "abnt.typ").read_text(encoding="utf-8")
     (tmp_path / "abnt.typ").write_text(abnt, encoding="utf-8")
+    (tmp_path / "gerado").mkdir()
+    (tmp_path / "capitulos").mkdir()
     for nome, conteudo in gerar_todas(carregar()).items():
+        (tmp_path / "gerado" / nome).write_text(conteudo, encoding="utf-8")
+        (tmp_path / "capitulos" / "c.typ").write_text(f'#include "../gerado/{nome}"\n', encoding="utf-8")
         doc = tmp_path / "doc.typ"
-        doc.write_text('#import "abnt.typ": abnt, fonte\n#show: abnt\n' + conteudo, encoding="utf-8")
+        doc.write_text('#import "abnt.typ": abnt\n#show: abnt\n#include "capitulos/c.typ"\n', encoding="utf-8")
         assert compilar(doc).startswith(b"%PDF"), nome

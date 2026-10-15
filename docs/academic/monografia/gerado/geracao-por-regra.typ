@@ -1,4 +1,5 @@
 // Gerado por `python -m academico tabelas`. Nao editar a mao.
+#import "../abnt.typ": fonte
 #figure(
   table(
     columns: 5,

@@ -56,6 +56,7 @@
 
 // CAPÍTULOS (cada task de capítulo acrescenta sua linha de #include aqui, na ordem 1 a 6)
 #include "capitulos/03-metodo.typ"
+#include "capitulos/04-avaliacao.typ"
 
 #context [#metadata(here().page()) <fim-textual>]
 
