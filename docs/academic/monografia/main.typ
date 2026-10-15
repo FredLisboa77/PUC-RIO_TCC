@@ -54,7 +54,7 @@
 #show: textual
 #context [#metadata(here().page()) <inicio-textual>]
 
-// CAPÍTULOS (cada task de capítulo acrescenta sua linha de #include aqui, na ordem 1 a 6)
+// Parte textual: capítulos 1 a 6
 #include "capitulos/01-introducao.typ"
 #include "capitulos/02-fundamentacao.typ"
 #include "capitulos/03-metodo.typ"

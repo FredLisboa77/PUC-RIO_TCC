@@ -2034,3 +2034,46 @@ acima dizia 0,65 por arredondamento e foi corrigida.
 Suíte: 897 testes passando.
 
 **Próximo passo:** capítulo 3 (Método e arquitetura), depois entregar o PDF parcial ao Fred.
+
+---
+
+## 15/10/2026 — Monografia escrita e README de entrega
+
+Os seis capítulos, o resumo e o abstract e os três apêndices foram redigidos pelo Claude e
+revisados pelo Fred capítulo a capítulo (capítulos 1 a 5); o capítulo 6 e os apêndices seguem
+para a revisão geral, que o Fred fará no documento inteiro. `docs/academic/monografia.pdf`:
+41 páginas textuais (56 no total), 35 referências, todas abertas e conferidas na fonte.
+
+**Decisões do Fred durante a escrita:**
+- **Páginas não são restrição** (pedido de 15/10): todo termo importante é definido onde
+  aparece, no nível da explicação do `model.bim` que ele pediu no capítulo 3. O limite de
+  30–50 páginas da spec deixou de guiar cortes.
+- A observação de que muitos modelos são feitos por analistas de negócio sem formação em
+  modelagem é do autor e ficou declarada como tal na introdução.
+
+**Ajustes de infraestrutura feitos na escrita (com teste):** o estilo bibliográfico passou a
+ser uma cópia do CSL oficial da ABNT com um ajuste local (ano em páginas da web; sem ele a
+letra a/b caía na data de acesso); capítulos e tabelas geradas importam o que usam de
+`abnt.typ`; tabelas não quebram entre páginas; legenda acima também nas figuras (NBR 14724);
+a CLI avisa, sem traceback, quando o PDF está aberto em outro programa; o catálogo gerado usa
+os termos do texto (desempenho, DAX, média).
+
+**Correções de fato encontradas ao escrever:**
+- A consulta da PERF-001 **não** leva a expressão DAX (como diziam a ADR-002 e a entrada de
+  12/10 deste log): leva os termos da regra e `column Tabela[Coluna]`. A causa provável da
+  falta de complementares pertinentes é o nome das colunas de data. ADR-002 corrigida com nota.
+- As regras do BPA publicadas pela Microsoft (`microsoft/Analysis-Services`) têm licença MIT;
+  só `TabularEditor/BestPracticeRules` não tem. Nota na ADR-004; a decisão não muda.
+- O limiar de "menos de 10% de falsos positivos efetivos" está verificado no capítulo de
+  Sadowski em *Software Engineering at Google* (Winters et al., 2020), não no artigo da CACM
+  de 2018, que o backlog citava.
+- O Tabular Editor 2 é gratuito e de código aberto (MIT), conforme o Fred apontou.
+
+**README:** reescrito no modelo da PUC-Rio; as três tabelas de resultado são geradas do
+consolidado, com teste de sincronia. O conteúdo técnico anterior foi para
+`docs/project/ambiente.md`, sem alteração.
+
+**Próximo passo:** revisão geral da monografia pelo Fred; correções; merge da
+`fase5-monografia` na `main`; depois a demonstração (subprojeto 3, semana 13). Oferecer a
+atualização da página do orientador.
+
