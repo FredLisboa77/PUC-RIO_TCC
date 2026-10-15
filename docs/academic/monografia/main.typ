@@ -58,6 +58,7 @@
 #include "capitulos/02-fundamentacao.typ"
 #include "capitulos/03-metodo.typ"
 #include "capitulos/04-avaliacao.typ"
+#include "capitulos/05-discussao.typ"
 
 #context [#metadata(here().page()) <fim-textual>]
 
