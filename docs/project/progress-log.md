@@ -1946,7 +1946,7 @@ então principal = piso = teto.
 | Item | sim / n | Principal | Wilson 95% |
 |---|---|---|---|
 | Pertinente | 61 / 61 | 1,00 | 0,94–1,00 |
-| Fiel | 32 / 61 | 0,52 | 0,40–0,65 |
+| Fiel | 32 / 61 | 0,52 | 0,40–0,64 |
 | Recomendação correta | 47 / 61 | 0,77 | 0,65–0,86 |
 | **Utilizável como está** (os três "sim") | 23 / 61 | **0,38** | 0,27–0,50 |
 
@@ -2004,3 +2004,33 @@ correção e que o achado e a recomendação padrão não dependem do modelo
 resultados antigos continuarem legíveis. A página do orientador já descreve o rótulo novo.
 
 Suíte: 877 testes passando.
+
+---
+
+## 15/10/2026 — Monografia: desenho, plano e infraestrutura
+
+Fase 5, subprojeto 2. Decisões do Fred: formato livre nas normas ABNT, em PDF; 30 a 50 páginas
+textuais (alvo 42); Claude rascunha e o Fred revisa capítulo a capítulo; composição em **Typst**
+instalado pelo pip; o `README.md` passa a seguir o modelo de entrega da PUC-Rio (requisito do
+curso). Título "Auditoria de projetos Power BI"; autor Carlos Frederico Coelho Lisboa;
+orientadora Evelyn C. S. Batista; matrícula 251.100.867. Spec
+`docs/superpowers/specs/2026-10-15-monografia-design.md`, plano
+`docs/superpowers/plans/2026-10-15-monografia.md`, branch `fase5-monografia`.
+
+Infraestrutura pronta (`academico/`):
+- `python -m academico pdf` compila `docs/academic/monografia/main.typ` com o Typst 0.15.0 da roda
+  do pip e informa as páginas textuais (medidas por dois marcadores no documento); a capa, a folha
+  de rosto, as listas e o sumário seguem a NBR 14724. O estilo bibliográfico ABNT **embutido** no
+  Typst (`associacao-brasileira-de-normas-tecnicas`) foi testado e serve — não foi preciso versionar
+  um CSL.
+- `python -m academico tabelas` gera 8 tabelas Typst (regras, regras pós-correção, recuperação,
+  complementares, geração, geração por regra, concordância, catálogo) a partir do consolidado de
+  14/10 e do registro de regras; um teste falha se algum arquivo de `gerado/` divergir.
+- A conferência de citações acusa citação sem entrada no `.bib` e entrada nunca citada.
+
+**Correção:** o intervalo de Wilson da fidelidade é [0,40; 0,64] (teto 0,6447); a tabela de 14/10
+acima dizia 0,65 por arredondamento e foi corrigida.
+
+Suíte: 897 testes passando.
+
+**Próximo passo:** capítulo 3 (Método e arquitetura), depois entregar o PDF parcial ao Fred.

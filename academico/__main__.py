@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from academico.citacoes import verificar
 from academico.compilacao import PDF, PRINCIPAL, ErroDeCompilacao, compilar, paginas_textuais
 from academico.tabelas import CONSOLIDADO, PASTA_GERADO, carregar, escrever, gerar_todas
 
@@ -20,6 +21,11 @@ def _tabelas() -> int:
 
 
 def _pdf(principal: Path, saida: Path) -> int:
+    if principal == PRINCIPAL:
+        conferencia = verificar()
+        if conferencia.sem_entrada:
+            print(f"citacoes sem entrada no .bib: {', '.join(conferencia.sem_entrada)}", file=sys.stderr)
+            return 1
     conteudo = compilar(principal)
     saida.write_bytes(conteudo)
     print(f"{_ascii(saida.name)}: {paginas_textuais(principal)} paginas textuais")
