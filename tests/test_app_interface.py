@@ -218,3 +218,9 @@ def test_detalhe_do_achado_do_cache_diz_que_veio_do_cache(app, tmp_path):
     _abrir_salvo(app, caminho)
     textos = " ".join(m.value for m in app.markdown) + " ".join(c.value for c in app.caption)
     assert "resposta guardada no cache" in textos
+
+
+def test_detalhe_da_explicacao_diz_o_limite_da_conferencia_automatica(app, tmp_path):
+    _abrir_salvo(app, _gravar_resultado_salvo(tmp_path))
+    textos = " ".join(m.value for m in app.markdown) + " ".join(c.value for c in app.caption)
+    assert "não garante que a explicação esteja correta" in textos

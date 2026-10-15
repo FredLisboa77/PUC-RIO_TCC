@@ -307,6 +307,7 @@ def _detalhe(resultado: ResultadoAuditoria, linha: consulta.Linha, bloqueado: bo
     if item.geracao is not None:
         st.markdown("**Explicação**")
         st.markdown(_md(item.geracao.explicacao))
+        st.caption(consulta.NOTA_EXPLICACAO)
     if item.do_cache:
         st.caption("Resposta guardada no cache de respostas do LLM, não gerada nesta auditoria.")
     st.markdown("**Recomendação**")

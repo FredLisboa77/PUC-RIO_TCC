@@ -127,3 +127,11 @@ def test_link_que_nao_e_do_learn_nao_vira_href():
     trechos[0] = trechos[0].model_copy(update={"url": "javascript:alert(4)//"})
     html = gerar_html(_resultado([_gerado(contexto=trechos)]), registro=_registro())
     assert "javascript:" not in html
+
+
+def test_explicacao_gerada_traz_o_limite_da_conferencia_automatica():
+    html = gerar_html(_resultado([_gerado()]), registro=_registro())
+    assert "não garante que a explicação esteja correta" in html
+    so_regras = gerar_html(_resultado([AchadoEnriquecido.so_regras(achado())], modo="so_regras", modelo_llm=None),
+                           registro=_registro())
+    assert "não garante que a explicação esteja correta" not in so_regras

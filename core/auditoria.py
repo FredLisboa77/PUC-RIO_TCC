@@ -150,7 +150,7 @@ def resumir(resultado: ResultadoAuditoria) -> str:
     if gerados:
         citam = sum(1 for a in gerados if a.cita_ancora)
         divergem = sum(1 for a in gerados if a.fidelidade.divergencias)
-        linhas.append(f"Citam a ancora: {citam}/{len(gerados)} | com divergencia de fidelidade: {divergem}")
+        linhas.append(f"Citam a ancora: {citam}/{len(gerados)} | com numeros ou nomes sem origem: {divergem}")
     reduzidos = sum(1 for a in achados if a.reducoes_de_contexto)
     if reduzidos:
         linhas.append(f"Contexto reduzido para caber: {reduzidos}")
