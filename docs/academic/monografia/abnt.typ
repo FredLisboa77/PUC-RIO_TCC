@@ -15,11 +15,12 @@
   show figure.where(kind: table): set figure.caption(position: top)
   set figure.caption(separator: [ -- ])
   show figure.caption: set text(size: 10pt)
-  show figure: set block(breakable: true)
+  show figure.where(kind: table): set block(breakable: true)
   show table: set text(size: 10pt)
   show table: set par(justify: false, first-line-indent: 0pt, leading: 0.5em)
   set table(stroke: 0.5pt, inset: 4pt)
-  show raw: set text(size: 10pt)
+  show bibliography: set heading(numbering: none)
+  show bibliography: set par(first-line-indent: 0pt, justify: false, leading: 0.5em, spacing: 1.2em)
   corpo
 }
 

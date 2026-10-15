@@ -55,7 +55,9 @@
 #context [#metadata(here().page()) <inicio-textual>]
 
 // CAPÍTULOS (cada task de capítulo acrescenta sua linha de #include aqui, na ordem 1 a 6)
+#include "capitulos/03-metodo.typ"
 
 #context [#metadata(here().page()) <fim-textual>]
 
-// BIBLIOGRAFIA E APÊNDICES (Tasks 4 e 9)
+#bibliography("referencias.bib", title: [Referências], style: "abnt.csl")
+// APÊNDICES (Task 9)
