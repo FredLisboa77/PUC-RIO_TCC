@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 11 de 13 — Fase 5 em andamento: avaliação da geração medida (rubrica humana em P1–P7); monografia a seguir · **Atualizado em:** 14/10/2026
+**Posição:** semana 12 de 13 — Fase 5 em andamento: avaliação da geração medida; monografia escrita (41 páginas textuais, aguardando a revisão geral do Fred); demonstração a seguir · **Atualizado em:** 15/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -42,7 +42,7 @@ uma das 9 regras foi conferida no texto extraído.
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
 | F4 — Interface e relatório | 9–10 | **Concluída** | 13/10/2026 — interface Streamlit (mergeada em `5fce01f`), relatório HTML/PDF e cache das respostas do LLM (branch `fase4-relatorio`) |
-| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); rubrica anotada e medida em 14/10/2026 (seção 3). Depois: monografia (semana 12) e demonstração (semana 13) |
+| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); rubrica anotada e medida em 14/10/2026 (seção 3). Depois: monografia (semana 12) e demonstração (semana 13). **Monografia (subprojeto 2), 15/10/2026:** escrita em Typst nas normas ABNT, `docs/academic/monografia.pdf` (6 capítulos, 3 apêndices, 35 referências conferidas, tabelas geradas do consolidado por `python -m academico tabelas`); README no modelo de entrega da PUC-Rio |
 
 **Posição no calendário, e o uso da folga que a atualização anterior reportou:**
 o projeto começou em 22/09/2026. Na atualização de 06/10/2026 estávamos cerca de

@@ -238,6 +238,11 @@ combinada +0,03). O índice não muda.
   consulta da PERF-001 carrega a expressão DAX da coluna, e as três buscas se agarram aos
   nomes de função. **O defeito está na consulta, não no tipo de busca** — trocar a busca não
   o resolveria. A âncora em [1] continua sendo o que sustenta a explicação desse achado.
+  **Correção (15/10/2026):** a consulta não leva a expressão DAX — `rag.consulta.montar_consulta`
+  usa os termos da regra mais `column Tabela[Coluna]` (conferido em
+  `eval/recuperacao/consultas.yaml`). A causa provável é o **nome** da coluna: 13 das 31
+  colunas estão em tabelas de data (`Year`, `Month`, `Mth of year`…), nomes que coincidem com
+  termos de funções DAX. A conclusão (defeito da consulta, não da busca) não muda.
 - (−) **A decisão muda conforme o conjunto de consultas.** Só com as consultas de achado (as
   que o pipeline faz), a densa supera o BM25 por 0,13. A regra aprovada antes de medir usa as
   70 consultas, em que as 9 consultas da regra pesam ~41% da macro; o Fred manteve essa regra

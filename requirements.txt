@@ -25,3 +25,6 @@ streamlit==1.64.0
 # Fase 4 - relatorio (o PDF usa o Edge do sistema: sem `playwright install`)
 jinja2==3.1.6
 playwright==1.62.0
+
+# Fase 5 - monografia (compilador Typst embutido na roda)
+typst==0.15.0

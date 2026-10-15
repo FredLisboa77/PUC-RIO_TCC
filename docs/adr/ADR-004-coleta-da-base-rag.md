@@ -14,6 +14,10 @@ O plano original da Fase 1 previa baixar o markdown da documentação da Microso
 5. `https://learn.microsoft.com/en-us/power-bi/guidance/toc.json` retorna HTTP 200 e lista **142 artigos** de orientação, entre eles: `star-schema`, `import-modeling-data-reduction`, `model-date-tables`, `relationships-one-to-one`, `relationships-many-to-many`, `relationships-active-inactive`, `relationships-bidirectional-filtering`, `directquery-model-guidance`, `composite-model-guidance`, `report-separate-from-model`.
 6. `www.sqlbi.com/robots.txt` e `dax.guide/robots.txt` (User-agent `*`): bloqueiam apenas `/wp-admin/`, `/u/`, `/cert/`, `/learn/`, `/account/`, `/cart/`, `/checkout/`. Páginas de artigo estão liberadas.
 7. `github.com/TabularEditor/BestPracticeRules`: campo `license` da API = **null**, sem arquivo LICENSE.
+   **Nota (15/10/2026):** o conjunto de regras publicado pela Microsoft fica em outro repositório,
+   `microsoft/Analysis-Services` (pasta `BestPracticeRules`), que tem licença **MIT**. A decisão 4
+   abaixo não muda — o BPA segue como referência conceitual —, mas o motivo que a sustenta é a
+   exigência de âncora citável no Learn e a dependência do Tabular Editor, não a falta de licença.
 
 ## Decisão
 1. **Coletar as páginas públicas do `learn.microsoft.com` em HTML**, convertendo para texto, em vez de clonar repositório de markdown.

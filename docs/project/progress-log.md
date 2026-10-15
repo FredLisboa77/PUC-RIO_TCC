@@ -1946,7 +1946,7 @@ então principal = piso = teto.
 | Item | sim / n | Principal | Wilson 95% |
 |---|---|---|---|
 | Pertinente | 61 / 61 | 1,00 | 0,94–1,00 |
-| Fiel | 32 / 61 | 0,52 | 0,40–0,65 |
+| Fiel | 32 / 61 | 0,52 | 0,40–0,64 |
 | Recomendação correta | 47 / 61 | 0,77 | 0,65–0,86 |
 | **Utilizável como está** (os três "sim") | 23 / 61 | **0,38** | 0,27–0,50 |
 
@@ -2004,3 +2004,76 @@ correção e que o achado e a recomendação padrão não dependem do modelo
 resultados antigos continuarem legíveis. A página do orientador já descreve o rótulo novo.
 
 Suíte: 877 testes passando.
+
+---
+
+## 15/10/2026 — Monografia: desenho, plano e infraestrutura
+
+Fase 5, subprojeto 2. Decisões do Fred: formato livre nas normas ABNT, em PDF; 30 a 50 páginas
+textuais (alvo 42); Claude rascunha e o Fred revisa capítulo a capítulo; composição em **Typst**
+instalado pelo pip; o `README.md` passa a seguir o modelo de entrega da PUC-Rio (requisito do
+curso). Título "Auditoria de projetos Power BI"; autor Carlos Frederico Coelho Lisboa;
+orientadora Evelyn C. S. Batista; matrícula 251.100.867. Spec
+`docs/superpowers/specs/2026-10-15-monografia-design.md`, plano
+`docs/superpowers/plans/2026-10-15-monografia.md`, branch `fase5-monografia`.
+
+Infraestrutura pronta (`academico/`):
+- `python -m academico pdf` compila `docs/academic/monografia/main.typ` com o Typst 0.15.0 da roda
+  do pip e informa as páginas textuais (medidas por dois marcadores no documento); a capa, a folha
+  de rosto, as listas e o sumário seguem a NBR 14724. O estilo bibliográfico ABNT **embutido** no
+  Typst (`associacao-brasileira-de-normas-tecnicas`) foi testado e serve — não foi preciso versionar
+  um CSL.
+- `python -m academico tabelas` gera 8 tabelas Typst (regras, regras pós-correção, recuperação,
+  complementares, geração, geração por regra, concordância, catálogo) a partir do consolidado de
+  14/10 e do registro de regras; um teste falha se algum arquivo de `gerado/` divergir.
+- A conferência de citações acusa citação sem entrada no `.bib` e entrada nunca citada.
+
+**Correção:** o intervalo de Wilson da fidelidade é [0,40; 0,64] (teto 0,6447); a tabela de 14/10
+acima dizia 0,65 por arredondamento e foi corrigida.
+
+Suíte: 897 testes passando.
+
+**Próximo passo:** capítulo 3 (Método e arquitetura), depois entregar o PDF parcial ao Fred.
+
+---
+
+## 15/10/2026 — Monografia escrita e README de entrega
+
+Os seis capítulos, o resumo e o abstract e os três apêndices foram redigidos pelo Claude e
+revisados pelo Fred capítulo a capítulo (capítulos 1 a 5); o capítulo 6 e os apêndices seguem
+para a revisão geral, que o Fred fará no documento inteiro. `docs/academic/monografia.pdf`:
+41 páginas textuais (56 no total), 35 referências, todas abertas e conferidas na fonte.
+
+**Decisões do Fred durante a escrita:**
+- **Páginas não são restrição** (pedido de 15/10): todo termo importante é definido onde
+  aparece, no nível da explicação do `model.bim` que ele pediu no capítulo 3. O limite de
+  30–50 páginas da spec deixou de guiar cortes.
+- A observação de que muitos modelos são feitos por analistas de negócio sem formação em
+  modelagem é do autor e ficou declarada como tal na introdução.
+
+**Ajustes de infraestrutura feitos na escrita (com teste):** o estilo bibliográfico passou a
+ser uma cópia do CSL oficial da ABNT com um ajuste local (ano em páginas da web; sem ele a
+letra a/b caía na data de acesso); capítulos e tabelas geradas importam o que usam de
+`abnt.typ`; tabelas não quebram entre páginas; legenda acima também nas figuras (NBR 14724);
+a CLI avisa, sem traceback, quando o PDF está aberto em outro programa; o catálogo gerado usa
+os termos do texto (desempenho, DAX, média).
+
+**Correções de fato encontradas ao escrever:**
+- A consulta da PERF-001 **não** leva a expressão DAX (como diziam a ADR-002 e a entrada de
+  12/10 deste log): leva os termos da regra e `column Tabela[Coluna]`. A causa provável da
+  falta de complementares pertinentes é o nome das colunas de data. ADR-002 corrigida com nota.
+- As regras do BPA publicadas pela Microsoft (`microsoft/Analysis-Services`) têm licença MIT;
+  só `TabularEditor/BestPracticeRules` não tem. Nota na ADR-004; a decisão não muda.
+- O limiar de "menos de 10% de falsos positivos efetivos" está verificado no capítulo de
+  Sadowski em *Software Engineering at Google* (Winters et al., 2020), não no artigo da CACM
+  de 2018, que o backlog citava.
+- O Tabular Editor 2 é gratuito e de código aberto (MIT), conforme o Fred apontou.
+
+**README:** reescrito no modelo da PUC-Rio; as três tabelas de resultado são geradas do
+consolidado, com teste de sincronia. O conteúdo técnico anterior foi para
+`docs/project/ambiente.md`, sem alteração.
+
+**Próximo passo:** revisão geral da monografia pelo Fred; correções; merge da
+`fase5-monografia` na `main`; depois a demonstração (subprojeto 3, semana 13). Oferecer a
+atualização da página do orientador.
+
