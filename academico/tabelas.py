@@ -6,6 +6,7 @@ que este módulo produz.
 """
 
 import json
+import re
 from pathlib import Path
 
 from academico.compilacao import PASTA_MONOGRAFIA, RAIZ_REPO
@@ -14,7 +15,8 @@ from core.rules.todas import REGISTRO
 CONSOLIDADO = RAIZ_REPO / "eval" / "results" / "consolidado-2026-10-14.json"
 PASTA_GERADO = PASTA_MONOGRAFIA / "gerado"
 AUSENTE = "—"
-_ESPECIAIS = "\\*_#@<>$`[]~"
+_ESPECIAIS = "\\*_#@<>$`[]~/"
+_MARCADOR_INICIAL = re.compile(r"^(\s*)([-+=]|\d+\.)")
 
 ROTULOS_GERACAO = {
     "pertinente": "Pertinente",
@@ -44,10 +46,15 @@ def faixa(par: list[float] | None) -> str:
 
 
 def escapar(texto: str) -> str:
-    """Texto literal dentro de conteúdo Typst."""
+    """Texto literal dentro de conteúdo Typst.
+
+    Além dos caracteres de marcação, escapa a barra (`//` e `/*` abrem
+    comentário) e os marcadores que só valem no início do texto: `-` (lista),
+    `+` e `1.` (enumeração) e `=` (título).
+    """
     for caractere in _ESPECIAIS:
         texto = texto.replace(caractere, "\\" + caractere)
-    return texto
+    return _MARCADOR_INICIAL.sub(lambda m: m.group(1) + m.group(2)[:-1] + "\\" + m.group(2)[-1], texto)
 
 
 def carregar(caminho: Path = CONSOLIDADO) -> dict:

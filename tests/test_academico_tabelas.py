@@ -53,6 +53,21 @@ def test_escapar_neutraliza_marcacao_do_typst():
     assert escapar(r"x\y") == r"x\\y"
 
 
+def test_escapar_mantem_literal_a_sintaxe_que_depende_de_posicao(tmp_path):
+    import json
+
+    import typst
+
+    from academico.tabelas import _celula
+
+    textos = ["a // b c", "- item", "= titulo", "+ mais", "1. lista", "x /* y"]
+    doc = tmp_path / "doc.typ"
+    doc.write_text("#table(columns: 1, " + ", ".join(_celula(t) for t in textos) + ")", encoding="utf-8")
+    assert compilar(doc).startswith(b"%PDF")
+    for elemento in ("list", "enum", "heading"):
+        assert json.loads(typst.query(str(doc), elemento, root=str(tmp_path))) == [], elemento
+
+
 def test_tabela_regras_ordena_mostra_ausente_e_total():
     texto = tabela_regras(BLOCO_REGRAS, "tab-x", "Legenda")
     assert texto.index("[DAX-001]") < texto.index("[MOD-002]")
@@ -73,8 +88,8 @@ def test_tabela_geracao_conta_n_com_indeterminados():
         "utilizavel": {"total": {"n": {"sim": 1, "nao": 3, "indeterminado": 0}, "principal": 0.25, "wilson": [0.05, 0.7]}},
     }
     texto = tabela_geracao(bloco)
-    assert r"[Fiel], [2 / 4], [0,50], [\[0,10; 0,90\]]" in texto
-    assert r"[*Utilizável como está*], [1 / 4], [0,25], [\[0,05; 0,70\]]" in texto
+    assert r"[Fiel], [2 \/ 4], [0,50], [\[0,10; 0,90\]]" in texto
+    assert r"[*Utilizável como está*], [1 \/ 4], [0,25], [\[0,05; 0,70\]]" in texto
 
 
 def test_tabela_concordancia_explica_as_celulas():
@@ -86,7 +101,7 @@ def test_tabela_concordancia_explica_as_celulas():
         },
     }
     texto = tabela_concordancia(bloco)
-    assert "[Fiel], [Sem aviso de números ou nomes], [24], [24], [8], [5], [0,48], [-0,08]" in texto
+    assert r"[Fiel], [Sem aviso de números ou nomes], [24], [24], [8], [5], [0,48], [\-0,08]" in texto
 
 
 def test_catalogo_usa_os_termos_do_texto():

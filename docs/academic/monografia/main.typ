@@ -48,6 +48,39 @@
 #titulo-pre[Lista de figuras]
 #outline(title: none, target: figure.where(kind: image))
 
+#titulo-pre[Lista de abreviaturas e siglas]
+#block({
+  set par(first-line-indent: 0pt, justify: false)
+  grid(columns: (2.2cm, 1fr), row-gutter: 0.8em,
+  [ABNT], [Associação Brasileira de Normas Técnicas],
+  [ADR], [_Architecture Decision Record_ (registro de decisão de arquitetura)],
+  [BM25], [_Best Matching 25_, função de pontuação da busca lexical],
+  [BPA], [_Best Practice Analyzer_ (Tabular Editor)],
+  [CPU], [_Central Processing Unit_ (processador central)],
+  [DAX], [_Data Analysis Expressions_],
+  [FN], [Falso negativo],
+  [FP], [Falso positivo],
+  [GPU], [_Graphics Processing Unit_ (placa de vídeo)],
+  [HTML], [_HyperText Markup Language_],
+  [IC], [Intervalo de confiança],
+  [IEEE], [_Institute of Electrical and Electronics Engineers_],
+  [JSON], [_JavaScript Object Notation_],
+  [LLM], [_Large Language Model_ (modelo de linguagem de grande porte)],
+  [M], [Linguagem de fórmulas do Power Query],
+  [MIT], [Licença de código aberto do _Massachusetts Institute of Technology_],
+  [MRR], [_Mean Reciprocal Rank_ (média do inverso da posição)],
+  [PBIP], [_Power BI Project_],
+  [PBIR], [_Power BI Enhanced Report Format_],
+  [PBIX], [Arquivo binário de relatório do Power BI Desktop],
+  [PDF], [_Portable Document Format_],
+  [RAG], [_Retrieval-Augmented Generation_ (geração aumentada por recuperação)],
+  [TMDL], [_Tabular Model Definition Language_],
+  [TMSL], [_Tabular Model Scripting Language_],
+  [VN], [Verdadeiro negativo],
+  [VP], [Verdadeiro positivo],
+  )
+})
+
 #titulo-pre[Sumário]
 #outline(title: none, depth: 3, indent: auto)
 
