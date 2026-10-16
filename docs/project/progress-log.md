@@ -2143,3 +2143,34 @@ Protocolo versionado **antes** da rodada (`d84c5b4`,
 **Próximo passo:** o Fred anota as 81 linhas sem abrir a chave
 (`python -m avaliacao_geracao glossario-importar --parcial` mostra o andamento); depois
 `glossario-importar` e `glossario-medir`, e o resultado entra na monografia como análise de erros.
+
+### 15/10/2026 — Teste do glossário medido e levado à monografia
+
+Fred anotou as 81 linhas. Decisão (minha, delegada pelo Fred "no contexto de uma banca"):
+**nenhum veredito alterado**; resultado relatado inteiro, com a fragilidade.
+
+- **Regra pré-registrada:** utilizável 23 → 32/61, McNemar p = 0,049 → "melhora"; mas
+  **frágil**: consistência do anotador em utilizável 0,65 (kappa 0,30) nas 20 reanotadas.
+  Fiel 32 → 51 (p < 0,001); recomendação 47 → 37 (p = 0,076).
+- **Deriva da régua:** em fiel, 6 originais "não" → "sim" na reanotação, nenhuma ao contrário
+  (duas ainda com "não compreende"). **Exploratória (fora do protocolo):** só vereditos da
+  mesma sessão nos 20 → glossário sem vantagem (utilizável 8 × 10).
+- **Indicador léxico (sem anotação):** "compreend|descompress" na PERF-001: original 16/31,
+  reexecução sem cache 16/31, glossário 3/31. O erro de tradução é resolvido pela instrução.
+- **Efeito colateral:** recomendações corretas da PERF-001 24 → 10 ("desnormalize/descomprima a
+  coluna no Power Query"; YEAR/FORMAT em M persistiram apesar da entrada no glossário).
+  MOD-003, MOD-007 e MOD-001 passaram a ter recomendação correta.
+- **Defeito do instrumento:** a planilha da rubrica não mostrava a expressão DAX do achado
+  (que o LLM recebe). A anotação de 14/10 não foi afetada (conferido); na sessão nova, 8
+  vereditos dependiam só dela. Análise de sensibilidade em
+  `eval/rubrica_glossario_sensibilidade.csv` (motivo por veredito): utilizável 23 → 35,
+  p = 0,008, mas consistência 0,55 e, na mesma sessão, 9 × 12 — conclusão igual. A planilha
+  passou a mostrar `trecho_do_modelo`.
+
+Monografia: nova subseção 4.x (`sec-glossario`) com duas tabelas geradas (`glossario.typ`,
+`glossario-sessao.typ`, do consolidado); ameaça do anotador único agora com medida; defeito do
+instrumento em validade interna; conclusão, trabalhos futuros e resumo/abstract atualizados.
+McNemar (1947) conferido no Crossref. PDF: 48 páginas textuais. Suíte: 920 testes.
+
+**Próximo passo:** o Fred relê a subseção do glossário e os caps. 5–6; merge da
+`revisao-monografia` na `main`; demonstração (subprojeto 3).

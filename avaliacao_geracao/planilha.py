@@ -27,12 +27,12 @@ PLANILHA = RAIZ_REPO / "eval" / "gabarito" / "rubrica-geracao-P1-P7.xlsx"
 CSV_OFICIAL = RAIZ_REPO / "eval" / "rubrica_geracao.csv"
 
 COLUNAS_LEITURA = (
-    "id", "impressao", "projeto", "regra", "titulo_regra", "objeto", "mensagem",
+    "id", "impressao", "projeto", "regra", "titulo_regra", "objeto", "mensagem", "trecho_do_modelo",
     "explicacao", "recomendacao", "citacoes", "referencia_regra",
 )
 COLUNAS_ANOTACAO = (*ITENS, "justificativa", "observacao")
 LARGURAS = {"id": 30, "impressao": 10, "projeto": 12, "regra": 9, "titulo_regra": 25, "objeto": 30,
-            "mensagem": 40, "explicacao": 60, "recomendacao": 50, "citacoes": 80, "referencia_regra": 60,
+            "mensagem": 40, "trecho_do_modelo": 50, "explicacao": 60, "recomendacao": 50, "citacoes": 80, "referencia_regra": 60,
             "pertinente": 13, "fiel": 13, "recomendacao_correta": 13, "justificativa": 40, "observacao": 30}
 
 INSTRUCOES = [
@@ -43,7 +43,8 @@ INSTRUCOES = [
     "",
     "pertinente — pelo menos um trecho citado é de fato a passagem da documentação que sustenta o achado",
     "  (não basta existir entre os trechos fornecidos).",
-    "fiel — o que a explicação afirma é sustentado pelos trechos citados ou pelos fatos do achado, sem nada",
+    "fiel — o que a explicação afirma é sustentado pelos trechos citados ou pelos fatos do achado (mensagem e",
+    "  trecho_do_modelo, a expressão que o modelo recebeu), sem nada",
     "  inventado (números, nomes, comportamentos).",
     "recomendacao_correta — a recomendação resolve o problema neste modelo, sem erro técnico.",
     "",
@@ -118,7 +119,7 @@ def escrever_planilha(itens: list[tuple[str, ItemDaRodada]], destino: Path, *, f
         meta = registro.meta(r.item.achado.id_regra)
         valores = [
             chave, impressao(r.item), r.projeto, meta.id, meta.titulo, r.item.achado.evidencia.objeto,
-            r.item.achado.mensagem, r.item.geracao.explicacao, r.item.geracao.recomendacao,
+            r.item.achado.mensagem, _cortar(r.item.achado.evidencia.trecho or ""), r.item.geracao.explicacao, r.item.geracao.recomendacao,
             _citacoes(r), _referencia(r, registro),
         ]
         for coluna, valor in enumerate(valores, start=1):

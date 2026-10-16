@@ -21,6 +21,7 @@ ORIGENS = {
     "regras_pos_correcao": "regras-2026-10-15-pos-correcao.json",
     "recuperacao": "recuperacao-2026-10-11.json",
     "complementares": "complementares-2026-10-12.json",
+    "glossario": "glossario-2026-10-15.json",
 }
 
 
@@ -56,6 +57,7 @@ def consolidar(pasta: Path = PASTA_RESULTADOS) -> dict:
     pos = _ler(pasta, ORIGENS["regras_pos_correcao"])
     recuperacao = _ler(pasta, ORIGENS["recuperacao"])
     complementares = _ler(pasta, ORIGENS["complementares"])
+    glossario = _ler(pasta, ORIGENS["glossario"])
     geracoes = sorted(p for p in pasta.glob("geracao-*.json") if PADRAO_GERACAO.match(p.name))
     if not geracoes:
         raise ErroDeAvaliacao(f"falta geracao-<data>.json em {pasta} — rode `python -m avaliacao_geracao medir`")
@@ -77,4 +79,6 @@ def consolidar(pasta: Path = PASTA_RESULTADOS) -> dict:
             "decisao": complementares["decisao"],
         },
         "geracao": {"origem": geracoes[-1].name, **json.loads(geracoes[-1].read_text(encoding="utf-8"))},
+        # A chave do sorteio fica no arquivo de origem; a monografia não precisa dela.
+        "glossario": {"origem": ORIGENS["glossario"], **{k: v for k, v in glossario.items() if k != "chave"}},
     }

@@ -2001,5 +2001,587 @@
         "kappa": -0.07964601769911503
       }
     }
+  },
+  "glossario": {
+    "origem": "glossario-2026-10-15.json",
+    "estatuto": "análise de erros",
+    "protocolo": "docs/superpowers/specs/2026-10-15-teste-do-glossario-design.md",
+    "n_pares": 61,
+    "itens": {
+      "pertinente": {
+        "original": {
+          "sim": 61,
+          "n": 61,
+          "proporcao": 1.0,
+          "wilson": [
+            0.9407540837980555,
+            1.0
+          ]
+        },
+        "glossario": {
+          "sim": 61,
+          "n": 61,
+          "proporcao": 1.0,
+          "wilson": [
+            0.9407540837980555,
+            1.0
+          ]
+        },
+        "discordantes": {
+          "so_original": 0,
+          "so_glossario": 0
+        },
+        "p_mcnemar": 1.0
+      },
+      "fiel": {
+        "original": {
+          "sim": 32,
+          "n": 61,
+          "proporcao": 0.5245901639344263,
+          "wilson": [
+            0.4015694171531101,
+            0.6446971771320402
+          ]
+        },
+        "glossario": {
+          "sim": 51,
+          "n": 61,
+          "proporcao": 0.8360655737704918,
+          "wilson": [
+            0.7238692567544832,
+            0.9084408651425705
+          ]
+        },
+        "discordantes": {
+          "so_original": 2,
+          "so_glossario": 21
+        },
+        "p_mcnemar": 6.604194641113281e-05
+      },
+      "recomendacao_correta": {
+        "original": {
+          "sim": 47,
+          "n": 61,
+          "proporcao": 0.7704918032786885,
+          "wilson": [
+            0.6508635609254849,
+            0.858068976211168
+          ]
+        },
+        "glossario": {
+          "sim": 37,
+          "n": 61,
+          "proporcao": 0.6065573770491803,
+          "wilson": [
+            0.4811702438560874,
+            0.7193183313795637
+          ]
+        },
+        "discordantes": {
+          "so_original": 18,
+          "so_glossario": 8
+        },
+        "p_mcnemar": 0.07551869750022888
+      },
+      "utilizavel": {
+        "original": {
+          "sim": 23,
+          "n": 61,
+          "proporcao": 0.3770491803278688,
+          "wilson": [
+            0.2661433042836724,
+            0.5025237242905762
+          ]
+        },
+        "glossario": {
+          "sim": 32,
+          "n": 61,
+          "proporcao": 0.5245901639344263,
+          "wilson": [
+            0.4015694171531101,
+            0.6446971771320402
+          ]
+        },
+        "discordantes": {
+          "so_original": 4,
+          "so_glossario": 13
+        },
+        "p_mcnemar": 0.049041748046875
+      }
+    },
+    "por_regra": {
+      "DAX-001": {
+        "pertinente": {
+          "original": "6 / 6",
+          "glossario": "6 / 6"
+        },
+        "fiel": {
+          "original": "1 / 6",
+          "glossario": "2 / 6"
+        },
+        "recomendacao_correta": {
+          "original": "6 / 6",
+          "glossario": "3 / 6"
+        },
+        "utilizavel": {
+          "original": "1 / 6",
+          "glossario": "1 / 6"
+        }
+      },
+      "MOD-001": {
+        "pertinente": {
+          "original": "1 / 1",
+          "glossario": "1 / 1"
+        },
+        "fiel": {
+          "original": "0 / 1",
+          "glossario": "0 / 1"
+        },
+        "recomendacao_correta": {
+          "original": "0 / 1",
+          "glossario": "1 / 1"
+        },
+        "utilizavel": {
+          "original": "0 / 1",
+          "glossario": "0 / 1"
+        }
+      },
+      "MOD-003": {
+        "pertinente": {
+          "original": "3 / 3",
+          "glossario": "3 / 3"
+        },
+        "fiel": {
+          "original": "3 / 3",
+          "glossario": "3 / 3"
+        },
+        "recomendacao_correta": {
+          "original": "0 / 3",
+          "glossario": "3 / 3"
+        },
+        "utilizavel": {
+          "original": "0 / 3",
+          "glossario": "3 / 3"
+        }
+      },
+      "MOD-006": {
+        "pertinente": {
+          "original": "3 / 3",
+          "glossario": "3 / 3"
+        },
+        "fiel": {
+          "original": "2 / 3",
+          "glossario": "1 / 3"
+        },
+        "recomendacao_correta": {
+          "original": "2 / 3",
+          "glossario": "3 / 3"
+        },
+        "utilizavel": {
+          "original": "1 / 3",
+          "glossario": "1 / 3"
+        }
+      },
+      "MOD-007": {
+        "pertinente": {
+          "original": "1 / 1",
+          "glossario": "1 / 1"
+        },
+        "fiel": {
+          "original": "1 / 1",
+          "glossario": "1 / 1"
+        },
+        "recomendacao_correta": {
+          "original": "0 / 1",
+          "glossario": "1 / 1"
+        },
+        "utilizavel": {
+          "original": "0 / 1",
+          "glossario": "1 / 1"
+        }
+      },
+      "PERF-001": {
+        "pertinente": {
+          "original": "31 / 31",
+          "glossario": "31 / 31"
+        },
+        "fiel": {
+          "original": "9 / 31",
+          "glossario": "28 / 31"
+        },
+        "recomendacao_correta": {
+          "original": "24 / 31",
+          "glossario": "10 / 31"
+        },
+        "utilizavel": {
+          "original": "6 / 31",
+          "glossario": "10 / 31"
+        }
+      },
+      "PERF-003": {
+        "pertinente": {
+          "original": "16 / 16",
+          "glossario": "16 / 16"
+        },
+        "fiel": {
+          "original": "16 / 16",
+          "glossario": "16 / 16"
+        },
+        "recomendacao_correta": {
+          "original": "15 / 16",
+          "glossario": "16 / 16"
+        },
+        "utilizavel": {
+          "original": "15 / 16",
+          "glossario": "16 / 16"
+        }
+      }
+    },
+    "consistencia": {
+      "pertinente": {
+        "n": 20,
+        "tabela": {
+          "a": 20,
+          "b": 0,
+          "c": 0,
+          "d": 0
+        },
+        "concordancia": 1.0,
+        "kappa": null
+      },
+      "fiel": {
+        "n": 20,
+        "tabela": {
+          "a": 9,
+          "b": 0,
+          "c": 6,
+          "d": 5
+        },
+        "concordancia": 0.7,
+        "kappa": 0.4285714285714285
+      },
+      "recomendacao_correta": {
+        "n": 20,
+        "tabela": {
+          "a": 11,
+          "b": 3,
+          "c": 2,
+          "d": 4
+        },
+        "concordancia": 0.75,
+        "kappa": 0.43181818181818177
+      },
+      "utilizavel": {
+        "n": 20,
+        "tabela": {
+          "a": 4,
+          "b": 1,
+          "c": 6,
+          "d": 9
+        },
+        "concordancia": 0.65,
+        "kappa": 0.30000000000000004
+      }
+    },
+    "exploratoria_mesma_sessao": {
+      "nota": "análise exploratória, fora do protocolo: vereditos da mesma sessão nos achados reanotados",
+      "n": 20,
+      "itens": {
+        "pertinente": {
+          "original_reanotada": 20,
+          "glossario": 20,
+          "so_original": 0,
+          "so_glossario": 0,
+          "p_mcnemar": 1.0
+        },
+        "fiel": {
+          "original_reanotada": 15,
+          "glossario": 14,
+          "so_original": 4,
+          "so_glossario": 3,
+          "p_mcnemar": 1.0
+        },
+        "recomendacao_correta": {
+          "original_reanotada": 13,
+          "glossario": 11,
+          "so_original": 5,
+          "so_glossario": 3,
+          "p_mcnemar": 0.7265625
+        },
+        "utilizavel": {
+          "original_reanotada": 10,
+          "glossario": 8,
+          "so_original": 5,
+          "so_glossario": 3,
+          "p_mcnemar": 0.7265625
+        }
+      }
+    },
+    "decisao": {
+      "melhora": true,
+      "fragil": true
+    },
+    "sensibilidade_expressao_oculta": {
+      "nota": "análise de sensibilidade, fora do protocolo: vereditos da nova sessão cuja única razão era um nome ou fórmula presente na expressão do achado, que a planilha não exibia",
+      "correcoes": [
+        {
+          "codigo": "R11",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: a fórmula com DIVIDE \"inventaria\" [Sales TY], [MonthID] e Store[SellingAreaSize]; os três estão na expressão da medida, enviada ao modelo e não exibida na planilha. A fórmula é a conversão exata da expressão para DIVIDE."
+        },
+        {
+          "codigo": "R20",
+          "item": "fiel",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: nomes [Sales TY] e [Units TY] \"inventados\"; estão na expressão da medida."
+        },
+        {
+          "codigo": "R20",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: nomes [Sales TY] e [Units TY] \"inventados\"; estão na expressão da medida."
+        },
+        {
+          "codigo": "R59",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão da recomendação: DIVIDE([Sales LY], [Units LY]) \"inventada\"; é a conversão exata da expressão. O \"não\" em fiel tem outra razão (BLANK) e fica."
+        },
+        {
+          "codigo": "R07",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: fórmula com [date] e [HireDate] \"inventada\"; as duas colunas estão na expressão da coluna calculada."
+        },
+        {
+          "codigo": "R27",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: DIVIDE([Total Sales Var], [Sales LY]) \"inventada\"; é a conversão exata da expressão."
+        },
+        {
+          "codigo": "R36",
+          "item": "fiel",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: \"inventa\" que a expressão divide [Sales LY] por [Units LY]; é exatamente o que a expressão faz."
+        },
+        {
+          "codigo": "R36",
+          "item": "recomendacao_correta",
+          "de": "não",
+          "para": "sim",
+          "motivo": "Única razão: \"inventa\" que a expressão divide [Sales LY] por [Units LY]; é exatamente o que a expressão faz."
+        }
+      ],
+      "itens": {
+        "pertinente": {
+          "original": {
+            "sim": 61,
+            "n": 61,
+            "proporcao": 1.0,
+            "wilson": [
+              0.9407540837980555,
+              1.0
+            ]
+          },
+          "glossario": {
+            "sim": 61,
+            "n": 61,
+            "proporcao": 1.0,
+            "wilson": [
+              0.9407540837980555,
+              1.0
+            ]
+          },
+          "discordantes": {
+            "so_original": 0,
+            "so_glossario": 0
+          },
+          "p_mcnemar": 1.0
+        },
+        "fiel": {
+          "original": {
+            "sim": 32,
+            "n": 61,
+            "proporcao": 0.5245901639344263,
+            "wilson": [
+              0.4015694171531101,
+              0.6446971771320402
+            ]
+          },
+          "glossario": {
+            "sim": 52,
+            "n": 61,
+            "proporcao": 0.8524590163934426,
+            "wilson": [
+              0.7427653049810489,
+              0.920389213106105
+            ]
+          },
+          "discordantes": {
+            "so_original": 2,
+            "so_glossario": 22
+          },
+          "p_mcnemar": 3.5881996154785156e-05
+        },
+        "recomendacao_correta": {
+          "original": {
+            "sim": 47,
+            "n": 61,
+            "proporcao": 0.7704918032786885,
+            "wilson": [
+              0.6508635609254849,
+              0.858068976211168
+            ]
+          },
+          "glossario": {
+            "sim": 41,
+            "n": 61,
+            "proporcao": 0.6721311475409836,
+            "wilson": [
+              0.5472157118133126,
+              0.7766504481827393
+            ]
+          },
+          "discordantes": {
+            "so_original": 14,
+            "so_glossario": 8
+          },
+          "p_mcnemar": 0.28627872467041016
+        },
+        "utilizavel": {
+          "original": {
+            "sim": 23,
+            "n": 61,
+            "proporcao": 0.3770491803278688,
+            "wilson": [
+              0.2661433042836724,
+              0.5025237242905762
+            ]
+          },
+          "glossario": {
+            "sim": 35,
+            "n": 61,
+            "proporcao": 0.5737704918032787,
+            "wilson": [
+              0.44895006843512514,
+              0.6898497144203256
+            ]
+          },
+          "discordantes": {
+            "so_original": 3,
+            "so_glossario": 15
+          },
+          "p_mcnemar": 0.007537841796875
+        }
+      },
+      "consistencia": {
+        "pertinente": {
+          "n": 20,
+          "tabela": {
+            "a": 20,
+            "b": 0,
+            "c": 0,
+            "d": 0
+          },
+          "concordancia": 1.0,
+          "kappa": null
+        },
+        "fiel": {
+          "n": 20,
+          "tabela": {
+            "a": 9,
+            "b": 0,
+            "c": 7,
+            "d": 4
+          },
+          "concordancia": 0.65,
+          "kappa": 0.33962264150943405
+        },
+        "recomendacao_correta": {
+          "n": 20,
+          "tabela": {
+            "a": 13,
+            "b": 1,
+            "c": 2,
+            "d": 4
+          },
+          "concordancia": 0.85,
+          "kappa": 0.625
+        },
+        "utilizavel": {
+          "n": 20,
+          "tabela": {
+            "a": 4,
+            "b": 1,
+            "c": 8,
+            "d": 7
+          },
+          "concordancia": 0.55,
+          "kappa": 0.18181818181818185
+        }
+      },
+      "exploratoria_mesma_sessao": {
+        "nota": "análise exploratória, fora do protocolo: vereditos da mesma sessão nos achados reanotados",
+        "n": 20,
+        "itens": {
+          "pertinente": {
+            "original_reanotada": 20,
+            "glossario": 20,
+            "so_original": 0,
+            "so_glossario": 0,
+            "p_mcnemar": 1.0
+          },
+          "fiel": {
+            "original_reanotada": 16,
+            "glossario": 14,
+            "so_original": 5,
+            "so_glossario": 3,
+            "p_mcnemar": 0.7265625
+          },
+          "recomendacao_correta": {
+            "original_reanotada": 15,
+            "glossario": 13,
+            "so_original": 5,
+            "so_glossario": 3,
+            "p_mcnemar": 0.7265625
+          },
+          "utilizavel": {
+            "original_reanotada": 12,
+            "glossario": 9,
+            "so_original": 7,
+            "so_glossario": 4,
+            "p_mcnemar": 0.548828125
+          }
+        }
+      },
+      "decisao": {
+        "melhora": true,
+        "fragil": true
+      }
+    },
+    "indicador_lexico": {
+      "original": {
+        "com_erro": 16,
+        "explicacoes": 31
+      },
+      "reexecucao_sem_cache": {
+        "com_erro": 16,
+        "explicacoes": 31
+      },
+      "glossario": {
+        "com_erro": 3,
+        "explicacoes": 31
+      }
+    },
+    "commit": "64e64a3"
   }
 }

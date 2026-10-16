@@ -233,6 +233,59 @@ def tabela_concordancia(bloco: dict) -> str:
     )
 
 
+ROTULOS_GLOSSARIO = {**ROTULOS_GERACAO, "utilizavel": "Utilizável como está"}
+
+
+def valor_p(p: float) -> str:
+    return "<0,001" if p < 0.001 else num(p, 3)
+
+
+def _rotulo_item(nome: str) -> str:
+    return _negrito(ROTULOS_GLOSSARIO[nome]) if nome == "utilizavel" else _celula(ROTULOS_GLOSSARIO[nome])
+
+
+def _de(sim: int, n: int, proporcao: bool = True) -> str:
+    return f"{sim} / {n} ({num(sim / n)})" if proporcao else f"{sim} / {n}"
+
+
+def tabela_glossario(bloco: dict) -> str:
+    linhas = []
+    for nome in ROTULOS_GLOSSARIO:
+        v = bloco["itens"][nome]
+        o, g, d = v["original"], v["glossario"], v["discordantes"]
+        linhas.append([_rotulo_item(nome), _celula(_de(o["sim"], o["n"])), _celula(_de(g["sim"], g["n"])),
+                       _celula(str(d["so_original"])), _celula(str(d["so_glossario"])), _celula(valor_p(v["p_mcnemar"]))])
+    return _figura(
+        "tab-glossario",
+        "Glossário na instrução, comparação pareada nos 61 achados (análise de erros): vereditos de 14/10 para as "
+        "explicações originais e da nova sessão para as com glossário",
+        ["Item", "Original", "Com glossário", "Só original", "Só glossário", "p (McNemar)"],
+        linhas,
+        ["left"] + ["right"] * 5,
+        bloco["origem"],
+    )
+
+
+def tabela_glossario_sessao(bloco: dict) -> str:
+    exploratoria = bloco["exploratoria_mesma_sessao"]
+    n = exploratoria["n"]
+    linhas = []
+    for nome in ROTULOS_GLOSSARIO:
+        c, e = bloco["consistencia"][nome], exploratoria["itens"][nome]
+        linhas.append([_rotulo_item(nome), _celula(num(c["concordancia"])), _celula(num(c["kappa"])),
+                       _celula(_de(e["original_reanotada"], n, False)), _celula(_de(e["glossario"], n, False)),
+                       _celula(num(e["p_mcnemar"], 3))])
+    return _figura(
+        "tab-glossario-sessao",
+        f"Os {n} achados reanotados: consistência do anotador entre 14/10 e a nova sessão, e comparação das duas "
+        "versões só com vereditos da nova sessão (análise exploratória, fora do protocolo)",
+        ["Item", "Concordância", "Kappa", "Original reanotada", "Com glossário", "p (McNemar)"],
+        linhas,
+        ["left"] + ["right"] * 5,
+        bloco["origem"],
+    )
+
+
 ROTULOS_CATEGORIA = {"modelagem": "modelagem", "performance": "desempenho", "dax": "DAX"}
 ROTULOS_SEVERIDADE = {"alta": "alta", "media": "média", "baixa": "baixa"}
 
@@ -272,6 +325,8 @@ def gerar_todas(consolidado: dict) -> dict[str, str]:
         "geracao.typ": tabela_geracao(consolidado["geracao"]),
         "geracao-por-regra.typ": tabela_geracao_por_regra(consolidado["geracao"]),
         "concordancia.typ": tabela_concordancia(consolidado["geracao"]),
+        "glossario.typ": tabela_glossario(consolidado["glossario"]),
+        "glossario-sessao.typ": tabela_glossario_sessao(consolidado["glossario"]),
         "catalogo.typ": tabela_catalogo(),
     }
 

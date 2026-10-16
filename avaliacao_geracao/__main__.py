@@ -12,8 +12,8 @@ from openpyxl.utils.exceptions import InvalidFileException
 from avaliacao_geracao import ErroDeAvaliacao
 from avaliacao_geracao.consolidacao import PASTA_RESULTADOS, consolidar
 from avaliacao_geracao.glossario import (
-    CHAVE, CSV_GLOSSARIO, PASTA_REEXECUCAO, PASTA_RODADA_GLOSSARIO, PLANILHA_CEGA, SISTEMA_COM_GLOSSARIO,
-    ClienteComInstrucao, gerar_planilha_cega, indicador_lexico, medir_glossario, montar_amostra, rodada_da_chave,
+    CHAVE, CSV_GLOSSARIO, CSV_SENSIBILIDADE, PASTA_REEXECUCAO, PASTA_RODADA_GLOSSARIO, PLANILHA_CEGA, SISTEMA_COM_GLOSSARIO,
+    ClienteComInstrucao, aplicar_correcoes, gerar_planilha_cega, ler_correcoes, indicador_lexico, medir_glossario, montar_amostra, rodada_da_chave,
 )
 from avaliacao_geracao.metricas import medir
 from avaliacao_geracao.planilha import CSV_OFICIAL, PLANILHA, gerar_planilha, gravar_csv, ler_csv, ler_planilha, validar
@@ -171,6 +171,17 @@ def _glossario_medir() -> int:
         return 1
     achados = sorted(k for k, r in original.items() if r.item.situacao == "gerado")
     resultado = medir_glossario(ler_csv(CSV_OFICIAL), novas, chave, achados=achados)
+    if CSV_SENSIBILIDADE.is_file():
+        # Fora do protocolo: a planilha não mostrava a expressão DAX do achado, que o
+        # modelo recebia; só vereditos cuja única razão dependia dela são revistos.
+        correcoes = ler_correcoes()
+        sensivel = medir_glossario(ler_csv(CSV_OFICIAL), aplicar_correcoes(novas, correcoes), chave, achados=achados)
+        resultado["sensibilidade_expressao_oculta"] = {
+            "nota": "análise de sensibilidade, fora do protocolo: vereditos da nova sessão cuja única razão era um "
+                    "nome ou fórmula presente na expressão do achado, que a planilha não exibia",
+            "correcoes": [c.model_dump() for c in correcoes],
+            **{k: sensivel[k] for k in ("itens", "consistencia", "exploratoria_mesma_sessao", "decisao")},
+        }
     resultado["indicador_lexico"] = {
         "original": indicador_lexico(original),
         "reexecucao_sem_cache": indicador_lexico(carregar_rodada(PASTA_REEXECUCAO)),

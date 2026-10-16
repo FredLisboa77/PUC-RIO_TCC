@@ -143,3 +143,31 @@ def test_indicador_lexico_conta_explicacoes_da_regra_com_o_erro_de_traducao():
         _item("E", regra="PERF-001", situacao="sem_fundamentacao"),
     ])
     assert indicador_lexico(rodada) == {"com_erro": 2, "explicacoes": 3}
+
+
+def test_comparacao_exploratoria_usa_so_os_vereditos_da_mesma_sessao():
+    ids = [f"P1_A|PERF-001|C{i}" for i in range(2)]
+    originais = [_linha(ids[0], f="não"), _linha(ids[1], f="não")]
+    chave = {
+        "R01": {"versao": "glossario", "achado": ids[0]},
+        "R02": {"versao": "glossario", "achado": ids[1]},
+        "R03": {"versao": "original", "achado": ids[0]},
+    }
+    novas = [_linha("R01", f="não"), _linha("R02"), _linha("R03")]
+    r = medir_glossario(originais, novas, chave, achados=ids)
+    e = r["exploratoria_mesma_sessao"]
+    assert e["n"] == 1 and "fora do protocolo" in e["nota"]
+    assert e["itens"]["fiel"] == {"original_reanotada": 1, "glossario": 0, "so_original": 1, "so_glossario": 0,
+                                  "p_mcnemar": 1.0}
+
+
+def test_correcoes_de_sensibilidade_trocam_so_o_item_indicado_e_conferem_o_veredito_anterior():
+    from avaliacao_geracao.glossario import Correcao, aplicar_correcoes
+
+    linhas = [_linha("R01", f="não", r="não"), _linha("R02")]
+    corrigidas = aplicar_correcoes(linhas, [Correcao(codigo="R01", item="recomendacao_correta", de="não", para="sim",
+                                                     motivo="m")])
+    assert (corrigidas[0].fiel, corrigidas[0].recomendacao_correta) == ("não", "sim")
+    assert linhas[0].recomendacao_correta == "não"  # a anotação original não muda
+    with pytest.raises(ValueError, match="R02"):
+        aplicar_correcoes(linhas, [Correcao(codigo="R02", item="fiel", de="não", para="sim", motivo="m")])

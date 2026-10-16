@@ -7,8 +7,12 @@ modo que as respostas novas entram no cache com chave própria e as originais
 continuam reproduzíveis.
 """
 
+import csv
 import random
 import re
+from pathlib import Path
+
+from pydantic import BaseModel
 
 from avaliacao_geracao.estatistica import kappa, mcnemar_exato, wilson
 from avaliacao_geracao.planilha import ITENS, LinhaRubrica, escrever_planilha
@@ -36,6 +40,7 @@ PASTA_REEXECUCAO = PASTA / "auditorias-reexecucao"
 CHAVE = PASTA / "glossario" / "chave.json"
 PLANILHA_CEGA = RAIZ_REPO / "eval" / "gabarito" / "rubrica-glossario-P1-P7.xlsx"
 CSV_GLOSSARIO = RAIZ_REPO / "eval" / "rubrica_glossario.csv"
+CSV_SENSIBILIDADE = RAIZ_REPO / "eval" / "rubrica_glossario_sensibilidade.csv"
 LIMIAR_CONSISTENCIA = 0.80
 ALFA = 0.05
 ERRO_DE_TRADUCAO = re.compile(r"compreend|descompress", re.IGNORECASE)
@@ -146,6 +151,17 @@ def medir_glossario(originais: list[LinhaRubrica], novas: list[LinhaRubrica], ch
         consistencia[item] = {"n": n, "tabela": t, "concordancia": (t["a"] + t["d"]) / n if n else None,
                               "kappa": kappa(t["a"], t["b"], t["c"], t["d"])}
 
+    # Acrescentada depois da medição, ao ver a consistência baixa: compara as duas
+    # versões só com vereditos dados na mesma sessão, nos achados reanotados.
+    exploratoria = {}
+    for item in nomes:
+        pares = [(_veredito(l, item) == "sim", _veredito(nova_por_achado.get(a), item) == "sim")
+                 for a, l in sorted(reanotada.items())]
+        b = sum(x and not y for x, y in pares)
+        c = sum(not x and y for x, y in pares)
+        exploratoria[item] = {"original_reanotada": sum(x for x, _ in pares), "glossario": sum(y for _, y in pares),
+                              "so_original": b, "so_glossario": c, "p_mcnemar": mcnemar_exato(b, c)}
+
     u = itens["utilizavel"]
     concordancia_u = consistencia["utilizavel"]["concordancia"]
     return {
@@ -155,6 +171,11 @@ def medir_glossario(originais: list[LinhaRubrica], novas: list[LinhaRubrica], ch
         "itens": itens,
         "por_regra": por_regra,
         "consistencia": consistencia,
+        "exploratoria_mesma_sessao": {
+            "nota": "análise exploratória, fora do protocolo: vereditos da mesma sessão nos achados reanotados",
+            "n": len(reanotada),
+            "itens": exploratoria,
+        },
         "decisao": {
             "melhora": u["glossario"]["sim"] > u["original"]["sim"] and u["p_mcnemar"] < ALFA,
             "fragil": concordancia_u is None or concordancia_u < LIMIAR_CONSISTENCIA,
@@ -167,3 +188,29 @@ def indicador_lexico(rodada: Rodada, regra: str = "PERF-001") -> dict:
     textos = [r.item.geracao.explicacao for r in rodada.values()
               if r.item.achado.id_regra == regra and r.item.situacao == "gerado"]
     return {"com_erro": sum(bool(ERRO_DE_TRADUCAO.search(t)) for t in textos), "explicacoes": len(textos)}
+
+
+class Correcao(BaseModel):
+    """Veredito revisto na análise de sensibilidade, com o motivo."""
+
+    codigo: str
+    item: str
+    de: str
+    para: str
+    motivo: str
+
+
+def ler_correcoes(caminho: Path = CSV_SENSIBILIDADE) -> list[Correcao]:
+    with caminho.open(encoding="utf-8", newline="") as arquivo:
+        return [Correcao(**linha) for linha in csv.DictReader(arquivo)]
+
+
+def aplicar_correcoes(linhas: list[LinhaRubrica], correcoes: list[Correcao]) -> list[LinhaRubrica]:
+    """Cópias corrigidas; a anotação lida não muda. Falha se o veredito anotado não for o `de`."""
+    por_id = {l.id: l.model_copy() for l in linhas}
+    for c in correcoes:
+        linha = por_id.get(c.codigo)
+        if linha is None or getattr(linha, c.item) != c.de:
+            raise ValueError(f"correção {c.codigo}/{c.item}: o veredito anotado não é '{c.de}'")
+        setattr(linha, c.item, c.para)
+    return [por_id[l.id] for l in linhas]
