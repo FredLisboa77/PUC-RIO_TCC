@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 12 de 13 — Fase 5 em andamento: avaliação da geração medida; monografia escrita, revisada (revisão externa aplicada e teste do glossário incluído, 48 páginas textuais) e mergeada na `main`; demonstração a seguir · **Atualizado em:** 15/10/2026
+**Posição:** semana 13 de 13 — entrega pronta, aguardando o aval do orientador (sem banca): monografia escrita, revisada e na `main` (48 páginas textuais); README no modelo da PUC-Rio, com roteiro para o orientador rodar o projeto e o hardware de medição; demonstração ao vivo com cache conferida · **Atualizado em:** 15/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -305,7 +305,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Demonstração (Fase 5, subprojeto 3, semana 13)** — slides e roteiro da apresentação à banca | A monografia está escrita, revisada e na `main` (15/10/2026); falta preparar a defesa |
+| 1 | **Aval do orientador (semana 13)** — leitura da monografia e, se ele quiser, a demonstração ao vivo com cache | Não haverá banca (decisão de 15/10/2026). A entrega está pronta: README com o roteiro em quatro níveis (seção 8), demonstração conferida. Antes de demonstrar: abrir o Ollama e fechar os programas que usam a GPU |
 | 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 

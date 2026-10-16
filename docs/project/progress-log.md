@@ -2200,3 +2200,22 @@ teste do glossário com a ressalva da consistência), tabela de regras com o gab
 roadmap e próximos passos sem banca, link do PDF na `main`. Fonte local no scratchpad da sessão.
 
 **Próximo passo:** aval do orientador, com a demonstração ao vivo e cache (Ollama aberto antes).
+
+### 15/10/2026 — Semana 13: entrega pronta para o aval
+
+- README conferido contra o modelo de entrega da PUC-Rio (READMEs de alunos do ICA com os
+  comentários do modelo): estrutura conforme; seções 5–8 são acréscimos depois das Conclusões.
+  Nova seção 8, roteiro do orientador em quatro níveis (testado num clone limpo: só regras
+  funciona sem base nem Ollama; a completa sem base falha com mensagem que diz o comando).
+  `eval/dataset.md` dizia P1–P7 "ainda não convertidos": corrigido.
+- Hardware de medição no README e no cap. 3 (i7-10750H, 16 GB, RTX 2060 6 GB, Windows 11;
+  Python 3.11.9, Ollama 0.40.4 em 15/10).
+- Interface no ar para o Fred. Ao auditar o P1, o Ollama caiu ao carregar o modelo (`CUDA error:
+  shared object initialization failed`, 0xc0000409). Log: memória coube (25/29 camadas na GPU);
+  as cinco cargas anteriores da mesma instância funcionaram; a carga seguinte também — falha
+  passageira do driver. Com 1,6 GB de VRAM ocupados por outros programas, o modelo ficou 82%
+  na GPU. Recomendação: fechar esses programas antes da demonstração. Oferecida (não feita)
+  uma segunda tentativa de aquecimento antes de abortar.
+- Página do orientador: versão 20, "semana 13 de 13", entrega pronta, aguardando aval.
+
+**Próximo passo:** aval do orientador.
