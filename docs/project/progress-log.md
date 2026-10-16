@@ -2174,3 +2174,20 @@ McNemar (1947) conferido no Crossref. PDF: 48 páginas textuais. Suíte: 920 tes
 
 **Próximo passo:** o Fred relê a subseção do glossário e os caps. 5–6; merge da
 `revisao-monografia` na `main`; demonstração (subprojeto 3).
+
+### 15/10/2026 — Sem banca: a "demonstração" vira entrega ao orientador
+
+O Fred informou que **não haverá apresentação à banca**, só o aval do orientador: o
+subprojeto 3 não produz slides. Demonstração escolhida: ferramenta **ao vivo, com cache**.
+
+- `revisao-monografia` mergeada na `main` (`e8a1983`) e enviada; `status.md` atualizado (`8f3abcf`).
+- Demo conferida: P8 pela CLI com `--cache` → 15/15 do cache, 10,5 s; a interface Streamlit
+  sobe. **O Ollama precisa estar rodando mesmo com cache** (o aquecimento vai ao modelo real).
+- Clone limpo do GitHub, sem `data/`, `outputs/` nem base RAG: **877 passam, 43 pulados**
+  (os que leem dados locais). Avisos de escape inválido nos testes novos corrigidos.
+- Apêndice C atualizado: medição oficial = `core/rules` da tag `regras-gt` contra o gabarito
+  corrigido (procedimento executado como está escrito: `git diff` vazio nos dois resultados),
+  comandos do teste do glossário, consolidado de 15/10.
+
+**Próximo passo:** atualizar a página do orientador (com confirmação do Fred) e a conversa
+com o orientador para o aval, com a demo ao vivo.

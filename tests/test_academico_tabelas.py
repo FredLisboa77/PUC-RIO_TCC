@@ -202,13 +202,13 @@ def _bloco_glossario():
 
 def test_tabela_glossario_pareada():
     texto = tabela_glossario(_bloco_glossario())
-    assert "[*Utilizável como está*], [23 \/ 61 (0,38)], [32 \/ 61 (0,52)], [4], [13], [0,049]" in texto
-    assert "[Fiel], [32 \/ 61 (0,52)], [51 \/ 61 (0,84)], [2], [21], [\<0,001]" in texto
+    assert r"[*Utilizável como está*], [23 \/ 61 (0,38)], [32 \/ 61 (0,52)], [4], [13], [0,049]" in texto
+    assert r"[Fiel], [32 \/ 61 (0,52)], [51 \/ 61 (0,84)], [2], [21], [\<0,001]" in texto
     assert "<tab-glossario>" in texto and "`glossario-x.json`" in texto
 
 
 def test_tabela_glossario_mesma_sessao_mostra_consistencia_e_comparacao():
     texto = tabela_glossario_sessao(_bloco_glossario())
-    assert "[Pertinente], [1,00], [—], [20 \/ 20], [20 \/ 20], [1,000]" in texto
-    assert "[*Utilizável como está*], [0,65], [0,30], [10 \/ 20], [8 \/ 20], [0,727]" in texto
+    assert r"[Pertinente], [1,00], [—], [20 \/ 20], [20 \/ 20], [1,000]" in texto
+    assert r"[*Utilizável como está*], [0,65], [0,30], [10 \/ 20], [8 \/ 20], [0,727]" in texto
     assert "<tab-glossario-sessao>" in texto

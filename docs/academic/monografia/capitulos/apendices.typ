@@ -64,7 +64,14 @@ python -m gabarito importar   # grava o gabarito
 python -m gabarito medir      # precisão e revocação por regra
 ```
 
-O gabarito anotado já está versionado em `eval/ground_truth.csv`; para refazer só a medição, basta o último comando, executado na marca de versão `regras-gt` do repositório.
+O gabarito anotado já está versionado em `eval/ground_truth.csv`, com a correção da MOD-005 descrita no Capítulo 4. O resultado oficial mede as regras congeladas na marca de versão `regras-gt` contra esse gabarito; para refazê-lo, trazem-se só as regras da marca, mede-se e restauram-se as regras atuais:
+
+```
+git checkout regras-gt -- core/rules
+python -m gabarito medir
+git checkout HEAD -- core/rules
+python -m gabarito medir --rotulo pos-correcao   # regras corrigidas
+```
 
 == Geração e consolidação
 
@@ -76,6 +83,18 @@ python -m avaliacao_geracao consolidar  # junta todos os resultados
 
 Os vereditos da rubrica estão versionados em `eval/rubrica_geracao.csv`. Como o modelo de linguagem não é determinístico, uma nova rodada sem o cache original produz textos diferentes dos avaliados, e a rubrica precisaria ser aplicada de novo.
 
+== Teste do glossário
+
+```
+python -m avaliacao_geracao glossario-auditar     # rodada com o glossário
+python -m avaliacao_geracao glossario-reexecutar  # instrução original, sem cache
+python -m avaliacao_geracao glossario-gerar       # sorteio e planilha cega
+python -m avaliacao_geracao glossario-importar    # grava os vereditos
+python -m avaliacao_geracao glossario-medir       # comparação pareada
+```
+
+O protocolo, escrito antes da rodada, está em `docs/superpowers/specs/2026-10-15-teste-do-glossario-design.md`. Os vereditos estão em `eval/rubrica_glossario.csv`, os vereditos revistos da análise de sensibilidade, com o motivo de cada um, em `eval/rubrica_glossario_sensibilidade.csv`, e a chave do sorteio, que liga cada código à versão da explicação, no próprio arquivo de resultado.
+
 == Monografia
 
 ```
@@ -83,4 +102,4 @@ python -m academico tabelas   # tabelas a partir de eval/results/
 python -m academico pdf       # compila este documento
 ```
 
-Todas as tabelas de resultado deste documento são geradas pelo primeiro comando a partir do arquivo `eval/results/consolidado-2026-10-14.json`, e a suíte de testes do repositório falha se alguma delas divergir do arquivo de resultados.
+Todas as tabelas de resultado deste documento são geradas pelo primeiro comando a partir do arquivo `eval/results/consolidado-2026-10-15.json`, e a suíte de testes do repositório falha se alguma delas divergir do arquivo de resultados.
