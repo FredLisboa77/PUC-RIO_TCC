@@ -2191,3 +2191,12 @@ subprojeto 3 não produz slides. Demonstração escolhida: ferramenta **ao vivo,
 
 **Próximo passo:** atualizar a página do orientador (com confirmação do Fred) e a conversa
 com o orientador para o aval, com a demo ao vivo.
+
+### 15/10/2026 — Página do orientador atualizada
+
+Publicada a versão 19 da página do orientador (https://claude.ai/artifact/9pakodHeCD3koXbzKyCdcB),
+com autorização do Fred: seção nova 03 (monografia, revisão externa com a correção da MOD-005,
+teste do glossário com a ressalva da consistência), tabela de regras com o gabarito corrigido,
+roadmap e próximos passos sem banca, link do PDF na `main`. Fonte local no scratchpad da sessão.
+
+**Próximo passo:** aval do orientador, com a demonstração ao vivo e cache (Ollama aberto antes).
