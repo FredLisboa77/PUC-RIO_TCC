@@ -2,7 +2,7 @@
 
 **Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 12 de 13 — Fase 5 em andamento: avaliação da geração medida; monografia escrita (41 páginas textuais, aguardando a revisão geral do Fred); demonstração a seguir · **Atualizado em:** 15/10/2026
+**Posição:** semana 12 de 13 — Fase 5 em andamento: avaliação da geração medida; monografia escrita, revisada (revisão externa aplicada e teste do glossário incluído, 48 páginas textuais) e mergeada na `main`; demonstração a seguir · **Atualizado em:** 15/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -42,7 +42,7 @@ uma das 9 regras foi conferida no texto extraído.
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
 | F4 — Interface e relatório | 9–10 | **Concluída** | 13/10/2026 — interface Streamlit (mergeada em `5fce01f`), relatório HTML/PDF e cache das respostas do LLM (branch `fase4-relatorio`) |
-| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); rubrica anotada e medida em 14/10/2026 (seção 3). Depois: monografia (semana 12) e demonstração (semana 13). **Monografia (subprojeto 2), 15/10/2026:** escrita em Typst nas normas ABNT, `docs/academic/monografia.pdf` (6 capítulos, 3 apêndices, 35 referências conferidas, tabelas geradas do consolidado por `python -m academico tabelas`); README no modelo de entrega da PUC-Rio |
+| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); rubrica anotada e medida em 14/10/2026 (seção 3). Depois: monografia (semana 12) e demonstração (semana 13). **Monografia (subprojeto 2), 15/10/2026:** escrita em Typst nas normas ABNT, `docs/academic/monografia.pdf` (6 capítulos, 3 apêndices, 36 referências conferidas, tabelas geradas do consolidado por `python -m academico tabelas`); README no modelo de entrega da PUC-Rio. Revisão externa aplicada e teste do glossário incluído como análise de erros; mergeada na `main` em `e8a1983`. Falta a demonstração (semana 13) |
 
 **Posição no calendário, e o uso da folga que a atualização anterior reportou:**
 o projeto começou em 22/09/2026. Na atualização de 06/10/2026 estávamos cerca de
@@ -79,7 +79,8 @@ regras de M, depois abrir mão do PDF (R-07).
 | Relatório HTML/PDF (`python -m reports <resultado.json> --pdf [--tecnico]`, e botões na interface) | Aceito em 13/10/2026: HTML autocontido e PDF pelo Edge do sistema (Playwright, `channel="msedge"`); P8 completo em 33 páginas (68 com a seção técnica), P5 só regras em 14; rodapé com número de página |
 | Cache das respostas do LLM (`--cache`, e caixa na interface) | Aceito em 13/10/2026: P8 auditado duas vezes — 165,6 s e **1,5 s**, gerações idênticas, "Do cache: 15"; desligado por padrão e rotulado no resultado, na interface e no relatório |
 | Avaliação da geração com rubrica humana (`python -m avaliacao_geracao`) | 61 explicações de P1–P7 julgadas às cegas (14/10/2026): **pertinente 61/61** (Wilson 0,94–1,00), **fiel 32/61 = 0,52** (0,40–0,65), **recomendação correta 47/61 = 0,77** (0,65–0,86), **utilizável como está 23/61 = 0,38** (0,27–0,50); descarte 0. O critério automático de fidelidade não concorda com o humano (kappa −0,08). Consolidado com Wilson nas regras em `eval/results/consolidado-2026-10-14.json` |
-| Suíte de testes | **874 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
+| Revisão externa e teste do glossário (15/10/2026) | Gabarito da MOD-005 corrigido (P1–P7 têm `dataCategory: "Time"`; 7 "indeterminados" → "não viola"), regras remedidas: valores principais iguais, indeterminados 13 → 6. Glossário na instrução, protocolo registrado antes: erro de tradução da PERF-001 16/31 → 3/31 (reexecução sem cache: 16), recomendações corretas da PERF-001 24 → 10; "utilizável" 23 → 32 (p = 0,049) mas comparação frágil — consistência do anotador 0,65 nas 20 reanotadas. Consolidado em `eval/results/consolidado-2026-10-15.json` |
+| Suíte de testes | **920 testes passando**, dos quais os que leem o PBIP real continuam travando as 15 ocorrências medidas |
 
 ### As 9 regras e o que acharam no P8
 
@@ -125,8 +126,9 @@ Essa pendência está **resolvida — por decisão, não por chegar ao número**
 
 Em 06/10/2026 passou a valer uma segunda condição, anterior à detectabilidade —
 âncora citável do Microsoft Learn, verificada antes do código — que eliminou 3 das
-8 regras estruturais propostas e reescreveu a MOD-005 (ela lia uma propriedade que
-o Power BI Desktop nunca grava no arquivo).
+8 regras estruturais propostas e reescreveu a MOD-005 (ela lia a ausência de uma propriedade que o Power BI Desktop
+não garante gravar no arquivo; em 15/10 verificou-se que P1–P7 a trazem, e o gabarito
+foi corrigido).
 
 Nesta etapa (08/10/2026) o critério ganhou um **terceiro teste**, formulado a
 partir da lição da MOD-005: suficiência de evidência, em três cláusulas — (a)
@@ -303,7 +305,7 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Monografia (Fase 5, subprojeto 2, semana 12)** — a avaliação fechou em 14/10/2026 com o consolidado como fonte única das tabelas | A revisão de meio de projeto foi aprovada pelo orientador em 13/10/2026 ([documento](https://claude.ai/artifact/WixEjbcvDMm8XTWufbtLZ1)), com as decisões de 12/10 validadas: resultado oficial na tag `regras-gt`, BM25 mantido, grupo 4 fora do MVP |
+| 1 | **Demonstração (Fase 5, subprojeto 3, semana 13)** — slides e roteiro da apresentação à banca | A monografia está escrita, revisada e na `main` (15/10/2026); falta preparar a defesa |
 | 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
 | 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
