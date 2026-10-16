@@ -169,6 +169,55 @@ python -m academico pdf       # compila docs/academic/monografia.pdf
 
 Os comandos para reproduzir a avaliação (gabarito das regras, recuperação e rubrica da geração) estão no Apêndice C da monografia e em [`docs/project/ambiente.md`](docs/project/ambiente.md).
 
+### 8. Como o orientador pode rodar o projeto
+
+O roteiro vai do mais leve ao completo. Cada nível acrescenta um requisito ao anterior, e os três primeiros não precisam de GPU nem de modelo de linguagem.
+
+**Nível 1 — ler o trabalho (sem instalar nada).** A [monografia](docs/academic/monografia.pdf) está no repositório. Os resultados que ela apresenta estão em [`eval/results/`](eval/results/), em JSON; o arquivo que alimenta todas as tabelas é o `consolidado-2026-10-15.json`. Os vereditos humanos estão em `eval/ground_truth.csv` (regras), `eval/rubrica_geracao.csv` (geração) e `eval/rubrica_glossario.csv` (teste do glossário).
+
+**Nível 2 — conferir os números (cerca de 15 minutos; requer Python 3.11 e Git).**
+
+```powershell
+git clone https://github.com/FredLisboa77/PUC-RIO_TCC.git
+cd PUC-RIO_TCC
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pytest -q                   # esperado: 877 passam e 43 são pulados
+python -m academico pdf     # recompila a monografia a partir das fontes
+```
+
+Os 43 testes pulados são os que leem dados que não estão no repositório: os projetos Power BI, a cópia local da documentação e o modelo de linguagem. Entre os que passam está o que confere cada tabela da monografia contra os arquivos de `eval/results/`: se algum número divergisse, ele falharia. Se o `pip` acusar `CERTIFICATE_VERIFY_FAILED`, um antivírus está interceptando a conexão; a solução está em [`docs/project/ambiente.md`](docs/project/ambiente.md).
+
+**Nível 3 — auditar um projeto Power BI só com as regras (alguns minutos a mais; requer o Power BI Desktop).** A detecção não depende do modelo de linguagem nem da base de documentação.
+
+1. Abra no Power BI Desktop qualquer arquivo `.pbix`, por exemplo uma das amostras do repositório [`microsoft/powerbi-desktop-samples`](https://github.com/microsoft/powerbi-desktop-samples), que são as usadas na avaliação (lista em [`eval/dataset.md`](eval/dataset.md)).
+2. Em *Arquivo > Opções e configurações > Opções > Recursos de visualização*, deixe **desligado** o recurso "Store semantic model using TMDL format", para que o modelo seja gravado como `model.bim`, o formato que a ferramenta lê. Depois, *Arquivo > Salvar como > Projeto do Power BI (.pbip)*. O procedimento completo, usado na avaliação, está em [`eval/dataset.md`](eval/dataset.md#procedimento-de-conversão-manual-fora-do-escopo-do-software).
+3. Rode:
+
+```powershell
+python -m core.auditoria "C:\caminho\do\projeto" --so-regras   # achados em menos de 1 s
+streamlit run app/streamlit_app.py                              # a mesma auditoria pela interface, no modo "só regras"
+python -m reports outputs\<arquivo-gerado>.json --pdf           # relatório em PDF (usa o Microsoft Edge)
+```
+
+O nome do arquivo gerado aparece na última linha da auditoria. Nesse modo, cada achado sai com a recomendação padrão da regra e o link da página do Microsoft Learn que a fundamenta.
+
+**Nível 4 — auditoria completa, com as explicações do modelo de linguagem (cerca de 1 hora na primeira vez; requer o Ollama e, de preferência, uma GPU com 6 GB).**
+
+```powershell
+ollama pull qwen2.5:7b-instruct-q4_K_M
+python -m rag.coleta             # baixa 1.420 páginas do Microsoft Learn (~40 min, uma vez só)
+python -m rag.extracao
+python -m rag.indice construir
+python -m core.auditoria "C:\caminho\do\projeto"            # ~8 s por achado com GPU
+python -m core.auditoria "C:\caminho\do\projeto" --cache    # repete em segundos, com os mesmos textos
+```
+
+O Ollama precisa estar aberto antes da auditoria. Como o modelo de linguagem não é determinístico, as explicações geradas numa máquina nova não serão idênticas às avaliadas na monografia: a avaliação foi feita sobre uma rodada fixa, guardada em cache na máquina do autor.
+
+**Demonstração na máquina do autor.** O projeto do estudo de caso (P8) não é público. Ele pode ser mostrado ao vivo na máquina do autor, com o cache ligado: as 15 explicações aparecem em cerca de 10 segundos, idênticas às da monografia.
+
 ---
 
 Matrícula: 251.100.867

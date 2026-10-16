@@ -1,6 +1,6 @@
 # Dataset de avaliação
 
-**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. **P1–P7 baixados em 09/10/2026** (passo 1 do procedimento abaixo) e **ainda não convertidos** — os passos 2–5 exigem a GUI do Power BI Desktop.
+**Status:** P8 convertido (23/09/2026), agora como estudo de caso fora das métricas. **P1–P7 baixados e convertidos para PBIP em 09/10/2026** pelo procedimento abaixo (os passos 2–5 exigem a GUI do Power BI Desktop), anotados no gabarito e usados em todas as métricas da monografia.
 **Decisão de origem:** [ADR-005](../docs/adr/ADR-005-dataset-de-avaliacao.md).
 
 ## Origem
