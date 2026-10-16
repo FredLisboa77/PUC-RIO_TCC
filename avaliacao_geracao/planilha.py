@@ -27,12 +27,12 @@ PLANILHA = RAIZ_REPO / "eval" / "gabarito" / "rubrica-geracao-P1-P7.xlsx"
 CSV_OFICIAL = RAIZ_REPO / "eval" / "rubrica_geracao.csv"
 
 COLUNAS_LEITURA = (
-    "id", "impressao", "projeto", "regra", "titulo_regra", "objeto", "mensagem",
+    "id", "impressao", "projeto", "regra", "titulo_regra", "objeto", "mensagem", "trecho_do_modelo",
     "explicacao", "recomendacao", "citacoes", "referencia_regra",
 )
 COLUNAS_ANOTACAO = (*ITENS, "justificativa", "observacao")
 LARGURAS = {"id": 30, "impressao": 10, "projeto": 12, "regra": 9, "titulo_regra": 25, "objeto": 30,
-            "mensagem": 40, "explicacao": 60, "recomendacao": 50, "citacoes": 80, "referencia_regra": 60,
+            "mensagem": 40, "trecho_do_modelo": 50, "explicacao": 60, "recomendacao": 50, "citacoes": 80, "referencia_regra": 60,
             "pertinente": 13, "fiel": 13, "recomendacao_correta": 13, "justificativa": 40, "observacao": 30}
 
 INSTRUCOES = [
@@ -43,7 +43,8 @@ INSTRUCOES = [
     "",
     "pertinente — pelo menos um trecho citado é de fato a passagem da documentação que sustenta o achado",
     "  (não basta existir entre os trechos fornecidos).",
-    "fiel — o que a explicação afirma é sustentado pelos trechos citados ou pelos fatos do achado, sem nada",
+    "fiel — o que a explicação afirma é sustentado pelos trechos citados ou pelos fatos do achado (mensagem e",
+    "  trecho_do_modelo, a expressão que o modelo recebeu), sem nada",
     "  inventado (números, nomes, comportamentos).",
     "recomendacao_correta — a recomendação resolve o problema neste modelo, sem erro técnico.",
     "",
@@ -91,17 +92,23 @@ def _referencia(r: ItemDaRodada, registro: Registro) -> str:
 
 
 def gerar_planilha(rodada: Rodada, destino: Path, *, forcar: bool = False, registro: Registro | None = None) -> int:
-    if destino.exists() and not forcar:
-        raise ErroDeAvaliacao(f"{destino} já existe e pode ter vereditos — apague, renomeie ou use --forcar")
-    registro = REGISTRO if registro is None else registro
     itens = sorted(
         ((chave, r) for chave, r in rodada.items() if r.item.situacao == "gerado"),
         key=lambda par: (par[1].projeto, par[1].item.achado.id_regra, par[1].item.achado.evidencia.objeto),
     )
+    return escrever_planilha(itens, destino, forcar=forcar, registro=registro)
+
+
+def escrever_planilha(itens: list[tuple[str, ItemDaRodada]], destino: Path, *, forcar: bool = False,
+                      registro: Registro | None = None, instrucoes_extra: list[str] | None = None) -> int:
+    """Uma linha por item, na ordem recebida; a primeira coluna é a chave dada."""
+    if destino.exists() and not forcar:
+        raise ErroDeAvaliacao(f"{destino} já existe e pode ter vereditos — apague, renomeie ou use --forcar")
+    registro = REGISTRO if registro is None else registro
     livro = Workbook()
     instrucoes = livro.active
     instrucoes.title = "Instruções"
-    for i, linha in enumerate(INSTRUCOES, start=1):
+    for i, linha in enumerate([*INSTRUCOES, *(instrucoes_extra or [])], start=1):
         instrucoes.cell(row=i, column=1, value=linha)
     aba = livro.create_sheet("Rubrica")
     cabecalho = [*COLUNAS_LEITURA, *COLUNAS_ANOTACAO]
@@ -112,7 +119,7 @@ def gerar_planilha(rodada: Rodada, destino: Path, *, forcar: bool = False, regis
         meta = registro.meta(r.item.achado.id_regra)
         valores = [
             chave, impressao(r.item), r.projeto, meta.id, meta.titulo, r.item.achado.evidencia.objeto,
-            r.item.achado.mensagem, r.item.geracao.explicacao, r.item.geracao.recomendacao,
+            r.item.achado.mensagem, _cortar(r.item.achado.evidencia.trecho or ""), r.item.geracao.explicacao, r.item.geracao.recomendacao,
             _citacoes(r), _referencia(r, registro),
         ]
         for coluna, valor in enumerate(valores, start=1):

@@ -155,3 +155,14 @@ def test_validar_aponta_achado_gerado_ausente_da_planilha(tmp_path):
     assert [(p.linha, p.id, p.motivo) for p in problemas if p.linha is None] == [
         (None, ausente, "achado gerado da rodada ausente da planilha")]
     assert not [p for p in validar(lidas, rodada, parcial=True) if p.linha is None]
+
+
+def test_planilha_mostra_a_expressao_do_achado_que_o_modelo_recebeu(tmp_path):
+    """Defeito achado no teste do glossário (15/10/2026): sem a expressão, nomes que o
+    modelo tirou dela pareciam inventados."""
+    item = _gerado().model_copy(update={"achado": achado(objeto="T", trecho="IF([Units]<>0, [Sales]/[Units])")})
+    destino = tmp_path / "r.xlsx"
+    gerar_planilha(_rodada(item), destino, registro=_registro())
+    _, celulas = _celulas(destino)
+    assert "trecho_do_modelo" in celulas[0]
+    assert "IF([Units]<>0, [Sales]/[Units])" in celulas[1]

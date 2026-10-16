@@ -1,0 +1,9 @@
+codigo,item,de,para,motivo
+R11,recomendacao_correta,não,sim,"Única razão: a fórmula com DIVIDE ""inventaria"" [Sales TY], [MonthID] e Store[SellingAreaSize]; os três estão na expressão da medida, enviada ao modelo e não exibida na planilha. A fórmula é a conversão exata da expressão para DIVIDE."
+R20,fiel,não,sim,"Única razão: nomes [Sales TY] e [Units TY] ""inventados""; estão na expressão da medida."
+R20,recomendacao_correta,não,sim,"Única razão: nomes [Sales TY] e [Units TY] ""inventados""; estão na expressão da medida."
+R59,recomendacao_correta,não,sim,"Única razão da recomendação: DIVIDE([Sales LY], [Units LY]) ""inventada""; é a conversão exata da expressão. O ""não"" em fiel tem outra razão (BLANK) e fica."
+R07,recomendacao_correta,não,sim,"Única razão: fórmula com [date] e [HireDate] ""inventada""; as duas colunas estão na expressão da coluna calculada."
+R27,recomendacao_correta,não,sim,"Única razão: DIVIDE([Total Sales Var], [Sales LY]) ""inventada""; é a conversão exata da expressão."
+R36,fiel,não,sim,"Única razão: ""inventa"" que a expressão divide [Sales LY] por [Units LY]; é exatamente o que a expressão faz."
+R36,recomendacao_correta,não,sim,"Única razão: ""inventa"" que a expressão divide [Sales LY] por [Units LY]; é exatamente o que a expressão faz."

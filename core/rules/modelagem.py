@@ -224,9 +224,10 @@ def tabela_sem_relacionamento(modelo: ModeloSemantico) -> Iterator[Achado]:
     ),
     nota_de_verificacao=(
         "Detectável apenas quando o Tempo automático de data/hora está ligado. A "
-        "marcação de tabela de data NÃO é representada no model.bim salvo pelo "
-        "Power BI Desktop — verificado em 06/10/2026: dataCategory aparece só em "
-        "coluna, e isDateTable não aparece. A prova usada é indireta e vem da "
+        "marcação de tabela de data aparece no model.bim como dataCategory: Time "
+        "na tabela, e a regra se cala diante dela; mas não há garantia de que o "
+        "Power BI Desktop sempre a grave (no P8, em 06/10/2026, ela não apareceu), "
+        "então a ausência não prova nada. A prova usada é indireta e vem da "
         "própria documentação: marcar a tabela faz o Power BI remover a tabela de "
         "data automática que havia criado, então uma variations da coluna de data "
         "apontando para uma tabela automática prova que a marcação não aconteceu. "
@@ -242,9 +243,10 @@ def dimensao_de_data_nao_marcada(modelo: ModeloSemantico) -> Iterator[Achado]:
     Power BI remover essa tabela.
 
     Sem essa prova a regra não afirma nada. A versão anterior lia
-    `dataCategory: "Time"` e tratava a ausência como prova de não-marcação — e o
-    Power BI Desktop nunca escreve essa propriedade, de modo que a regra marcaria
-    também a dimensão corretamente marcada.
+    `dataCategory: "Time"` e tratava a ausência como prova de não-marcação — mas
+    não há garantia de que o Power BI Desktop sempre escreva essa propriedade (no
+    P8 ela não apareceu), de modo que a regra poderia marcar também a dimensão
+    corretamente marcada.
     """
     for nome in sorted(dimensao_de_data(modelo)):
         t = tabela_por_nome(modelo, nome)

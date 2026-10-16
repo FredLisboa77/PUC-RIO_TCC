@@ -43,7 +43,7 @@ A primeira é um *critério de detectabilidade* para regras de auditoria de mode
 
 A segunda é uma *arquitetura* em que o modelo de linguagem não detecta problemas, apenas os explica, e em que a passagem da documentação que sustenta cada regra entra sempre no contexto do modelo, de modo que a qualidade da busca afeta só os trechos complementares.
 
-A terceira é uma *avaliação* das três camadas contra julgamento humano, com regras de decisão fixadas antes das medições e com resultados negativos relatados: as regras atingiram precisão de 0,88, todas as explicações citaram uma passagem pertinente, mas só 52% foram fiéis à documentação e 38% puderam ser usadas sem edição, e a verificação automática de fidelidade mostrou-se incapaz de substituir a leitura humana.
+A terceira é uma *avaliação* das três camadas contra julgamento humano, com regras de decisão fixadas antes das medições e com resultados negativos relatados: as regras atingiram precisão de 0,88, todas as explicações citaram uma passagem pertinente, mas só 52% foram fiéis à documentação e 38% puderam ser usadas sem edição, e a conferência automática de fidelidade usada pela ferramenta, que compara números e nomes, mostrou-se incapaz de substituir a leitura humana.
 
 A quarta é a própria *ferramenta*, com o código, os resultados e os gabaritos disponíveis num repositório público, de modo que a avaliação pode ser reproduzida com os mesmos projetos.
 

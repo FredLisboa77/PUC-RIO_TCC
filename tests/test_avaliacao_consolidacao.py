@@ -28,6 +28,7 @@ def _escrever(pasta, sem=None):
                            {"configuracao": {"busca": "bm25"}, "macro": {"mrr": 0.9, "acerto": {"5": 1.0}}}],
         },
         "complementares": {"por_busca": {"bm25": {"macro": {"principal": 0.62}}}, "decisao": {"vencedora": "bm25"}},
+        "glossario": {"estatuto": "análise de erros", "chave": {"R01": {}}, "itens": {"fiel": 1}},
     }
     for chave, nome in ORIGENS.items():
         if chave != sem:
@@ -46,6 +47,7 @@ def test_consolida_com_wilson_e_origens(tmp_path):
     assert c["recuperacao"]["macro"]["mrr"] == 0.9
     assert c["complementares"]["macro"] == {"bm25": {"principal": 0.62}}
     assert c["geracao"]["origem"] == "geracao-2026-10-15.json" and c["geracao"]["itens"] == {"novo": 1}
+    assert c["glossario"] == {"origem": ORIGENS["glossario"], "estatuto": "análise de erros", "itens": {"fiel": 1}}
 
 
 @pytest.mark.parametrize("sem", [*ORIGENS, "geracao"])

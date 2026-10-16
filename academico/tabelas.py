@@ -12,7 +12,7 @@ from pathlib import Path
 from academico.compilacao import PASTA_MONOGRAFIA, RAIZ_REPO
 from core.rules.todas import REGISTRO
 
-CONSOLIDADO = RAIZ_REPO / "eval" / "results" / "consolidado-2026-10-14.json"
+CONSOLIDADO = RAIZ_REPO / "eval" / "results" / "consolidado-2026-10-15.json"
 PASTA_GERADO = PASTA_MONOGRAFIA / "gerado"
 AUSENTE = "—"
 _ESPECIAIS = "\\*_#@<>$`[]~/"
@@ -91,6 +91,15 @@ def _figura(rotulo: str, legenda: str, cabecalho: list[str], linhas: list[list[s
     return "\n".join(partes)
 
 
+def com_piso_e_teto(taxa: dict) -> str:
+    """Proporção principal e, entre parênteses, piso–teto quando os indeterminados os afastam dela."""
+    principal = taxa["principal"]
+    piso, teto = taxa.get("piso", principal), taxa.get("teto", principal)
+    if piso == principal and teto == principal:
+        return num(principal)
+    return f"{num(principal)} ({num(piso)}–{num(teto)})"
+
+
 def _linha_regra(nome: str, dados: dict, negrito: bool = False) -> list[str]:
     m = dados["matriz"]
     rotulo = _negrito(nome) if negrito else _celula(nome)
@@ -99,22 +108,25 @@ def _linha_regra(nome: str, dados: dict, negrito: bool = False) -> list[str]:
         _celula(str(m["vp"])),
         _celula(str(m["fp"])),
         _celula(str(m["fn"])),
-        _celula(str(m["ind_marcados"] + m["ind_nao_marcados"])),
-        _celula(num(dados["taxas"]["precisao"]["principal"])),
+        _celula(str(m["ind_marcados"])),
+        _celula(str(m["ind_nao_marcados"])),
+        _celula(com_piso_e_teto(dados["taxas"]["precisao"])),
         _celula(faixa((dados.get("wilson") or {}).get("precisao"))),
-        _celula(num(dados["taxas"]["recall"]["principal"])),
+        _celula(com_piso_e_teto(dados["taxas"]["recall"])),
     ]
 
 
 def tabela_regras(bloco: dict, rotulo: str, legenda: str) -> str:
+    """Indeterminados em duas colunas: os que a regra marcou (Ind. M) entram no
+    denominador da precisão; os que ela não marcou (Ind. NM), só no da revocação."""
     linhas = [_linha_regra(regra, bloco["por_regra"][regra]) for regra in sorted(bloco["por_regra"])]
     linhas.append(_linha_regra("Total (micro)", bloco["total_micro"], negrito=True))
     return _figura(
         rotulo,
         legenda,
-        ["Regra", "VP", "FP", "FN", "Indet.", "Precisão", "IC 95% (Wilson)", "Revocação"],
+        ["Regra", "VP", "FP", "FN", "Ind. M", "Ind. NM", "Precisão (piso–teto)", "IC 95% (Wilson)", "Revocação (piso–teto)"],
         linhas,
-        ["left"] + ["right"] * 7,
+        ["left"] + ["right"] * 8,
         bloco["origem"],
     )
 
@@ -221,6 +233,59 @@ def tabela_concordancia(bloco: dict) -> str:
     )
 
 
+ROTULOS_GLOSSARIO = {**ROTULOS_GERACAO, "utilizavel": "Utilizável como está"}
+
+
+def valor_p(p: float) -> str:
+    return "<0,001" if p < 0.001 else num(p, 3)
+
+
+def _rotulo_item(nome: str) -> str:
+    return _negrito(ROTULOS_GLOSSARIO[nome]) if nome == "utilizavel" else _celula(ROTULOS_GLOSSARIO[nome])
+
+
+def _de(sim: int, n: int, proporcao: bool = True) -> str:
+    return f"{sim} / {n} ({num(sim / n)})" if proporcao else f"{sim} / {n}"
+
+
+def tabela_glossario(bloco: dict) -> str:
+    linhas = []
+    for nome in ROTULOS_GLOSSARIO:
+        v = bloco["itens"][nome]
+        o, g, d = v["original"], v["glossario"], v["discordantes"]
+        linhas.append([_rotulo_item(nome), _celula(_de(o["sim"], o["n"])), _celula(_de(g["sim"], g["n"])),
+                       _celula(str(d["so_original"])), _celula(str(d["so_glossario"])), _celula(valor_p(v["p_mcnemar"]))])
+    return _figura(
+        "tab-glossario",
+        "Glossário na instrução, comparação pareada nos 61 achados (análise de erros): vereditos de 14/10 para as "
+        "explicações originais e da nova sessão para as com glossário",
+        ["Item", "Original", "Com glossário", "Só original", "Só glossário", "p (McNemar)"],
+        linhas,
+        ["left"] + ["right"] * 5,
+        bloco["origem"],
+    )
+
+
+def tabela_glossario_sessao(bloco: dict) -> str:
+    exploratoria = bloco["exploratoria_mesma_sessao"]
+    n = exploratoria["n"]
+    linhas = []
+    for nome in ROTULOS_GLOSSARIO:
+        c, e = bloco["consistencia"][nome], exploratoria["itens"][nome]
+        linhas.append([_rotulo_item(nome), _celula(num(c["concordancia"])), _celula(num(c["kappa"])),
+                       _celula(_de(e["original_reanotada"], n, False)), _celula(_de(e["glossario"], n, False)),
+                       _celula(num(e["p_mcnemar"], 3))])
+    return _figura(
+        "tab-glossario-sessao",
+        f"Os {n} achados reanotados: consistência do anotador entre 14/10 e a nova sessão, e comparação das duas "
+        "versões só com vereditos da nova sessão (análise exploratória, fora do protocolo)",
+        ["Item", "Concordância", "Kappa", "Original reanotada", "Com glossário", "p (McNemar)"],
+        linhas,
+        ["left"] + ["right"] * 5,
+        bloco["origem"],
+    )
+
+
 ROTULOS_CATEGORIA = {"modelagem": "modelagem", "performance": "desempenho", "dax": "DAX"}
 ROTULOS_SEVERIDADE = {"alta": "alta", "media": "média", "baixa": "baixa"}
 
@@ -246,17 +311,22 @@ def tabela_catalogo() -> str:
     )
 
 
+SIGLAS_INDETERMINADOS = "; Ind. M e Ind. NM: indeterminados marcados e não marcados pela regra"
+
+
 def gerar_todas(consolidado: dict) -> dict[str, str]:
     regras = consolidado["regras"]
     pos = consolidado["regras_pos_correcao"]
     return {
-        "regras.typ": tabela_regras(regras, "tab-regras", f"Desempenho das regras contra o gabarito em P1–P7 ({regras['rotulo']})"),
-        "regras-pos-correcao.typ": tabela_regras(pos, "tab-regras-pos-correcao", f"Desempenho das regras após a correção da MOD-003 e da PERF-001 ({pos['rotulo']})"),
+        "regras.typ": tabela_regras(regras, "tab-regras", f"Desempenho das regras contra o gabarito em P1–P7 ({regras['rotulo']}){SIGLAS_INDETERMINADOS}"),
+        "regras-pos-correcao.typ": tabela_regras(pos, "tab-regras-pos-correcao", f"Desempenho das regras após a correção da MOD-003 e da PERF-001 ({pos['rotulo']}){SIGLAS_INDETERMINADOS}"),
         "recuperacao.typ": tabela_recuperacao(consolidado["recuperacao"]),
         "complementares.typ": tabela_complementares(consolidado["complementares"]),
         "geracao.typ": tabela_geracao(consolidado["geracao"]),
         "geracao-por-regra.typ": tabela_geracao_por_regra(consolidado["geracao"]),
         "concordancia.typ": tabela_concordancia(consolidado["geracao"]),
+        "glossario.typ": tabela_glossario(consolidado["glossario"]),
+        "glossario-sessao.typ": tabela_glossario_sessao(consolidado["glossario"]),
         "catalogo.typ": tabela_catalogo(),
     }
 

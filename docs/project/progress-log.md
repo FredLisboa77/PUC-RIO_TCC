@@ -2077,3 +2077,100 @@ consolidado, com teste de sincronia. O conteúdo técnico anterior foi para
 `fase5-monografia` na `main`; depois a demonstração (subprojeto 3, semana 13). Oferecer a
 atualização da página do orientador.
 
+
+---
+
+## 15/10/2026 — Revisão externa da monografia: MOD-005 no gabarito e correções do texto
+
+Branch `revisao-monografia`. O Fred trouxe uma revisão externa do PDF; cada ponto foi conferido
+contra os dados, o código e o PDF antes de ser aceito ou recusado.
+
+**Defeito real encontrado (o mais grave):** as 7 linhas da MOD-005 revistas para "indeterminado"
+em 12/10 estavam erradas. As tabelas de data de P1–P7 têm `dataCategory: "Time"` na tabela e
+`isKey: true` na coluna de data, ou seja, **estão marcadas**, e P1–P7 foram salvos como PBIP pelo
+próprio Desktop (ADR-005). A conclusão de 06/10 ("o Desktop nunca grava a propriedade"), tirada
+só no P8, está refutada pelos nossos dados; a causa da divergência no P8 não foi apurada. A regra
+sempre se comportou certo (se cala diante de `dataCategory: "Time"`).
+
+- Gabarito: as 7 linhas viraram "não viola", com o histórico na justificativa.
+- Remedição: regras congeladas num worktree com `core/rules` da tag `regras-gt` — a reprodução
+  do resultado de 12/10 com o CSV antigo saiu **idêntica** antes da troca — e regras corrigidas.
+  Novos `regras-2026-10-15.json`, `regras-2026-10-15-pos-correcao.json` e
+  `consolidado-2026-10-15.json` (fonte da monografia; os de 12/10 e 14/10 ficam como histórico).
+- **Valores principais não mudam** (0,88/0,88 oficial; 0,93/1,00 pós-correção). Indeterminados
+  13 → 6; piso de revocação oficial 0,72 → 0,81. MOD-005: 13 VN.
+- Docstrings e nota de verificação da MOD-005 corrigidas; lógica da regra inalterada.
+
+**Tabelas de regras:** indeterminados em duas colunas (Ind. M, que a regra marcou; Ind. NM, que
+não marcou) e piso–teto entre parênteses quando diferem do principal. Fecha a conta dos 61
+achados da geração: 56 decididos + 5 indeterminados marcados pela PERF-001.
+
+**Texto:** exemplo de indeterminado trocado (PERF-001, `Product[Sorting]` com `RELATED`); Etapa 1
+da recuperação apresentada como registro da decisão; MOD-002/MOD-005 sem detecção medida
+declaradas; ponto cego topológico da MOD-006 (cabeçalho–item) e a leitura do erro do P8 (a
+mensagem do achado cita `FactOnlineSales`); denominador da DAX-001 (parênteses não disparam;
+`VAR` constante dispara — falso positivo declarado); ameaças de construto novas (falso positivo
+efetivo da PERF-001 em tabelas de data; sem comparação com o texto fixo; conclusão sobre a
+conferência limitada à verificação léxica); hipótese, não medida, de que os complementares da
+PERF-001 induziram as recomendações com sintaxe DAX; trabalhos futuros (glossário na instrução,
+comparação às cegas com o texto fixo, geração só com a âncora, reverificar a marcação no
+Desktop); frase da Introdução sobre o verificador restringida; vírgula duplicada no cap. 2.
+
+**Recusados, com motivo:** "É" mal renderizado e "de 1 a 3" sem o 1 (o PDF está certo; artefato
+da leitura do revisor); trocar o BM25 depois de medir (violaria a regra pré-fixada, e a densa
+também zerou a PERF-001); parênteses na DAX-001 (o código já trata); a explicação do erro do P8
+pela topologia da MOD-006 (a tabela apontada era dimensão).
+
+PDF: 45 páginas textuais. Suíte: 905 testes passando.
+
+**Próximo passo:** o Fred relê os trechos alterados (caps. 3 a 6) e decide se faz o teste com
+glossário na instrução antes da entrega; depois, merge da `revisao-monografia` na `main` e a
+demonstração (subprojeto 3).
+
+### 15/10/2026 — Teste do glossário: rodada feita, planilha cega pronta para anotar
+
+Protocolo versionado **antes** da rodada (`d84c5b4`,
+`docs/superpowers/specs/2026-10-15-teste-do-glossario-design.md`); código em `4d37616`
+(`avaliacao_geracao/glossario.py`, subcomandos `glossario-*`; produção inalterada).
+
+- Rodada com glossário: 61 achados, 61 gerados, todos fora do cache (novos); achados e
+  contextos idênticos aos da rodada original — só a instrução mudou.
+- Planilha cega `eval/gabarito/rubrica-glossario-P1-P7.xlsx`: 81 linhas (61 novas + 20
+  originais sorteadas, semente 20261015), códigos R01–R81, ordem aleatória. Chave em
+  `eval/geracao/glossario/chave.json` (fora do git; vai para o resultado só na medição).
+- Reexecução da instrução original sem cache em andamento (indicador léxico).
+
+**Próximo passo:** o Fred anota as 81 linhas sem abrir a chave
+(`python -m avaliacao_geracao glossario-importar --parcial` mostra o andamento); depois
+`glossario-importar` e `glossario-medir`, e o resultado entra na monografia como análise de erros.
+
+### 15/10/2026 — Teste do glossário medido e levado à monografia
+
+Fred anotou as 81 linhas. Decisão (minha, delegada pelo Fred "no contexto de uma banca"):
+**nenhum veredito alterado**; resultado relatado inteiro, com a fragilidade.
+
+- **Regra pré-registrada:** utilizável 23 → 32/61, McNemar p = 0,049 → "melhora"; mas
+  **frágil**: consistência do anotador em utilizável 0,65 (kappa 0,30) nas 20 reanotadas.
+  Fiel 32 → 51 (p < 0,001); recomendação 47 → 37 (p = 0,076).
+- **Deriva da régua:** em fiel, 6 originais "não" → "sim" na reanotação, nenhuma ao contrário
+  (duas ainda com "não compreende"). **Exploratória (fora do protocolo):** só vereditos da
+  mesma sessão nos 20 → glossário sem vantagem (utilizável 8 × 10).
+- **Indicador léxico (sem anotação):** "compreend|descompress" na PERF-001: original 16/31,
+  reexecução sem cache 16/31, glossário 3/31. O erro de tradução é resolvido pela instrução.
+- **Efeito colateral:** recomendações corretas da PERF-001 24 → 10 ("desnormalize/descomprima a
+  coluna no Power Query"; YEAR/FORMAT em M persistiram apesar da entrada no glossário).
+  MOD-003, MOD-007 e MOD-001 passaram a ter recomendação correta.
+- **Defeito do instrumento:** a planilha da rubrica não mostrava a expressão DAX do achado
+  (que o LLM recebe). A anotação de 14/10 não foi afetada (conferido); na sessão nova, 8
+  vereditos dependiam só dela. Análise de sensibilidade em
+  `eval/rubrica_glossario_sensibilidade.csv` (motivo por veredito): utilizável 23 → 35,
+  p = 0,008, mas consistência 0,55 e, na mesma sessão, 9 × 12 — conclusão igual. A planilha
+  passou a mostrar `trecho_do_modelo`.
+
+Monografia: nova subseção 4.x (`sec-glossario`) com duas tabelas geradas (`glossario.typ`,
+`glossario-sessao.typ`, do consolidado); ameaça do anotador único agora com medida; defeito do
+instrumento em validade interna; conclusão, trabalhos futuros e resumo/abstract atualizados.
+McNemar (1947) conferido no Crossref. PDF: 48 páginas textuais. Suíte: 920 testes.
+
+**Próximo passo:** o Fred relê a subseção do glossário e os caps. 5–6; merge da
+`revisao-monografia` na `main`; demonstração (subprojeto 3).

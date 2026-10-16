@@ -11,6 +11,8 @@ from academico.tabelas import (
     tabela_catalogo,
     tabela_concordancia,
     tabela_geracao,
+    tabela_glossario,
+    tabela_glossario_sessao,
     tabela_regras,
 )
 
@@ -24,8 +26,19 @@ BLOCO_REGRAS = {
         },
         "DAX-001": {
             "matriz": {"vp": 6, "fp": 0, "fn": 0, "vn": 4, "ind_marcados": 1, "ind_nao_marcados": 2},
-            "taxas": {"precisao": {"principal": 1.0}, "recall": {"principal": 1.0}},
+            "taxas": {
+                "precisao": {"principal": 1.0, "piso": 0.857, "teto": 1.0},
+                "recall": {"principal": 1.0, "piso": 0.667, "teto": 1.0},
+            },
             "wilson": {"precisao": [0.6096, 0.99999], "recall": [0.6096, 0.99999]},
+        },
+        "MOD-007": {
+            "matriz": {"vp": 1, "fp": 0, "fn": 0, "vn": 45, "ind_marcados": 0, "ind_nao_marcados": 0},
+            "taxas": {
+                "precisao": {"principal": 1.0, "piso": 1.0, "teto": 1.0},
+                "recall": {"principal": 1.0, "piso": 1.0, "teto": 1.0},
+            },
+            "wilson": {"precisao": [0.2065, 1.0], "recall": [0.2065, 1.0]},
         },
     },
     "total_micro": {
@@ -71,8 +84,13 @@ def test_escapar_mantem_literal_a_sintaxe_que_depende_de_posicao(tmp_path):
 def test_tabela_regras_ordena_mostra_ausente_e_total():
     texto = tabela_regras(BLOCO_REGRAS, "tab-x", "Legenda")
     assert texto.index("[DAX-001]") < texto.index("[MOD-002]")
-    assert "[MOD-002], [0], [0], [0], [0], [—], [—], [—]" in texto
-    assert r"[DAX-001], [6], [0], [0], [3], [1,00], [\[0,61; 1,00\]], [1,00]" in texto
+    assert "[MOD-002], [0], [0], [0], [0], [0], [—], [—], [—]" in texto
+    assert r"[DAX-001], [6], [0], [0], [1], [2], [1,00 (0,86–1,00)], [\[0,61; 1,00\]], [1,00 (0,67–1,00)]" in texto
+
+
+def test_tabela_regras_omite_piso_e_teto_quando_coincidem_com_o_principal():
+    texto = tabela_regras(BLOCO_REGRAS, "tab-x", "Legenda")
+    assert r"[MOD-007], [1], [0], [0], [0], [0], [1,00], [\[0,21; 1,00\]], [1,00]" in texto
     assert "[*Total (micro)*]" in texto
     assert texto.rstrip().endswith("`regras-x.json`.]")
     assert "<tab-x>" in texto
@@ -164,3 +182,33 @@ def test_readme_em_dia_com_o_consolidado():
 
     texto = README.read_text(encoding="utf-8")
     assert atualizar_readme(texto, blocos_markdown(carregar())) == texto, "rode `python -m academico tabelas`"
+
+
+def _bloco_glossario():
+    item = lambda o, g, b, c, p: {"original": {"sim": o, "n": 61}, "glossario": {"sim": g, "n": 61},
+                                  "discordantes": {"so_original": b, "so_glossario": c}, "p_mcnemar": p}
+    sessao = lambda o, g, p: {"original_reanotada": o, "glossario": g, "so_original": 0, "so_glossario": 0, "p_mcnemar": p}
+    consist = lambda c, k: {"n": 20, "concordancia": c, "kappa": k}
+    nomes = ("pertinente", "fiel", "recomendacao_correta", "utilizavel")
+    return {
+        "origem": "glossario-x.json",
+        "itens": dict(zip(nomes, [item(61, 61, 0, 0, 1.0), item(32, 51, 2, 21, 0.0001), item(47, 37, 18, 8, 0.0755),
+                                  item(23, 32, 4, 13, 0.049)])),
+        "consistencia": dict(zip(nomes, [consist(1.0, None), consist(0.7, 0.43), consist(0.75, 0.43), consist(0.65, 0.3)])),
+        "exploratoria_mesma_sessao": {"n": 20, "itens": dict(zip(nomes, [sessao(20, 20, 1.0), sessao(15, 14, 1.0),
+                                                                        sessao(13, 11, 0.727), sessao(10, 8, 0.727)]))},
+    }
+
+
+def test_tabela_glossario_pareada():
+    texto = tabela_glossario(_bloco_glossario())
+    assert "[*Utilizável como está*], [23 \/ 61 (0,38)], [32 \/ 61 (0,52)], [4], [13], [0,049]" in texto
+    assert "[Fiel], [32 \/ 61 (0,52)], [51 \/ 61 (0,84)], [2], [21], [\<0,001]" in texto
+    assert "<tab-glossario>" in texto and "`glossario-x.json`" in texto
+
+
+def test_tabela_glossario_mesma_sessao_mostra_consistencia_e_comparacao():
+    texto = tabela_glossario_sessao(_bloco_glossario())
+    assert "[Pertinente], [1,00], [—], [20 \/ 20], [20 \/ 20], [1,000]" in texto
+    assert "[*Utilizável como está*], [0,65], [0,30], [10 \/ 20], [8 \/ 20], [0,727]" in texto
+    assert "<tab-glossario-sessao>" in texto

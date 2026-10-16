@@ -208,8 +208,8 @@ def test_mod005_cala_quando_nao_ha_prova_no_arquivo(ler):
     """Com o tempo automático desligado não há como saber se está marcada.
 
     Falso negativo declarado: é melhor calar que afirmar sem evidência. Era
-    exatamente o que a versão anterior desta regra fazia, ao ler uma
-    `dataCategory` que o Power BI Desktop nunca escreve.
+    exatamente o que a versão anterior desta regra fazia, ao ler a ausência de
+    uma `dataCategory` que o Power BI Desktop não garante escrever.
     """
     modelo = ler(
         tabelas=[
