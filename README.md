@@ -125,6 +125,20 @@ A lista completa, com as páginas do Microsoft Learn que ancoram cada regra, est
 
 Requisitos: Windows 11, Python 3.11, [Ollama](https://ollama.com) e, para o PDF do relatório, o Microsoft Edge (já presente no Windows).
 
+**Ambiente em que o projeto foi desenvolvido e medido.** Todos os tempos relatados aqui e na monografia vêm desta máquina:
+
+| Componente | Especificação |
+|---|---|
+| Computador | Notebook Lenovo (modelo 82CF) |
+| Processador | Intel Core i7-10750H, 2,6 GHz, 6 núcleos e 12 threads |
+| Memória | 16 GB de RAM |
+| GPU | NVIDIA GeForce RTX 2060, 6 GB de memória (VRAM) |
+| Armazenamento | SSD NVMe |
+| Sistema | Windows 11 Home |
+| Software | Python 3.11.9; Ollama 0.40.4 (versão em 15/10/2026); modelo `qwen2.5:7b-instruct-q4_K_M` |
+
+Os 6 GB de VRAM foram a restrição que definiu o modelo de linguagem: o `qwen2.5:7b-instruct` quantizado em 4 bits ocupa cerca de 5,3 GB, com a janela de contexto limitada a 4.096 tokens para não transbordar para a RAM. Nessa configuração, a explicação de cada achado leva cerca de 8 s. Uma GPU com menos memória faz o Ollama dividir o modelo com a CPU, e a geração fica várias vezes mais lenta; sem GPU, ela funciona, mas pode levar minutos por achado. A detecção pelas regras não usa GPU e roda em menos de 1 segundo em qualquer máquina.
+
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
