@@ -93,13 +93,13 @@ O problema abordado é como auditar automaticamente um modelo semântico de modo
 | **Utilizável como está** | 23 / 61 | 0,38 | [0,27; 0,50] |
 <!-- /tabela -->
 
-As tabelas acima são geradas pelo código a partir de `eval/results/consolidado-2026-10-14.json` (`python -m academico tabelas`).
+As tabelas acima são geradas pelo código a partir de `eval/results/consolidado-2026-10-15.json` (`python -m academico tabelas`).
 
 ### 4. Conclusões
 
-Numa ferramenta de auditoria que usa modelos de linguagem, a confiança deve residir na parte determinística. As regras, escolhidas por um critério explícito, entregaram achados confiáveis; a recuperação com a passagem âncora fixa entregou o fundamento certo; o modelo local de 7 bilhões de parâmetros, com o fundamento nas mãos, ainda erra o suficiente para que as suas explicações precisem de revisão. A ferramenta deve ser usada como apoio a um analista.
+Numa ferramenta de auditoria que usa modelos de linguagem, a confiança deve residir na parte determinística. As regras, escolhidas por um critério explícito, entregaram achados confiáveis; a recuperação com a passagem âncora fixa entregou o fundamento certo; o modelo local de 7 bilhões de parâmetros, com o fundamento nas mãos, ainda erra o suficiente para que as suas explicações precisem de revisão. A ferramenta deve ser usada como apoio a um analista. Um teste com um glossário na instrução, feito como análise de erros, eliminou quase todo o erro de tradução das explicações, mas não a confusão entre DAX e M, e introduziu erros novos.
 
-As principais limitações são o anotador único (sem medida de concordância entre anotadores), o pequeno número de casos por regra, o uso de amostras públicas possivelmente mais limpas que modelos reais e a avaliação com um único modelo de linguagem. Trabalhos futuros incluem melhorar a geração (glossário, exemplos, modelos maiores), verificar a fidelidade pelo sentido, ampliar as regras pelo mesmo critério (Power Query M, DAX dependente de contexto) e ler TMDL, PBIX e a camada de relatório.
+As principais limitações são o anotador único (sem segundo anotador; reanotando 20 explicações, o autor repetiu o próprio veredito de "utilizável" em 65% dos casos), o pequeno número de casos por regra, o uso de amostras públicas possivelmente mais limpas que modelos reais e a avaliação com um único modelo de linguagem. Trabalhos futuros incluem melhorar a geração (glossário, exemplos, modelos maiores), verificar a fidelidade pelo sentido, ampliar as regras pelo mesmo critério (Power Query M, DAX dependente de contexto) e ler TMDL, PBIX e a camada de relatório.
 
 ### 5. Referências
 
