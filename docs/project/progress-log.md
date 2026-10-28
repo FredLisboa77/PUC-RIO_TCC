@@ -1,5 +1,12 @@
 # Progress Log
 
+## 27/10/2026 — Fase 5 concluída — avaliação final do orientador
+
+- **Feito:** README e monografia atualizados e publicados na `main` após o feedback do orientador, que avaliou o trabalho como excelente. O título passou a explicitar a IA e a auditoria de modelos semânticos; o README esclarece o escopo em `model.bim`, acrescenta o diagrama do pipeline e o prompt de sistema, e apresenta a comparação entre BM25, busca densa e combinada.
+- **Recuperação:** a documentação registra que `bge-small-en-v1.5` foi avaliado como opção densa, mas não é usado na consulta do MVP. As precisões macro dos complementares foram mantidas como medidas: BM25 0,62, densa 0,67 e combinada 0,65. Como a regra definida antes da medição exigia vantagem mínima de 0,10, BM25 permanece como a busca escolhida.
+- **Fechamento:** as cinco fases do projeto estão concluídas. Não haverá demonstração ao vivo nem apresentação à banca; o orientador já avaliou a entrega e as modificações sugeridas foram atendidas.
+- **Referência:** atualização no GitHub pelo commit [`cc46c1b`](https://github.com/FredLisboa77/PUC-RIO_TCC/commit/cc46c1b5ad4288f73b0cee743e87a1cfae02516f).
+
 ## 22/09/2026 — Fase 1, semana 1 — planejamento
 - **Feito:** planejamento da Fase 1 (análise PBIP, TMDL × model.bim, stack, matriz de funcionalidades, arquitetura, estrutura de repositório, roadmap de 13 semanas); ADR-001 a ADR-003; riscos e backlog.
 - **Problemas:** status de licença das fontes não confirmado; estrutura PBIP não validada com projeto real.
