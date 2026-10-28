@@ -1,4 +1,4 @@
-# Auditoria de projetos Power BI
+# As Regras Decidem, o LLM Explica: Auditoria de Modelos Semânticos do Power BI com Geração Aumentada por Recuperação
 
 #### Aluno: [Carlos Frederico Coelho Lisboa](https://github.com/FredLisboa77)
 #### Orientadora: Evelyn C. S. Batista
@@ -21,13 +21,13 @@ Trabalho apresentado ao curso [GenAI e LLM MASTER](https://ica.ele.puc-rio.br/cu
 
 ### Resumo
 
-Modelos semânticos do Power BI, a camada que organiza os dados consultados pelos relatórios, podem ser construídos sem seguir as boas práticas de modelagem documentadas pela Microsoft, o que pode produzir resultados inesperados, consultas lentas e modelos maiores que o necessário. Este trabalho desenvolve e avalia uma ferramenta que audita projetos do Power BI no formato PBIP, combinando regras determinísticas com explicações geradas por um modelo de linguagem executado localmente. A ferramenta lê a definição do modelo no arquivo `model.bim` e aplica nove regras de modelagem, desempenho e DAX, selecionadas por um critério de detectabilidade em três testes: o problema deve ser decidível no arquivo, sustentado por uma passagem citável do Microsoft Learn e afirmado com evidência suficiente. Para cada achado, a ferramenta recupera trechos de uma base de 1.420 páginas do Microsoft Learn, sempre incluindo a passagem que ancora a regra, e pede a um modelo de linguagem de 7 bilhões de parâmetros que explique o problema e recomende a correção, citando os trechos; a citação é validada por código, e o modelo de linguagem nunca decide se um problema existe. A avaliação, feita em sete projetos públicos contra julgamento humano, mediu separadamente as três camadas. As regras atingiram precisão e revocação de 0,88. Com a passagem âncora sempre no contexto, todas as 61 explicações avaliadas citaram uma passagem pertinente; a busca dos trechos complementares foi escolhida por medição entre 24 combinações. A geração foi o ponto fraco: 52% das explicações foram fiéis à documentação e 38% puderam ser usadas sem edição, com erros sistemáticos concentrados em duas regras; a verificação automática de fidelidade, baseada em números e nomes, não concordou com a leitura humana além do acaso. Conclui-se que, numa ferramenta de auditoria que usa modelos de linguagem, a confiança deve residir na parte determinística, e que a explicação gerada é um rascunho útil a ser revisado por um analista.
+Modelos semânticos do Power BI, a camada que organiza os dados consultados pelos relatórios, podem ser construídos sem seguir as boas práticas de modelagem documentadas pela Microsoft, o que pode produzir resultados inesperados, consultas lentas e modelos maiores que o necessário. Este trabalho desenvolve e avalia uma ferramenta que audita **modelos semânticos** definidos em projetos Power BI no formato PBIP; ela lê o `model.bim`, não os dados nem a camada de relatórios e visuais. A auditoria combina regras determinísticas com explicações geradas por um modelo de linguagem executado localmente. Nove regras de modelagem, desempenho e DAX foram selecionadas por um critério de detectabilidade em três testes: o problema deve ser decidível no arquivo, sustentado por uma passagem citável do Microsoft Learn e afirmado com evidência suficiente. Para cada achado, a ferramenta recupera trechos de uma base de 1.420 páginas do Microsoft Learn, sempre incluindo a passagem que ancora a regra, e pede a um modelo de linguagem de 7 bilhões de parâmetros que explique o problema e recomende a correção, citando os trechos; a citação é validada por código, e o modelo de linguagem nunca decide se um problema existe. A avaliação, feita em sete modelos semânticos de projetos públicos contra julgamento humano, mediu separadamente as três camadas. As regras atingiram precisão e revocação de 0,88. Com a passagem âncora sempre no contexto, todas as 61 explicações avaliadas citaram uma passagem pertinente; a busca dos trechos complementares foi escolhida por medição entre 24 combinações. A geração foi o ponto fraco: 52% das explicações foram fiéis à documentação e 38% puderam ser usadas sem edição, com erros sistemáticos concentrados em duas regras; a verificação automática de fidelidade, baseada em números e nomes, não concordou com a leitura humana além do acaso. Conclui-se que, numa ferramenta de auditoria que usa modelos de linguagem, a confiança deve residir na parte determinística, e que a explicação gerada é um rascunho útil a ser revisado por um analista.
 
 **Palavras-chave:** Power BI. Modelo semântico. Análise estática. Geração aumentada por recuperação. Modelos de linguagem.
 
 ### Abstract
 
-Power BI semantic models, the layer that organizes the data queried by reports, can be built without following the modeling best practices documented by Microsoft, which can produce unexpected results, slow queries and models larger than necessary. This work develops and evaluates a tool that audits Power BI projects in the PBIP format, combining deterministic rules with explanations generated by a locally executed language model. The tool reads the model definition from the `model.bim` file and applies nine modeling, performance and DAX rules, selected by a three-test detectability criterion: the problem must be decidable from the file, supported by a citable passage of Microsoft Learn and asserted on sufficient evidence. For each finding, the tool retrieves passages from a base of 1,420 Microsoft Learn pages, always including the passage that anchors the rule, and asks a 7-billion-parameter language model to explain the problem and recommend a fix, citing the passages; the citation is validated by code, and the language model never decides whether a problem exists. The evaluation, carried out on seven public projects against human judgment, measured the three layers separately. The rules reached a precision and recall of 0.88. With the anchor passage always in the context, all 61 explanations evaluated cited a relevant passage; the search for complementary passages was chosen by measurement among 24 configurations. Generation was the weak point: 52% of the explanations were faithful to the documentation and 38% could be used without editing, with systematic errors concentrated in two rules; the automatic faithfulness check, based on numbers and names, did not agree with human reading beyond chance. We conclude that, in an auditing tool that uses language models, trust should rest on the deterministic part, and that the generated explanation is a useful draft to be reviewed by an analyst.
+Power BI semantic models, the layer that organizes the data queried by reports, can be built without following the modeling best practices documented by Microsoft, which can produce unexpected results, slow queries and models larger than necessary. This work develops and evaluates a tool that audits **semantic models** defined in Power BI projects in the PBIP format; it reads `model.bim`, not the data or the report and visual layer. The audit combines deterministic rules with explanations generated by a locally executed language model. Nine modeling, performance and DAX rules were selected by a three-test detectability criterion: the problem must be decidable from the file, supported by a citable passage of Microsoft Learn and asserted on sufficient evidence. For each finding, the tool retrieves passages from a base of 1,420 Microsoft Learn pages, always including the passage that anchors the rule, and asks a 7-billion-parameter language model to explain the problem and recommend a fix, citing the passages; the citation is validated by code, and the language model never decides whether a problem exists. The evaluation, carried out on seven semantic models from public projects against human judgment, measured the three layers separately. The rules reached a precision and recall of 0.88. With the anchor passage always in the context, all 61 explanations evaluated cited a relevant passage; the search for complementary passages was chosen by measurement among 24 configurations. Generation was the weak point: 52% of the explanations were faithful to the documentation and 38% could be used without editing, with systematic errors concentrated in two rules; the automatic faithfulness check, based on numbers and names, did not agree with human reading beyond chance. We conclude that, in an auditing tool that uses language models, trust should rest on the deterministic part, and that the generated explanation is a useful draft to be reviewed by an analyst.
 
 **Keywords:** Power BI. Semantic model. Static analysis. Retrieval-augmented generation. Language models.
 
@@ -43,9 +43,57 @@ O problema abordado é como auditar automaticamente um modelo semântico de modo
 
 **Leitura do projeto.** A ferramenta lê o arquivo `model.bim`, que contém, em TMSL (um documento JSON), a definição completa do modelo semântico: tabelas, colunas e tipos, medidas e colunas calculadas em DAX, consultas em Power Query M e relacionamentos — mas não os dados. Ela converte o arquivo num modelo interno validado e passa as expressões DAX por um analisador léxico próprio, cuja cobertura foi medida: 137 de 137 expressões do modelo do estudo de caso lidas sem token desconhecido.
 
+**Escopo.** Embora o arquivo de entrada pertença a um projeto PBIP, a auditoria cobre a definição do modelo semântico em `model.bim`. Não inspeciona os dados, as páginas do relatório, os visuais nem outros elementos do projeto.
+
+#### Visão do pipeline
+
+```mermaid
+flowchart LR
+    A["Projeto PBIP<br/>model.bim"] --> B["Leitura e normalização<br/>do modelo semântico"]
+    B --> C["Regras determinísticas<br/>9 regras de modelagem, desempenho e DAX"]
+    C --> D["Achado confirmado<br/>+ trecho-âncora da regra"]
+    D --> E["BM25 seleciona<br/>trechos complementares"]
+    D --> F["Prompt com achado<br/>e contexto numerado"]
+    E --> F
+    F --> G["LLM local<br/>Qwen2.5 7B"]
+    G --> H["Validação da resposta<br/>formato e citações"]
+    H --> I["Relatório<br/>explicação e recomendação"]
+    C -. "só regras" .-> I
+```
+
+O LLM não decide se há um problema: as regras produzem os achados. A seção do Microsoft Learn que fundamenta cada regra é incluída como âncora, independentemente da busca; o BM25 recupera apenas os trechos complementares. Se a resposta do modelo não passar pela validação, o relatório usa a recomendação padrão da regra.
+
 **Critério de detectabilidade.** Em vez de uma meta de 20 a 25 regras, cada regra candidata passou por três testes, aplicados antes do código: (1) o problema é decidível no arquivo; (2) existe uma passagem citável do Microsoft Learn que o sustenta; (3) a evidência é suficiente — a regra enumera todas as formas da condição, todas as coisas parecidas com o sinal e todos os lugares onde o sinal pode estar, e só afirma pela ausência de algo quando as três listas estão completas. O critério resultou em **9 regras** (6 de modelagem, 2 de desempenho e 1 de DAX). A regra de maior rendimento esperado, "coluna sem uso", foi rejeitada pelo terceiro teste: o uso de uma coluna pelos visuais está na camada de relatório, que a ferramenta não lê, e a sua precisão variaria entre cerca de 15% e 91%.
 
 **Recuperação.** A base de documentação reúne 1.420 páginas do Microsoft Learn, extraídas por seção. Para cada achado, a seção que ancora a regra entra **sempre** como o primeiro trecho do contexto; a busca só acrescenta trechos complementares. O método de busca foi escolhido por medição entre 24 combinações, com a regra de decisão fixada antes: venceu a busca lexical **BM25** (Robertson; Zaragoza, 2009) sobre seções do corpus completo.
+
+As alternativas foram comparadas também pela pertinência dos trechos complementares, que é o conteúdo escolhido pela busca em cada geração. A busca densa usa embeddings `BAAI/bge-small-en-v1.5`; a combinada une BM25 e busca densa por Reciprocal Rank Fusion (RRF, k = 60). A regra definida antes da medição exigia que uma alternativa superasse o BM25 em pelo menos 0,10 na macro para substituí-lo.
+
+| Métrica de recuperação | BM25 (MVP) | Densa (`bge-small-en-v1.5`) | Combinada (RRF) |
+|---|---:|---:|---:|
+| Precisão macro dos complementares (70 consultas; decide) | **0,62** | 0,67 | 0,65 |
+| Precisão micro dos complementares | 0,39 | 0,45 | 0,45 |
+| Precisão macro nas consultas de achado | 0,49 | 0,62 | 0,54 |
+| Teste anterior: acerto@5 / MRR@10 | **1,000 / 0,613** | 0,889 / 0,613 | **1,000 / 0,687** |
+
+Embora a busca densa tenha obtido macro 0,05 acima do BM25 na métrica decisória, não atingiu a margem de 0,10; a combinada ficou 0,03 acima. Por isso, o MVP mantém BM25. **O embedding foi avaliado, mas não é usado na consulta escolhida.** O teste anterior de acerto@5/MRR é apresentado como registro separado, pois avalia a recuperação da âncora, que hoje é fornecida diretamente ao contexto.
+
+#### Prompt de geração
+
+O texto de sistema usado na geração é:
+
+```text
+Você é um auditor de modelos semânticos do Power BI.
+Uma regra determinística JÁ detectou o problema descrito pelo usuário. Você NÃO decide se o problema existe: sua tarefa é explicá-lo e recomendar a correção.
+Use somente as informações do achado e dos trechos de documentação numerados. Não invente números, nomes de objetos nem fatos.
+Responda em português do Brasil, em JSON, com:
+- "explicacao": por que isso é um problema neste modelo;
+- "recomendacao": o que fazer, de forma acionável;
+- "citacoes": de 1 a 3 números dos trechos que sustentam a explicação.
+Explicação e recomendação juntas devem ter no máximo 120 palavras.
+```
+
+A mensagem de usuário é montada para cada achado: inclui regra, objeto, mensagem, evidência disponível e os trechos numerados recuperados. O código completo está em [`core/analise/prompt.py`](core/analise/prompt.py).
 
 **Geração com citação obrigatória.** O modelo `qwen2.5:7b-instruct` (Qwen Team, 2024), quantizado em 4 bits e executado localmente pelo Ollama numa GPU de 6 GB, recebe o achado e os trechos numerados e responde em JSON, com explicação, recomendação e de 1 a 3 citações. **As regras são a única fonte de achados**: o modelo apenas explica. Se a citação não existe no contexto, a resposta é descartada e o achado sai com a recomendação padrão da regra.
 
