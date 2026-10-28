@@ -1,8 +1,8 @@
 # Status do Projeto — resumo de andamento
 
-**Projeto:** powerbi-ai-auditor — auditoria automatizada de projetos Power BI (PBIP) com IA
+**Projeto:** powerbi-ai-auditor — auditoria de modelos semânticos do Power BI (PBIP) com IA
 **TCC:** PUC-Rio · **Autor:** Fred
-**Posição:** semana 13 de 13 — entrega pronta, aguardando o aval do orientador (sem banca): monografia escrita, revisada e na `main` (48 páginas textuais); README no modelo da PUC-Rio, com roteiro para o orientador rodar o projeto e o hardware de medição; demonstração ao vivo com cache conferida · **Atualizado em:** 15/10/2026
+**Posição:** cinco fases concluídas em 27/10/2026 — monografia e README atualizados na `main`; avaliação final do orientador: trabalho excelente, sugestões atendidas. Não haverá demonstração nem banca · **Atualizado em:** 27/10/2026
 
 > Este é o resumo executivo para acompanhamento. O detalhamento técnico de cada
 > dia está em [`progress-log.md`](progress-log.md); as decisões de arquitetura em
@@ -13,24 +13,15 @@
 
 ## 1. Resumo em cinco linhas
 
-As duas primeiras fases estão concluídas, a segunda já incluindo o grupo de regras
-de DAX que o roadmap original reservava para o início da Fase 3. A ferramenta já lê
-um projeto PBIP real, normaliza o modelo semântico e aponta 15 problemas de boas
-práticas nele, com cada uma das **9 regras** ancorada numa página do Microsoft
-Learn. São **580 testes** automatizados passando. O maior risco técnico do
-projeto — rodar um LLM na GPU disponível — foi resolvido por medição, não por
-estimativa. A contagem de regras **deixou de ser meta e passou a ser resultado**
-(D-1): o critério de detectabilidade, com um terceiro teste formulado nesta etapa,
-rejeitou uma regra de alto valor esperado (PERF-005) por falta de evidência
-suficiente — e **essa rejeição, não a contagem, é o resultado que a monografia
-defende**. Os sete projetos públicos do dataset foram convertidos em 09/10/2026 e
-renderam **53 achados**, acima do gatilho de ~40 do R-12 — mas 16 deles vêm da
-regra de precisão mais dependente de dado, e sem ela seriam 37. O projeto de
-contingência P9 não foi acionado (seção 4.2). A Fase 3 começou: o catálogo de
-fontes da RAG está pronto, com **1.420 páginas do Microsoft Learn** a indexar e 6
-artigos do SQLBI só como leitura complementar (seção 4.3). Em 11/10/2026 as 1.420
-páginas foram coletadas e extraídas por seção, sem erro, e a passagem citada por cada
-uma das 9 regras foi conferida no texto extraído.
+As **cinco fases** do projeto estão concluídas. A ferramenta lê um modelo semântico
+real em PBIP, aplica **9 regras** ancoradas no Microsoft Learn e enriquece os
+achados com explicações citadas por um LLM local. A avaliação foi feita em sete
+projetos públicos; a monografia documenta resultados, limitações e decisões de
+método. Em 27/10/2026 o README e a monografia foram atualizados na `main` para
+incorporar o feedback do orientador sobre título, escopo, diagrama do pipeline,
+prompt e comparação da recuperação. O orientador avaliou o trabalho como excelente
+e as sugestões foram atendidas. Não haverá demonstração nem banca. O registro
+técnico detalhado está no [`progress-log.md`](progress-log.md).
 
 ---
 
@@ -42,9 +33,9 @@ uma das 9 regras foi conferida no texto extraído.
 | F2 — Leitura do PBIP e regras | 3–5 | **Concluída** | 08/10/2026 — motor de regras e 9 regras (8 estruturais, já na `main`, mais o grupo 2 de DAX, mergeado na `main` pelo [PR #1](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/1) em 11/10/2026) |
 | F3 — RAG e análise com LLM | 6–8 | **Concluída** | 13/10/2026 — revisão de meio de projeto aprovada pelo orientador. Catálogo, coleta, régua e recuperação concluídos; geração com citação obrigatória rodando no P8, mergeada na `main` pelo [PR #5](https://github.com/FredLisboa77/PUC-RIO_TCC/pull/5) em 11/10/2026. Revisão de meio de projeto na semana 8: gabarito das regras anotado e medido (precisão 0,88 na tag `regras-gt`); correção da MOD-003 e da PERF-001 como análise de erros |
 | F4 — Interface e relatório | 9–10 | **Concluída** | 13/10/2026 — interface Streamlit (mergeada em `5fce01f`), relatório HTML/PDF e cache das respostas do LLM (branch `fase4-relatorio`) |
-| F5 — Avaliação, documentação e banca | 11–13 | **Em andamento** | Avaliação da geração (subprojeto 1): ferramenta `python -m avaliacao_geracao` pronta; rodada de P1–P7 feita em 14/10/2026 (61 achados, 61 explicações geradas, reproduzível pelo cache); rubrica anotada e medida em 14/10/2026 (seção 3). Depois: monografia (semana 12) e demonstração (semana 13). **Monografia (subprojeto 2), 15/10/2026:** escrita em Typst nas normas ABNT, `docs/academic/monografia.pdf` (6 capítulos, 3 apêndices, 36 referências conferidas, tabelas geradas do consolidado por `python -m academico tabelas`); README no modelo de entrega da PUC-Rio. Revisão externa aplicada e teste do glossário incluído como análise de erros; mergeada na `main` em `e8a1983`. Falta a demonstração (semana 13) |
+| F5 — Avaliação e documentação | 11–13 | **Concluída** | 27/10/2026 — avaliação da geração e monografia finalizadas; README e monografia atualizados na `main` após feedback do orientador, que avaliou o trabalho como excelente e teve suas sugestões atendidas. Não haverá demonstração nem banca |
 
-**Posição no calendário, e o uso da folga que a atualização anterior reportou:**
+**Registro histórico do cronograma (atualização de 06/10/2026) e uso da folga:**
 o projeto começou em 22/09/2026. Na atualização de 06/10/2026 estávamos cerca de
 uma semana à frente do cronograma em tempo — terceira semana de calendário,
 trabalho da quarta semana do roadmap já concluído. **Esta etapa consumiu essa
@@ -301,13 +292,13 @@ VRAM e responde em 6,0 s por achado, contra um limite de 60 s.
 
 ---
 
-## 8. Próximos passos
+## 8. Trabalhos futuros
 
 | # | Passo | Por quê agora |
 |---|---|---|
-| 1 | **Aval do orientador (semana 13)** — leitura da monografia e, se ele quiser, a demonstração ao vivo com cache | Não haverá banca (decisão de 15/10/2026). A entrega está pronta: README com o roteiro em quatro níveis (seção 8), demonstração conferida. Antes de demonstrar: abrir o Ollama e fechar os programas que usam a GPU |
-| 2 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
-| 3 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
+| ✓ | ~~Aval do orientador (semana 13)~~ — **concluído em 27/10/2026** | Avaliação excelente; as alterações sugeridas foram atendidas. Sem demonstração ao vivo e sem banca. Os itens abaixo são trabalhos futuros técnicos |
+| 1 | Consulta da PERF-001 sem a expressão DAX da coluna (trabalho futuro) | Medido em 12/10: a expressão atrai páginas de funções DAX, e nenhuma das três buscas entrega complementar pertinente para a PERF-001 |
+| 2 | Verificar empiricamente se o Power BI Desktop grava `roles[].tablePermissions[].filterExpression` no `model.bim` | Menos urgente do que antes: era a dependência da PERF-005, que foi recusada. Permanece pendência porque pode sustentar regra futura de RLS. Também vale para a DAX-001, que já consome o sítio `role` em produção hoje — mas sem o mesmo risco: ela afirma por **presença** do operador `/`, então sobre uma propriedade que o Desktop talvez nunca escreva ela simplesmente não encontra nada; o falso positivo destrutivo que motiva a pendência é risco de regra que afirma por **ausência**, como a PERF-005 teria sido |
 
 ---
 
@@ -319,7 +310,7 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-pytest                            # 483 testes (os que leem o PBIP real são pulados sem data/)
+pytest                            # 920 testes; em clone limpo: 877 passam e 43 são pulados
 python -m core.rules.catalogo     # as 9 regras com as URLs do Microsoft Learn
 python -m rag.catalogo            # regenera o catálogo de fontes offline; não deve gerar diff
 ```
